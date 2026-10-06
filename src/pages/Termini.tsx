@@ -53,7 +53,7 @@ const Termini = () => {
 
             <section>
               <h2 className="text-senior-xl font-semibold mb-3">5. Prenotazioni e Pagamenti</h2>
-              <p>Le prenotazioni sono gestite attraverso la Piattaforma. Il pagamento avviene tramite il sistema integrato Stripe. La tariffa indicata dal professionista è comprensiva della commissione della Piattaforma. Le politiche di cancellazione sono specificate al momento della prenotazione.</p>
+              <p>Le prenotazioni sono gestite attraverso la Piattaforma. Al momento non è previsto alcun pagamento online sulla Piattaforma: dopo la prenotazione l'utente viene ricontattato dal team ComuniCARE, che concorda i dettagli e le modalità di pagamento della prestazione. Le politiche di cancellazione sono specificate al momento della prenotazione.</p>
             </section>
 
             <section>

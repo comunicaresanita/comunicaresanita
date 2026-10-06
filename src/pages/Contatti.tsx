@@ -18,7 +18,7 @@ import { articles } from "@/data/blogArticles";
 const patientFaqItems = [
   {
     q: "Come posso prenotare una prestazione?",
-    a: "Accedi al tuo account, cerca il professionista o la prestazione che ti interessa dalla pagina 'Trova la prestazione o il professionista', seleziona data e orario disponibili e procedi con la prenotazione e il pagamento."
+    a: "Accedi al tuo account, cerca il professionista o la prestazione che ti interessa dalla pagina 'Trova la prestazione o il professionista', seleziona data e orario disponibili e conferma la prenotazione. Verrai ricontattato al più presto dal nostro team."
   },
   {
     q: "Posso prenotare una prestazione per un familiare o un'altra persona?",
@@ -29,8 +29,8 @@ const patientFaqItems = [
     a: "Sì, puoi cancellare una prenotazione dalla tua dashboard. È obbligatorio avvisare almeno 24 ore prima della prestazione. In caso contrario, l'importo non sarà rimborsato."
   },
   {
-    q: "I pagamenti sono sicuri?",
-    a: "Sì, tutti i pagamenti vengono gestiti tramite Stripe, una piattaforma di pagamento certificata e sicura. ComuniCARE non conserva i dati delle carte di credito."
+    q: "Devo pagare online al momento della prenotazione?",
+    a: "No, al momento non è previsto alcun pagamento online. Dopo la prenotazione verrai ricontattato dal nostro team per confermare i dettagli della prestazione."
   },
   {
     q: "Come posso modificare i miei dati personali?",
@@ -61,7 +61,7 @@ const professionalFaqItems = [
   },
   {
     q: "Come funziona il pagamento delle prestazioni?",
-    a: "Il pagamento viene gestito direttamente dalla piattaforma con pagamento online. Essendo i pagamenti gestiti tramite Stripe, gli accrediti seguono i tempi standard di tale piattaforma di pagamento."
+    a: "Al momento non è previsto il pagamento online sulla piattaforma. Dopo ogni prenotazione il team ComuniCARE ti contatterà per concordare i dettagli e le modalità di pagamento della prestazione."
   },
   {
     q: "Cosa succede se il paziente cancella o non si presenta?",
