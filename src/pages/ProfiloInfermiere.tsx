@@ -512,32 +512,14 @@ const ProfiloInfermiere = () => {
       if (bookingError) throw bookingError;
       if (!newBooking) throw new Error("Impossibile creare la prenotazione.");
 
-      const { data: payData, error: payError } = await supabase.functions.invoke("create-payment", {
-        body: {
-          bookingId: (newBooking as any).id,
-          serviceName: servizioSelezionato,
-          price: bookingPricing.finalPrice,
-          professionalName: `${professional.first_name} ${professional.last_name}`,
-        },
-      });
-
-      if (payError) throw payError;
-      if (!payData?.url) throw new Error("URL di pagamento non disponibile.");
-
-      // Open Stripe Checkout in a new tab to avoid being blocked by the
-      // preview iframe's X-Frame-Options (which causes the page to look stuck/looping).
-      const checkoutUrl = payData.url as string;
-      const newWindow = window.open(checkoutUrl, "_blank");
-      if (!newWindow) {
-        // Popup blocked — fall back to top-level navigation
-        try {
-          if (window.top) window.top.location.href = checkoutUrl;
-          else window.location.href = checkoutUrl;
-        } catch {
-          window.location.href = checkoutUrl;
-        }
+      const newId = (newBooking as any).id as string;
+      try {
+        await supabase.functions.invoke("send-booking-notifications", { body: { bookingId: newId } });
+      } catch (e) {
+        console.error(e);
       }
-      toast({ title: "Reindirizzamento al pagamento", description: "Completa il pagamento nella nuova scheda." });
+      localStorage.removeItem(BOOKING_DRAFT_KEY);
+      navigate(`/prenotazione-confermata?booking=${newId}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Errore durante la prenotazione.";
       toast({ title: "Errore", description: message, variant: "destructive" });
@@ -927,7 +909,7 @@ const ProfiloInfermiere = () => {
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground text-center mt-2">
-                  Il pagamento verrà richiesto al completamento della prenotazione. Riceverai una conferma via email.
+                  Riceverai una conferma via email e sarai ricontattato al più presto dal nostro team.
                 </p>
                 <p className="text-xs text-muted-foreground text-center mt-1 font-bold">
                   In caso di cancellazione, è obbligatorio avvisare almeno 24 ore prima della prestazione.

@@ -154,8 +154,14 @@ function getTitoloRuolo(tipo?: string): string {
 const SetupProfessionista = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, user, loading: authLoading } = useAuth();
   const tipo = profile?.professional_type;
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/login", { state: { redirect: "/setup-professionista", message: "Accedi per completare il tuo profilo da professionista." } });
+    }
+  }, [authLoading, user, navigate]);
 
   const [servizi, setServizi] = useState<Servizio[]>([]);
   const [loadingData, setLoadingData] = useState(true);

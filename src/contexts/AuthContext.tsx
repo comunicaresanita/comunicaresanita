@@ -45,12 +45,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-    setProfile(data as Profile | null);
+    // Right after signup the profile row may not be readable yet: retry a few times
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (data) {
+        setProfile(data as Profile);
+        return;
+      }
+      await new Promise((r) => setTimeout(r, 700));
+    }
+    setProfile(null);
   };
 
   const refreshProfile = async () => {
