@@ -1,2 +1,0 @@
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS caregiver_first_name text, ADD COLUMN IF NOT EXISTS caregiver_last_name text;
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS recipient_first_name text, ADD COLUMN IF NOT EXISTS recipient_last_name text;
