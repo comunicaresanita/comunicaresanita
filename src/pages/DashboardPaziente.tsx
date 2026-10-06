@@ -605,7 +605,7 @@ const DashboardPaziente = () => {
                     n: 3,
                     title: "Conferma la prenotazione",
                     body:
-                      "Controlla il riepilogo, completa il pagamento sicuro e conferma. Riceverai subito un'email con tutti i dettagli della tua prestazione.",
+                      "Controlla il riepilogo e conferma. Riceverai subito un'email di conferma e il nostro team ti ricontatterà al più presto.",
                     Icon: CalendarCheck,
                   },
                 ].map(({ n, title, body, Icon }) => (
