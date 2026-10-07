@@ -154,7 +154,7 @@ function getTitoloRuolo(tipo?: string): string {
 const SetupProfessionista = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { profile, user, loading: authLoading } = useAuth();
+  const { profile, user, loading: authLoading, refreshProfile } = useAuth();
   const tipo = profile?.professional_type;
 
   useEffect(() => {
@@ -167,6 +167,13 @@ const SetupProfessionista = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [isFirstSetup, setIsFirstSetup] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Safety net: if the profile is still missing a few seconds after signup, retry it
+  useEffect(() => {
+    if (profile || authLoading || !user) return;
+    const t = setTimeout(() => { refreshProfile(); }, 5000);
+    return () => clearTimeout(t);
+  }, [profile, authLoading, user]);
 
   useEffect(() => {
     const loadServices = async () => {

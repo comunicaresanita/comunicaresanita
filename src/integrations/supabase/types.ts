@@ -531,7 +531,11 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      create_profile_from_auth_user: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
+      ensure_my_profile: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
