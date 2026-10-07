@@ -13,6 +13,8 @@ import {
 const AuthHeader = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const hideAccedi = location.pathname === "/registrazione" || location.pathname === "/setup-professionista";
 
   const handleSignOut = async () => {
     await signOut();
