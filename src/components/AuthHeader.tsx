@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/comunicare-logo-header.png";
@@ -13,6 +13,8 @@ import {
 const AuthHeader = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const hideAccedi = location.pathname === "/registrazione" || location.pathname === "/setup-professionista";
 
   const handleSignOut = async () => {
     await signOut();
@@ -121,9 +123,11 @@ const AuthHeader = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button asChild size="sm" className="px-3 md:px-6 h-9 md:h-10 text-sm md:text-base">
-              <Link to="/login">Accedi</Link>
-            </Button>
+            {!hideAccedi && (
+              <Button asChild size="sm" className="px-3 md:px-6 h-9 md:h-10 text-sm md:text-base">
+                <Link to="/login">Accedi</Link>
+              </Button>
+            )}
 
           </div>
         )}
