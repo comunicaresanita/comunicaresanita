@@ -45,7 +45,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   const fetchProfile = async (userId: string) => {
-    // Right after signup the profile row may not be readable yet: retry a few times
+    // Right after signup the profile row may not exist yet: create it from the
+    // signup data if missing, then retry a few times
     for (let attempt = 0; attempt < 6; attempt++) {
       const { data } = await supabase
         .from("profiles")
@@ -56,7 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfile(data as Profile);
         return;
       }
-      await new Promise((r) => setTimeout(r, 700));
+      await (supabase.rpc as any)("ensure_my_profile");
+      await new Promise((r) => setTimeout(r, 400));
     }
     setProfile(null);
   };

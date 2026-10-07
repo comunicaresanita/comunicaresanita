@@ -170,7 +170,16 @@ const SetupProfessionista = () => {
 
   useEffect(() => {
     const loadServices = async () => {
-      if (!profile) return;
+      if (!profile) {
+        // Profile still missing after loading: retry once, then stop the spinner
+        if (!authLoading && user) {
+          const t = setTimeout(() => {
+            refreshProfile().finally(() => setLoadingData(false));
+          }, 3000);
+          return () => clearTimeout(t);
+        }
+        return;
+      }
       const serviziBase = getServiziPerTipo(profile.professional_type);
       const baseList = serviziBase.map((s, i) => buildServizio(s, i));
 
