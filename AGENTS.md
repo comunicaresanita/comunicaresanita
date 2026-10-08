@@ -1,0 +1,3 @@
+# Architecture rules
+- Contact submissions are validated and persisted by their dedicated Edge Function and exposed to the team through server-validated admin access, so no message relies on console logs or client-side success alone.
+- Disabled service categories are removed from every catalog and blocked in the services table, so stale clients cannot restore retired offerings while historical bookings remain intact.

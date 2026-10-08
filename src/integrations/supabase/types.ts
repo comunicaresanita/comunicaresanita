@@ -202,6 +202,33 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          messaggio: string
+          nome: string
+          request_fingerprint: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          messaggio: string
+          nome: string
+          request_fingerprint: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          messaggio?: string
+          nome?: string
+          request_fingerprint?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           access_notes: string | null
