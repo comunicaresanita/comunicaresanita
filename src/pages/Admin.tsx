@@ -39,6 +39,14 @@ type Profile = {
   created_at: string;
 };
 
+type ContactSubmission = {
+  id: string;
+  created_at: string;
+  nome: string;
+  email: string;
+  messaggio: string;
+};
+
 const COLORS = ["#0097B2", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6"];
 
 const professionalTypeLabel = (type: string | null) => {
@@ -56,6 +64,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [contacts, setContacts] = useState<ContactSubmission[]>([]);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -72,6 +81,7 @@ const Admin = () => {
         return;
       }
       setProfiles(data.profiles);
+      setContacts(data.contacts ?? []);
       setAuthenticated(true);
     } catch {
       setError("Errore di connessione");
@@ -222,6 +232,25 @@ const Admin = () => {
             </Button>
           </div>
         </div>
+
+        <section className="space-y-4" aria-labelledby="contact-messages-heading">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="contact-messages-heading" className="text-lg font-bold">Messaggi dai contatti</h2>
+            <Button variant="outline" onClick={handleLogin} disabled={loading}>Aggiorna</Button>
+          </div>
+          {contacts.length === 0 ? <p className="text-muted-foreground">Nessun messaggio ricevuto.</p> : contacts.map(contact => (
+            <Card key={contact.id}>
+              <CardContent className="p-4 space-y-2">
+                <div className="flex flex-wrap justify-between gap-2">
+                  <p className="font-semibold break-words">{contact.nome}</p>
+                  <time className="text-sm text-muted-foreground">{format(parseISO(contact.created_at), "dd/MM/yyyy HH:mm", { locale: it })}</time>
+                </div>
+                <a href={`mailto:${contact.email}`} className="text-primary underline break-all">{contact.email}</a>
+                <p className="whitespace-pre-wrap break-words">{contact.messaggio}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
 
         {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
