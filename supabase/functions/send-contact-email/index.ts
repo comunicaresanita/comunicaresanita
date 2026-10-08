@@ -1,68 +1,41 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { validateContact } from "./validation.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const json = (body: Record<string, unknown>, status = 200) => new Response(JSON.stringify(body), {
+  status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "Metodo non consentito" }, 405);
   try {
-    const { nome, email, messaggio } = await req.json();
-
-    if (!nome || !email || !messaggio) {
-      return new Response(JSON.stringify({ error: "Tutti i campi sono obbligatori" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-
-    if (RESEND_API_KEY) {
-      // Use Resend if available
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: "ComuniCARE <noreply@comunicare.lovable.app>",
-          to: ["comunicaresanita@gmail.com"],
-          subject: `[ComuniCARE] Nuovo messaggio da ${nome}`,
-          html: `
-            <h2>Nuovo messaggio dal modulo contatti</h2>
-            <p><strong>Nome:</strong> ${nome}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Messaggio:</strong></p>
-            <p>${messaggio.replace(/\n/g, "<br>")}</p>
-          `,
-          reply_to: email,
-        }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("Resend error:", errorData);
-        throw new Error("Failed to send email via Resend");
-      }
-    } else {
-      // Fallback: log the contact request (email will be stored for manual follow-up)
-      console.log("Contact form submission:", { nome, email, messaggio });
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    return new Response(JSON.stringify({ error: "Errore interno" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const raw = await req.text();
+    if (raw.length > 20000) return json({ error: "Messaggio troppo lungo" }, 400);
+    let body: unknown;
+    try { body = JSON.parse(raw); } catch { return json({ error: "Richiesta non valida" }, 400); }
+    const contact = validateContact(body);
+    if (!contact) return json({ error: "Controlla nome, email e messaggio" }, 400);
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !key) return json({ error: "Servizio temporaneamente non disponibile" }, 503);
+    const db = createClient(url, key);
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${ip}:${contact.email.toLowerCase()}`));
+    const fingerprint = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+    const { count, error: countError } = await db.from("contact_submissions")
+      .select("id", { count: "exact", head: true }).eq("request_fingerprint", fingerprint)
+      .gte("created_at", new Date(Date.now() - 15 * 60 * 1000).toISOString());
+    if (countError) throw new Error("contact_rate_limit_unavailable");
+    if ((count ?? 0) >= 5) return json({ error: "Troppi messaggi. Riprova tra 15 minuti." }, 429);
+    const { data, error } = await db.from("contact_submissions")
+      .insert({ ...contact, request_fingerprint: fingerprint }).select("id").single();
+    if (error || !data) throw new Error("contact_save_failed");
+    // No sender domain is configured. The team reads saved messages in its admin page.
+    // Do not claim email delivery or silently discard submissions.
+    return json({ success: true, submissionId: data.id, emailSent: false });
+  } catch {
+    console.error("Contact submission could not be saved");
+    return json({ error: "Impossibile ricevere il messaggio. Riprova più tardi." }, 500);
   }
 });

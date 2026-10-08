@@ -15,7 +15,7 @@ const PrenotazioneConfermata = () => (
           <h1 className="text-xl md:text-senior-2xl font-bold mb-2">Prenotazione avvenuta</h1>
           <p className="text-base md:text-senior-base text-muted-foreground mb-6">
             La tua prenotazione è stata registrata con successo. Verrai ricontattato al più presto dal nostro team.
-            Ti abbiamo inviato un'email di conferma.
+            Per qualsiasi problema contattaci su <a href="mailto:comunicaresanita@gmail.com" className="text-primary underline break-all">comunicaresanita@gmail.com</a>
           </p>
           <Link to="/">
             <Button className="w-full py-5">Torna alla home</Button>

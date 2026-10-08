@@ -115,10 +115,11 @@ const Contatti = () => {
     }
     setSending(true);
     try {
-      await supabase.functions.invoke("send-contact-email", {
-        body: { nome, email, messaggio },
+      const { data, error } = await supabase.functions.invoke("send-contact-email", {
+        body: { nome: nome.trim(), email: email.trim(), messaggio: messaggio.trim() },
       });
-      toast({ title: "Messaggio inviato!", description: "Ti risponderemo il prima possibile." });
+      if (error || !data?.success) throw new Error("Invio non riuscito");
+      toast({ title: "Messaggio ricevuto!", description: "La tua richiesta è stata salvata per il team. Ti risponderemo il prima possibile." });
       setNome("");
       setEmail("");
       setMessaggio("");
@@ -159,15 +160,15 @@ const Contatti = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="nome">Nome e Cognome</Label>
-                  <Input id="nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Mario Rossi" required />
+                  <Input id="nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Mario Rossi" maxLength={200} required />
                 </div>
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="mario@email.com" required />
+                  <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="mario@email.com" maxLength={254} required />
                 </div>
                 <div>
                   <Label htmlFor="messaggio">Messaggio</Label>
-                  <Textarea id="messaggio" value={messaggio} onChange={e => setMessaggio(e.target.value)} placeholder="Descrivi il tuo problema o la tua richiesta..." rows={5} required />
+                  <Textarea id="messaggio" value={messaggio} onChange={e => setMessaggio(e.target.value)} placeholder="Descrivi il tuo problema o la tua richiesta..." rows={5} maxLength={5000} required />
                 </div>
                 <Button type="submit" disabled={sending} className="w-full">
                   {sending ? "Invio in corso..." : "Invia messaggio"}

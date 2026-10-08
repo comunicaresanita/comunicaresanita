@@ -129,7 +129,13 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: error.message }, 500);
     }
 
-    return jsonResponse({ profiles });
+    const { data: contacts, error: contactsError } = await supabase
+      .from("contact_submissions")
+      .select("id, created_at, nome, email, messaggio")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (contactsError) return jsonResponse({ error: "Impossibile leggere i messaggi di contatto" }, 500);
+    return jsonResponse({ profiles, contacts });
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : "Errore sconosciuto";
     return jsonResponse({ error: errorMessage }, 500);

@@ -8,6 +8,20 @@
       "when": 1791357297090,
       "tag": "0000_ensure_profile_after_signup",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791477536860,
+      "tag": "0001_persist_contact_submissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791477563650,
+      "tag": "0002_block_retired_sampling_services",
+      "breakpoints": true
     }
   ]
 }
