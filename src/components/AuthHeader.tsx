@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/comunicare-logo-header.png";
-import { Menu, LogOut, Phone, Home, User, HelpCircle, ClipboardList, BriefcaseMedical } from "lucide-react";
+import { Menu, LogOut, Phone, Home, User, HelpCircle, ClipboardList } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,11 +69,6 @@ const AuthHeader = () => {
                   <Link to="/contatti" className="cursor-pointer"><Phone className="w-4 h-4 mr-2" />Contatti</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to={isProfessionista ? "/dashboard-professionista" : "/registrazione?ruolo=professionista"} className="cursor-pointer">
-                    <BriefcaseMedical className="w-4 h-4 mr-2" />Professionisti
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                   <Link to="/contatti#faq" className="cursor-pointer"><HelpCircle className="w-4 h-4 mr-2" />FAQ</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
@@ -112,11 +107,6 @@ const AuthHeader = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/contatti" className="cursor-pointer"><Phone className="w-4 h-4 mr-2" />Contatti</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/registrazione?ruolo=professionista" className="cursor-pointer">
-                    <BriefcaseMedical className="w-4 h-4 mr-2" />Professionisti
-                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/contatti#faq" className="cursor-pointer"><HelpCircle className="w-4 h-4 mr-2" />FAQ</Link>
