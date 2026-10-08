@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const SERVIZI_INFERMIERISTICI = [
   "Iniezione intramuscolare", "Iniezione sottocutanea", "Iniezione endovenosa",
-  "Prelievo ematico a domicilio", "Medicazione semplice", "Medicazione complessa",
+  "Medicazione semplice", "Medicazione complessa",
   "Medicazione ferita chirurgica", "Medicazione ulcera da pressione", "Medicazione ulcera venosa",
   "Rimozione punti di sutura", "Rimozione graffette chirurgiche",
   "Cateterismo vescicale maschile", "Cateterismo vescicale femminile",
@@ -23,7 +23,7 @@ const SERVIZI_INFERMIERISTICI = [
   "Gestione drenaggi", "Bendaggio compressivo", "Bendaggio elastocompressivo arti inferiori",
   "Assistenza post-operatoria a domicilio", "Assistenza post-dimissione ospedaliera",
   "Educazione sanitaria al paziente e caregiver", "Educazione alla gestione del diabete",
-  "Prelievo per test rapido (tampone, urine)", "Lavaggio auricolare",
+  "Lavaggio auricolare",
   "Aerosolterapia a domicilio", "Ossigenoterapia domiciliare - avvio e monitoraggio",
   "Assistenza domiciliare continuativa (per ora)", "Assistenza infermieristica notturna (per ora)",
   "Assistenza infermieristica diurna (per ora)",

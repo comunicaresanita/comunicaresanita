@@ -37,8 +37,6 @@ export const prestazioniInfermiere: string[] = [
   "Misurazione parametri vitali completa",
   "Misurazione pressione arteriosa",
   "Ossigenoterapia domiciliare - avvio e monitoraggio",
-  "Prelievo ematico a domicilio",
-  "Prelievo per test rapido (tampone, urine)",
   "Rimozione graffette chirurgiche",
   "Rimozione punti di sutura",
   "Somministrazione insulina",
