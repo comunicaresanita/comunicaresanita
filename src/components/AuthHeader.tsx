@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/comunicare-logo-header.png";
-import { Menu, LogOut, Phone, Home, User, HelpCircle, ClipboardList, BriefcaseMedical } from "lucide-react";
+import { Menu, LogOut, Phone, Home, User, HelpCircle, ClipboardList } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,

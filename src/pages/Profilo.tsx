@@ -289,6 +289,9 @@ const Profilo = () => {
                     <span className="text-sm text-primary underline">{uploading ? "Caricamento..." : "Cambia foto"}</span>
                     <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
                   </label>
+                  <p className="text-xs text-muted-foreground text-center max-w-xs">
+                    Consigliato: una foto professionale con il tuo camice, ben illuminata e con sfondo bianco.
+                  </p>
                 </div>
               )}
 
