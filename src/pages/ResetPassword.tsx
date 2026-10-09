@@ -1,3 +1,4 @@
+import { italianError } from "@/lib/italianErrors";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,7 +51,7 @@ const ResetPassword = () => {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast({ title: "Errore", description: error.message, variant: "destructive" });
+      toast({ title: "Errore", description: italianError(error, "password"), variant: "destructive" });
     } else {
       toast({ title: "Password aggiornata", description: "La tua password è stata aggiornata con successo." });
       navigate("/login");

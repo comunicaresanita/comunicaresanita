@@ -1,3 +1,4 @@
+import { italianError } from "@/lib/italianErrors";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -77,7 +78,7 @@ const Admin = () => {
         body: { password },
       });
       if (fnError || data?.error) {
-        setError(data?.error || "Errore di autenticazione");
+        setError(italianError(data?.error || fnError, "admin"));
         return;
       }
       setProfiles(data.profiles);
@@ -98,7 +99,7 @@ const Admin = () => {
         body: { password, action: "delete", userId: deleteTarget.user_id },
       });
       if (fnError || data?.error) {
-        toast.error(data?.error || "Errore durante l'eliminazione");
+        toast.error(italianError(data?.error || fnError, "deletion"));
         return;
       }
       setProfiles((prev) => prev.filter((p) => p.id !== deleteTarget.id));

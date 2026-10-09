@@ -1,3 +1,4 @@
+import { italianError } from "@/lib/italianErrors";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -134,7 +135,7 @@ const Profilo = () => {
 
     const { error } = await supabase.storage.from("profile-photos").upload(path, file, { upsert: true });
     if (error) {
-      toast({ title: "Errore upload", description: error.message, variant: "destructive" });
+      toast({ title: "Errore nel caricamento", description: italianError(error, "upload"), variant: "destructive" });
       setUploading(false);
       return;
     }
@@ -222,7 +223,7 @@ const Profilo = () => {
     const { error } = await supabase.from("profiles").update(updates).eq("user_id", user!.id);
     setSaving(false);
     if (error) {
-      toast({ title: "Errore", description: error.message, variant: "destructive" });
+      toast({ title: "Errore", description: italianError(error, "profile"), variant: "destructive" });
     } else {
       await refreshProfile();
       toast({ title: "Profilo aggiornato" });
@@ -245,7 +246,7 @@ const Profilo = () => {
       navigate("/");
       toast({ title: "Account eliminato", description: "Tutti i tuoi dati sono stati rimossi." });
     } catch (err: any) {
-      toast({ title: "Errore", description: err.message || "Impossibile eliminare l'account.", variant: "destructive" });
+      toast({ title: "Errore", description: italianError(err, "deletion"), variant: "destructive" });
     }
     setDeleting(false);
   };

@@ -1,3 +1,4 @@
+import { italianError } from "@/lib/italianErrors";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -257,7 +258,7 @@ const SetupProfessionista = () => {
     setSaving(false);
 
     if (error) {
-      toast({ title: "Errore", description: error.message, variant: "destructive" });
+      toast({ title: "Errore", description: italianError(error, "services"), variant: "destructive" });
     } else {
       toast({ title: "Servizi salvati" });
       if (isFirstSetup) {

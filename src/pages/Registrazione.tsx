@@ -1,3 +1,4 @@
+import { italianError } from "@/lib/italianErrors";
 import { useState } from "react";
 import { useSearchParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -169,7 +170,7 @@ const Registrazione = () => {
     setLoading(false);
 
     if (error) {
-      toast({ title: "Errore di registrazione", description: error.message, variant: "destructive" });
+      toast({ title: "Errore di registrazione", description: italianError(error, "registration"), variant: "destructive" });
       return;
     }
 

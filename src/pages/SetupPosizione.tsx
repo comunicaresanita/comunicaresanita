@@ -1,3 +1,4 @@
+import { italianError } from "@/lib/italianErrors";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ const SetupPosizione = () => {
       .eq("user_id", profile.user_id);
     setSaving(false);
     if (error) {
-      toast({ title: "Errore", description: error.message, variant: "destructive" });
+      toast({ title: "Errore", description: italianError(error, "location"), variant: "destructive" });
     } else {
       await refreshProfile();
       toast({ title: "Posizione aggiornata" });
