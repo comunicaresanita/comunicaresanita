@@ -41,7 +41,7 @@ const patientFaqItems = [
   },
   {
     q: "Come posso modificare i miei dati personali?",
-    a: "Accedi al tuo profilo dalla sezione 'Il tuo profilo' nel menu in alto a destra, poi clicca su 'Il mio profilo' per aggiornare le tue informazioni."
+    a: "Accedi al tuo profilo cliccando sul Menu in alto a destra, poi su Profilo e infine andando a modificare le informazioni che desideri nella sezione 'Il mio profilo' (ricorda sempre di salvare)."
   },
   {
     q: "Cosa devo fare se riscontro un problema tecnico?",
