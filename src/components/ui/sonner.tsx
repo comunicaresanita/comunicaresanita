@@ -11,7 +11,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       containerAriaLabel="Notifiche"
-      closeButtonAriaLabel="Chiudi avviso"
       toastOptions={{
         classNames: {
           toast:
