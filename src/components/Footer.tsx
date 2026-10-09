@@ -28,7 +28,7 @@ const Footer = () => {
             <ul className="space-y-3 text-sm md:text-senior-sm opacity-80">
               <li className="flex items-center justify-center gap-2"><Mail className="w-4 h-4 flex-shrink-0" /><a href="mailto:comunicaresanita@gmail.com" className="break-all">comunicaresanita@gmail.com</a></li>
               <li className="flex items-center justify-center gap-2"><MapPin className="w-4 h-4 flex-shrink-0" /> Firenze, Italia</li>
-              <li className="hidden lg:flex items-center justify-center gap-2"><a href="https://www.facebook.com/profile.php?id=61594047286315&locale=it_IT" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:opacity-100 transition-opacity" aria-label="ComuniCARE su Facebook (si apre in una nuova scheda)"><Facebook className="w-5 h-5 flex-shrink-0" aria-hidden="true" /> Facebook</a></li>
+              <li className="flex items-center justify-center gap-2"><a href="https://www.facebook.com/profile.php?id=61594047286315" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:opacity-100 transition-opacity" aria-label="ComuniCARE su Facebook (si apre in una nuova scheda)"><Facebook className="w-5 h-5 flex-shrink-0" aria-hidden="true" /> Facebook</a></li>
             </ul>
           </div>
         </div>
