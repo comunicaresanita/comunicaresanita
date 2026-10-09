@@ -645,6 +645,77 @@ const DashboardPaziente = () => {
               <h2 id="results-by-service" className="text-base md:text-senior-xl font-semibold mb-4 scroll-mt-24">
                 Professionisti disponibili per: <span className="text-primary">{prestazioneSelezionata}</span>
               </h2>
+              {!authLoading && !user && (
+                <Card className="mb-4 border-2 border-primary/40">
+                  <CardContent className="p-5 md:p-6 text-center space-y-3">
+                    <p className="text-sm md:text-senior-base font-semibold">Accedi o registrati per vedere i professionisti</p>
+                    <p className="text-sm text-muted-foreground">
+                      È richiesto per garantirti i professionisti più vicini a te, in base al tuo indirizzo di residenza.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      <Button onClick={() => navigate("/login", { state: { redirect: `/?servizio=${encodeURIComponent(prestazioneSelezionata)}`, message: "Accedi per vedere i professionisti più vicini a te." } })}>
+                        Accedi
+                      </Button>
+                      <Button variant="outline" onClick={() => navigate("/registrazione", { state: { redirect: `/?servizio=${encodeURIComponent(prestazioneSelezionata)}` } })}>
+                        Registrati
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {user && !searchFor && (
+                <Card className="mb-4 border-2 border-primary/40">
+                  <CardContent className="p-5 md:p-6 space-y-3">
+                    <p className="text-sm md:text-senior-base font-semibold">Per chi cerchi questa prestazione?</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button type="button" onClick={() => chooseSearchFor("self")} className="text-left p-3 rounded-lg border-2 border-border hover:border-primary">
+                        <p className="font-semibold text-sm">Per me</p>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">{profile?.address || "Il tuo indirizzo di residenza"}</p>
+                      </button>
+                      <button type="button" onClick={() => chooseSearchFor("other")} className="text-left p-3 rounded-lg border-2 border-border hover:border-primary">
+                        <p className="font-semibold text-sm">Per un familiare / assistito</p>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">{caregiverAddress || "Indirizzo del familiare"}</p>
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {user && askCaregiverAddr && (
+                <Card className="mb-4 border-2 border-primary/40">
+                  <CardContent className="p-5 md:p-6 space-y-4">
+                    <p className="text-sm text-muted-foreground">Inserisci l'indirizzo di residenza del tuo familiare: lo salveremo per le prossime ricerche.</p>
+                    <StructuredAddressInput
+                      via={cgVia} civico={cgCivico} cap={cgCap} citta={cgCitta}
+                      onViaChange={setCgVia} onCivicoChange={setCgCivico} onCapChange={setCgCap} onCittaChange={setCgCitta}
+                      label="Indirizzo del familiare" idPrefix="search-cg" required
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={saveCaregiverAddress} disabled={savingCg}>{savingCg ? "Salvataggio..." : "Salva e mostra i professionisti"}</Button>
+                      <Button variant="ghost" onClick={() => { setAskCaregiverAddr(false); setSearchFor(null); }}>Annulla</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {showList && (
+                <div className="flex flex-wrap items-center gap-2 mb-3 text-sm">
+                  <span className="text-muted-foreground">
+                    Ordinati per {sortBy === "distanza" ? "distanza" : "prezzo"} dall'indirizzo {searchFor === "other" ? "del familiare" : "di residenza"}
+                  </span>
+                  <Button size="sm" variant="outline" onClick={() => setShowSort((s) => !s)} className="gap-1">
+                    <SlidersHorizontal className="w-4 h-4" /> Filtra
+                  </Button>
+                  {showSort && (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant={sortBy === "distanza" ? "default" : "outline"} onClick={() => { setSortBy("distanza"); setShowSort(false); }}>Distanza</Button>
+                      <Button size="sm" variant={sortBy === "prezzo" ? "default" : "outline"} onClick={() => { setSortBy("prezzo"); setShowSort(false); }}>Prezzo</Button>
+                    </div>
+                  )}
+                  <button type="button" onClick={() => setSearchFor(null)} className="text-xs underline text-muted-foreground">
+                    Cambia (per me / familiare)
+                  </button>
+                </div>
+              )}
+              {showList && (
               <div className="space-y-4">
                 {professionistiFiltrati.map((p) => {
                   const servizio = p.servizi.find((s) => s.name === prestazioneSelezionata);
@@ -656,7 +727,7 @@ const DashboardPaziente = () => {
                       className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary"
                       onClick={() =>
                         navigate(
-                          `/profilo-infermiere/${p.profileId}?servizio=${encodeURIComponent(prestazioneSelezionata)}`,
+                          `/profilo-infermiere/${p.profileId}?servizio=${encodeURIComponent(prestazioneSelezionata)}&per=${searchFor || "self"}`,
                         )
                       }
                     >
@@ -709,11 +780,17 @@ const DashboardPaziente = () => {
                           )}
                         </div>
                         {servizio && (
-                          <div className="text-right flex-shrink-0">
-                            <p className="text-base md:text-senior-lg font-bold text-primary">€{servizio.price}</p>
-                            <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-                              per questa prestazione
-                            </p>
+                          <div className="text-right flex-shrink-0 max-w-[45%]">
+                            <p className="text-base md:text-senior-lg font-bold text-primary">€{priceWithDistance(servizio.price, distKm)}</p>
+                            {isLongDistance(distKm) ? (
+                              <p className="text-xs md:text-sm text-muted-foreground">
+                                +10% prestazione a lunga distanza (oltre 10 km)
+                              </p>
+                            ) : (
+                              <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
+                                per questa prestazione
+                              </p>
+                            )}
                           </div>
                         )}
                       </CardContent>
@@ -728,6 +805,7 @@ const DashboardPaziente = () => {
                   </div>
                 )}
               </div>
+              )}
             </>
           )}
 
