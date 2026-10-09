@@ -38,7 +38,7 @@ serve(async (req) => {
     if (action === "autocomplete") {
       const streetOnly = Array.isArray(types) && types.includes("route");
       // For street-only search, drop a trailing house number: it belongs in its own field.
-      const q = streetOnly ? String(input || "").replace(/[\s,]+\d+\S*\s*$/, "").trim() : String(input || "").trim();
+      const q = streetOnly ? String(input || "").replace(/(^|[\s,])\d{1,4}[a-zA-Z]?(\/\w+)?(?=[\s,]|$)/g, " ").replace(/\s+/g, " ").trim() : String(input || "").trim();
       if (q.length < 3) return json({ predictions: [] });
       const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=10&countrycodes=it&accept-language=it&q=${encodeURIComponent(q)}`;
       const res = await fetch(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
