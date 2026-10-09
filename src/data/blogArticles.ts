@@ -1,4 +1,5 @@
 import ossArticleImage from "@/assets/oss-article.jpg";
+import homeSafetyArticleImage from "@/assets/home-safety-article.jpg";
 
 export interface BlogArticle {
   slug: string;
@@ -62,6 +63,23 @@ export const articles: BlogArticle[] = [
       "Nel contesto dell'assistenza domiciliare, l'OSS rappresenta spesso il punto di riferimento quotidiano per le persone anziane o con disabilità. La sua presenza consente di mantenere l'autonomia del paziente il più a lungo possibile, prevenendo il ricorso a strutture residenziali.",
       "La formazione dell'OSS prevede un corso di almeno 1000 ore, di cui 450 di tirocinio pratico, che garantisce competenze sia tecniche che relazionali. Il professionista lavora sempre in collaborazione con l'infermiere e sotto la supervisione del personale sanitario.",
       "Con l'invecchiamento della popolazione e l'aumento delle patologie croniche, la domanda di OSS qualificati è in costante crescita, rendendo questa figura professionale sempre più strategica per il sistema sanitario territoriale."
+    ]
+  },
+  {
+    slug: "prevenire-cadute-sicurezza-casa",
+    title: "Prevenire le cadute: una casa più sicura per gli anziani",
+    date: "9 Ottobre 2026",
+    imageUrl: homeSafetyArticleImage,
+    imageAlt: "Professionista che accompagna una donna anziana vicino a un corrimano in casa",
+    summary: "Illuminazione adeguata, percorsi liberi e sostegni stabili aiutano a rendere la casa più sicura. Una valutazione personalizzata può sostenere la mobilità e l'autonomia quotidiana.",
+    source: "Organizzazione Mondiale della Sanità (OMS)",
+    sourceUrl: "https://www.who.int/news-room/fact-sheets/detail/falls",
+    content: [
+      "Le cadute sono un problema importante per la salute delle persone anziane. L'Organizzazione Mondiale della Sanità sottolinea che il rischio dipende da diversi fattori, tra cui le condizioni di salute, la mobilità e l'ambiente in cui si vive. La prevenzione richiede quindi attenzione sia alla persona sia agli spazi quotidiani.",
+      "In casa è utile mantenere liberi i passaggi, evitare cavi e tappeti instabili e garantire una buona illuminazione, soprattutto lungo il percorso tra camera e bagno. In bagno, superfici antiscivolo e sostegni adeguatamente installati possono rendere più sicuri i movimenti.",
+      "Calzature stabili e ausili adatti alle proprie esigenze possono favorire la sicurezza. La scelta di un bastone o di un deambulatore va concordata con un professionista, che può verificarne l'adeguatezza e spiegare come utilizzarlo correttamente.",
+      "Un percorso di esercizi per equilibrio, forza e mobilità deve essere personalizzato in base alle condizioni della persona. Il medico e il fisioterapista possono valutare le esigenze individuali e indicare le attività più adatte, evitando soluzioni uguali per tutti.",
+      "Se si verificano cadute, capogiri o difficoltà nuove nel camminare, è importante parlarne con il medico. Questi suggerimenti hanno carattere informativo e non sostituiscono una valutazione sanitaria individuale."
     ]
   },
 ];

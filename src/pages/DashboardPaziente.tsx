@@ -1018,7 +1018,7 @@ const DashboardPaziente = () => {
         {/* FAQ + Professionisti + Ultimi articoli — affiancati su desktop */}
         <div className="container mx-auto px-4 md:px-6 max-w-6xl mt-12 md:mt-16 grid lg:grid-cols-2 gap-6 items-stretch">
           {/* FAQ */}
-          <div className="flex flex-col">
+          <div id="faq" className="flex flex-col scroll-mt-24">
             <h2 className="text-xl md:text-2xl font-bold mb-6">&nbsp; &nbsp; &nbsp; Domande frequenti (FAQ)</h2>
             <Card className="flex-1">
               <CardContent className="pt-6">
@@ -1037,8 +1037,8 @@ const DashboardPaziente = () => {
           {/* Professionisti + Ultimi articoli */}
           <div className="flex flex-col gap-6 lg:contents">
             {/* Sei un professionista? */}
-            <Card className="w-full lg:col-span-2">
-              <CardContent className="p-6 flex flex-col gap-3 items-center text-center">
+            <Card className="w-full lg:mt-14 lg:h-auto">
+              <CardContent className="p-6 flex flex-col gap-3 items-center text-center lg:h-full lg:justify-center lg:gap-6 lg:p-8">
                 <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 justify-center">
                   <BriefcaseMedical className="w-6 h-6 text-primary" aria-hidden="true" />
                   Sei un professionista?
@@ -1062,12 +1062,12 @@ const DashboardPaziente = () => {
               <h2 className="text-xl md:text-2xl font-bold mb-6">&nbsp; &nbsp; &nbsp;Ultimi articoli</h2>
               <div className="flex-1 min-h-0">
                 <div className="grid gap-6 lg:grid-cols-2">
-                  {articles.map((article) => (
-                    <Link to={`/blog/${article.slug}`} key={article.slug} className="block">
-                      <Card className="hover:border-primary transition-colors cursor-pointer overflow-hidden">
+                  {articles.map((article, index) => (
+                    <Link to={`/blog/${article.slug}`} key={article.slug} className={cn("h-full", index >= 3 ? "hidden lg:block" : "block")}>
+                      <Card className="h-full flex flex-col hover:border-primary transition-colors cursor-pointer overflow-hidden">
                         {article.imageUrl && (
                           <div className="w-full h-48 overflow-hidden">
-                            <img src={article.imageUrl} alt={article.imageAlt} className="w-full h-full object-cover" />
+                            <img src={article.imageUrl} alt={article.imageAlt} loading="lazy" width={1200} height={800} className="w-full h-full object-cover" />
                           </div>
                         )}
                         <CardHeader>
@@ -1076,9 +1076,9 @@ const DashboardPaziente = () => {
                             <Calendar className="w-3.5 h-3.5" /> {article.date}
                           </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="flex flex-col gap-3 flex-1">
                           <p className="text-sm text-muted-foreground leading-relaxed">{article.summary}</p>
-                          <span className="inline-flex items-center gap-1.5 text-xs text-primary font-medium">
+                          <span className="mt-auto inline-flex items-center gap-1.5 text-xs text-primary font-medium">
                             <ExternalLink className="w-3.5 h-3.5" />
                             Fonte: {article.source}
                           </span>
