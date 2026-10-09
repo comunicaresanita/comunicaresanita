@@ -1,4 +1,5 @@
 # Requested changes
+- [ ] Localize all app notices and external-service errors in Italian; verify registration and sign-in feedback.
 - [x] Home-screen installability with icons and manifest, without offline caching.
 - [x] Once-only Android prompt and dismissible iOS guide (7-day preference).
 - [x] Updated iOS steps, persistent Home guide, full-width professional section and symmetric footer; verified with four preference tests and desktop/tablet/mobile browser checks.
