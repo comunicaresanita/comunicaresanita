@@ -117,24 +117,23 @@ const StructuredAddressInput = ({
     debounceRef.current = setTimeout(() => fetchPredictions(val), 300);
   };
 
-  const handleSelect = async (prediction: Prediction) => {
+  // Move a house number typed into the street field into the "civico" field.
+  const splitTypedNumber = (text: string) => {
+    const m = text.match(/^(.+?)[\s,]+(\d+[a-zA-Z/]*)\s*$/);
+    if (m && /[a-zA-Z]/.test(m[1])) {
+      if (!civico.trim()) onCivicoChange(m[2]);
+      return m[1].trim();
+    }
+    return text;
+  };
+
+  const handleSelect = (prediction: Prediction & { street?: string; cap?: string; city?: string }) => {
     setShowDropdown(false);
     setPredictions([]);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("places-autocomplete", {
-        body: { action: "details", placeId: prediction.place_id },
-      });
-      if (!error && data?.result) {
-        const ac = data.result.address_components || {};
-        // Only set the street name, leave civico/cap/citta for manual input
-        onViaChange(ac.street || prediction.description);
-      } else {
-        onViaChange(prediction.description);
-      }
-    } catch {
-      onViaChange(prediction.description);
-    }
+    splitTypedNumber(via);
+    onViaChange(prediction.street || prediction.description.split(",")[0].trim());
+    if (prediction.cap && !cap.trim()) onCapChange(prediction.cap);
+    if (prediction.city && !citta.trim()) onCittaChange(prediction.city);
   };
 
   const errorClass = "border-destructive ring-1 ring-destructive";
@@ -150,6 +149,7 @@ const StructuredAddressInput = ({
               value={via}
               onChange={(e) => handleViaInputChange(e.target.value)}
               onFocus={() => predictions.length > 0 && setShowDropdown(true)}
+              onBlur={() => { const cleaned = splitTypedNumber(via); if (cleaned !== via) onViaChange(cleaned); }}
               placeholder="Es. Via Roma"
               required={required}
               className={`text-senior-sm py-3 ${errors.via ? errorClass : ""}`}
