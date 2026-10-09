@@ -5,7 +5,7 @@ import logo from "@/assets/comunicare-logo-footer.png";
 const Footer = () => {
   return (
     <footer className="bg-medical-dark text-primary-foreground">
-      <div className="container mx-auto px-4 md:px-6 py-8 md:py-12">
+      <div className="container mx-auto px-4 md:px-6 pt-8 md:pt-12 pb-24">
         <div className="flex flex-col items-center gap-6 text-center">
           <div className="flex flex-col items-center">
             <Link to="/"><img src={logo} alt="ComuniCARE" className="h-12 md:h-14 mb-4 w-auto object-contain" /></Link>
