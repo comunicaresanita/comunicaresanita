@@ -33,11 +33,14 @@ serve(async (req) => {
   }
 
   try {
-    const { action, input, placeId, address } = await req.json();
+    const { action, input, placeId, address, types } = await req.json();
 
     if (action === "autocomplete") {
-      if (!input || String(input).trim().length < 3) return json({ predictions: [] });
-      const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=6&countrycodes=it&accept-language=it&q=${encodeURIComponent(input)}`;
+      const streetOnly = Array.isArray(types) && types.includes("route");
+      // For street-only search, drop a trailing house number: it belongs in its own field.
+      const q = streetOnly ? String(input || "").replace(/[\s,]+\d+\S*\s*$/, "").trim() : String(input || "").trim();
+      if (q.length < 3) return json({ predictions: [] });
+      const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=10&countrycodes=it&accept-language=it&q=${encodeURIComponent(q)}`;
       const res = await fetch(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
       if (!res.ok) {
         const body = await res.text();
@@ -45,7 +48,23 @@ serve(async (req) => {
         return json({ predictions: [] });
       }
       const data = await res.json();
-      const predictions = (Array.isArray(data) ? data : []).map((item: any) => ({
+      const items = Array.isArray(data) ? data : [];
+      if (streetOnly) {
+        const seen = new Set<string>();
+        const predictions: any[] = [];
+        for (const item of items) {
+          const c = buildComponents(item.address);
+          if (!c.street) continue;
+          const description = [c.street, [c.cap, c.city].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+          const key = `${c.street}|${c.city}`.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          predictions.push({ place_id: toPlaceId(item), description, street: c.street, cap: c.cap, city: c.city });
+          if (predictions.length >= 6) break;
+        }
+        return json({ predictions });
+      }
+      const predictions = items.slice(0, 6).map((item: any) => ({
         place_id: toPlaceId(item),
         description: item.display_name || "",
       }));
