@@ -14,7 +14,7 @@ import { fuzzySearchServices, haversineKm } from "@/lib/searchUtils";
 import { priceWithDistance, isLongDistance, isReachable } from "@/lib/distancePricing";
 import StructuredAddressInput, { composeAddress } from "@/components/StructuredAddressInput";
 import { useToast } from "@/hooks/use-toast";
-import { SlidersHorizontal, RotateCcw } from "lucide-react";
+import { SlidersHorizontal, RotateCcw, MoveHorizontal, ArrowUpNarrowWide, ArrowDownWideNarrow } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { prestazioniDisponibili } from "@/data/prestazioni";
 import { articles } from "@/data/blogArticles";
@@ -484,9 +484,9 @@ const DashboardPaziente = () => {
           <h1 className="md:text-senior-3xl mb-2 font-semibold text-xl font-sans">Trova la prestazione o il professionista</h1>
 
           <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:items-stretch lg:mb-6">
-          <div className="mb-6 md:mb-8 lg:mb-0 lg:contents">
+          <div className="mb-6 md:mb-8 lg:mb-0 lg:flex lg:flex-col">
 
-          <Card className="lg:col-span-1 flex flex-col">
+          <Card className="flex flex-col flex-1">
 
             <CardHeader className="p-4 md:p-6">
               <CardTitle className="text-lg md:text-senior-lg flex items-center gap-2">
@@ -666,6 +666,10 @@ const DashboardPaziente = () => {
               )}
             </CardContent>
           </Card>
+
+          <p className="text-center text-sm md:text-base text-muted-foreground/70 mt-3 mb-4 lg:mb-0 px-2">
+            Non sai che prestazione scegliere? Nessun problema: chiedi al nostro Assistente digitale, ti aspetta nel pulsante in basso a destra 💙
+          </p>
           </div>
 
           {/* Map always visible */}
@@ -817,9 +821,15 @@ const DashboardPaziente = () => {
                   </Button>
                   {showSort && (
                     <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant={sortBy === "distanza" ? "default" : "outline"} onClick={() => { setSortBy("distanza"); setShowSort(false); }}>Distanza</Button>
-                      <Button size="sm" variant={sortBy === "prezzo" && priceDir === "asc" ? "default" : "outline"} onClick={() => { setSortBy("prezzo"); setPriceDir("asc"); setShowSort(false); }}>Prezzo € ↑ (dal più basso)</Button>
-                      <Button size="sm" variant={sortBy === "prezzo" && priceDir === "desc" ? "default" : "outline"} onClick={() => { setSortBy("prezzo"); setPriceDir("desc"); setShowSort(false); }}>Prezzo € ↓ (dal più alto)</Button>
+                      <Button size="sm" variant={sortBy === "distanza" ? "default" : "outline"} onClick={() => { setSortBy("distanza"); setShowSort(false); }} className="w-28 justify-center gap-1.5">
+                        <MoveHorizontal className="w-4 h-4" aria-hidden="true" /> Distanza
+                      </Button>
+                      <Button size="sm" variant={sortBy === "prezzo" && priceDir === "asc" ? "default" : "outline"} onClick={() => { setSortBy("prezzo"); setPriceDir("asc"); setShowSort(false); }} className="w-28 justify-center gap-1.5" title="Prezzo dal più basso al più alto">
+                        <ArrowUpNarrowWide className="w-4 h-4" aria-hidden="true" /> Prezzo
+                      </Button>
+                      <Button size="sm" variant={sortBy === "prezzo" && priceDir === "desc" ? "default" : "outline"} onClick={() => { setSortBy("prezzo"); setPriceDir("desc"); setShowSort(false); }} className="w-28 justify-center gap-1.5" title="Prezzo dal più alto al più basso">
+                        <ArrowDownWideNarrow className="w-4 h-4" aria-hidden="true" /> Prezzo
+                      </Button>
                     </div>
                   )}
                   <button type="button" onClick={() => setSearchFor(null)} className="text-xs underline text-muted-foreground">
