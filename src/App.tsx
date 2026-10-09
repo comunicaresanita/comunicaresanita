@@ -28,6 +28,7 @@ import BlogArticolo from "./pages/BlogArticolo.tsx";
 import Admin from "./pages/Admin.tsx";
 import ScrollToTop from "./components/ScrollToTop";
 import InstallBanner from "./components/InstallBanner";
+import ItalianFormValidation from "./components/ItalianFormValidation";
 
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
+      <ItalianFormValidation />
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
