@@ -66,6 +66,7 @@ interface ProfessionistaData {
   professionalType: string;
   photoUrl: string | null;
   verified: boolean;
+  longDistanceOk: boolean;
 }
 
 type SearchMode = "prestazione" | "professionista";
@@ -364,7 +365,7 @@ const DashboardPaziente = () => {
     const fetchProfessionisti = async () => {
       const { data: professionalsRaw } = await supabase
         .from("public_professionals" as any)
-        .select("id, first_name, last_name, bio, lat, lng, zona, professional_type, photo_url, verified");
+        .select("id, first_name, last_name, bio, lat, lng, zona, professional_type, photo_url, verified, long_distance_ok");
       const professionals = (professionalsRaw as any[] | null);
 
       if (!professionals || professionals.length === 0) return;
@@ -398,6 +399,7 @@ const DashboardPaziente = () => {
             professionalType: (p as any).professional_type || "infermiere",
             photoUrl: (p as any).photo_url || null,
             verified: (p as any).verified || false,
+            longDistanceOk: !!(p as any).long_distance_ok,
           };
         });
       setProfessionisti(mapped);
