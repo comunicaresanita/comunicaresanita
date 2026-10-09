@@ -29,7 +29,7 @@ const patientFaqItems = [
   },
   {
     q: "Posso prenotare una prestazione per un familiare o un'altra persona?",
-    a: "Sì. Durante la prenotazione, dopo aver scelto data e orario, puoi indicare se la prestazione è per te o per un familiare/assistito. Selezionando 'Per un familiare / assistito' potrai inserire l'indirizzo della persona che riceverà la prestazione: il professionista si recherà a quell'indirizzo invece che al tuo. L'indirizzo del familiare viene salvato in automatico, così alle prenotazioni successive ti basterà sceglierlo con un clic."
+    a: "Sì. Durante la prenotazione puoi indicare se la prestazione è per te o per un familiare/assistito. Selezionando 'Per un familiare / assistito' potrai inserire l'indirizzo della persona che riceverà la prestazione: il professionista si recherà a quell'indirizzo invece che al tuo. L'indirizzo del familiare viene salvato in automatico, così alle prenotazioni successive ti basterà sceglierlo con un clic."
   },
   {
     q: "Posso cancellare una prenotazione?",
