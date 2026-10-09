@@ -814,7 +814,7 @@ const ProfiloInfermiere = () => {
           {userProfile?.role !== "professionista" && servizioSelezionato && slotSelezionato && selectedDate && (
             <Card className="mb-6 md:mb-8">
               <CardHeader>
-                <CardTitle className="text-base md:text-senior-lg">{recipientPreset ? "Note importanti (consigliato)" : "Per chi stai prenotando?"}</CardTitle>
+                <CardTitle className="text-base md:text-senior-lg">{recipientPreset ? "Prima di prenotare" : "Per chi stai prenotando?"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!recipientPreset && (
