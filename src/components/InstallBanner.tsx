@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Download, PlusSquare, Share, X } from "lucide-react";
+import { Download, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
+import IosInstallGuide from "@/components/IosInstallGuide";
 import { Button } from "@/components/ui/button";
 import { canOfferNativeInstall, canShowIosGuide, INSTALL_HANDLED_KEY, IOS_DISMISSED_KEY, isIosSafari, readPreference, savePreference } from "@/lib/installPreferences";
 
@@ -10,6 +13,8 @@ interface InstallPromptEvent extends Event {
 
 export default function InstallBanner() {
   const [mode, setMode] = useState<"native" | "ios" | null>(null);
+  const [inlineGuide, setInlineGuide] = useState(false);
+  const { pathname } = useLocation();
   const pendingPrompt = useRef<InstallPromptEvent | null>(null);
 
   useEffect(() => {
@@ -20,6 +25,7 @@ export default function InstallBanner() {
       savePreference(INSTALL_HANDLED_KEY, "true");
       pendingPrompt.current = null;
       setMode(null);
+      setInlineGuide(false);
     };
     const beforeInstall = (event: Event) => {
       event.preventDefault();
@@ -30,6 +36,7 @@ export default function InstallBanner() {
     };
     const displayChanged = () => { if (installed()) clear(); };
     const preferenceChanged = () => {
+      setInlineGuide(!preview && !installed() && isIosSafari(navigator.userAgent, navigator.platform, navigator.maxTouchPoints) && Boolean(readPreference(IOS_DISMISSED_KEY)) && readPreference(INSTALL_HANDLED_KEY) !== "true");
       if (readPreference(INSTALL_HANDLED_KEY) === "true") {
         pendingPrompt.current = null;
         setMode(null);
@@ -41,6 +48,7 @@ export default function InstallBanner() {
     window.addEventListener("appinstalled", clear);
     window.addEventListener("storage", preferenceChanged);
     standalone.addEventListener("change", displayChanged);
+    preferenceChanged();
     if (installed()) clear();
     const timer = window.setTimeout(() => {
       if (!preview && isIosSafari(navigator.userAgent, navigator.platform, navigator.maxTouchPoints)
@@ -54,10 +62,13 @@ export default function InstallBanner() {
       window.removeEventListener("storage", preferenceChanged);
       standalone.removeEventListener("change", displayChanged);
     };
-  }, []);
+  }, [pathname]);
 
   function dismiss() {
-    if (mode === "ios") savePreference(IOS_DISMISSED_KEY, String(Date.now()));
+    if (mode === "ios") {
+      savePreference(IOS_DISMISSED_KEY, String(Date.now()));
+      setInlineGuide(true);
+    }
     else savePreference(INSTALL_HANDLED_KEY, "true");
     pendingPrompt.current = null;
     setMode(null);
@@ -77,16 +88,23 @@ export default function InstallBanner() {
     }
   }
 
-  if (!mode) return null;
+  if (!mode) {
+    const target = document.getElementById("home-install-guide");
+    if (!inlineGuide || !target || !["/", "/dashboard-paziente"].includes(pathname)) return null;
+    return createPortal(<section aria-label="Guida installazione ComuniCARE" className="w-full rounded-lg border border-border bg-secondary p-6">
+      <h2 className="text-xl font-semibold">Aggiungi ComuniCARE alla tua Home</h2>
+      <IosInstallGuide />
+    </section>, target);
+  }
   return (
     <aside aria-label="Installazione ComuniCARE" className="fixed bottom-24 left-3 right-3 z-40 max-w-sm rounded-lg border border-border bg-background p-4 shadow-lg sm:bottom-6 sm:left-6 sm:right-auto" role="region">
       <Button variant="ghost" size="icon" className="absolute right-1 top-1 h-9 w-9" aria-label="Chiudi avviso di installazione" title="Chiudi" onClick={dismiss}><X /></Button>
       <div className="flex items-center gap-3 pr-7">
         <img src="/icons/app-192.png" alt="" className="h-10 w-10 shrink-0 rounded-md" />
-        <h2 className="text-base font-semibold">ComuniCARE sulla tua Home</h2>
+        <h2 className="text-base font-semibold">{mode === "ios" ? "Aggiungi ComuniCARE alla tua Home" : "ComuniCARE sulla tua Home"}</h2>
       </div>
       {mode === "ios" ? <>
-        <p className="mt-3 text-sm text-muted-foreground">Tocca <Share className="mx-1 inline-block h-4 w-4 text-primary" aria-label="Icona Condividi" /> <strong className="text-foreground">Condividi</strong>, poi <PlusSquare className="mx-1 inline-block h-4 w-4 text-primary" aria-hidden="true" /> <strong className="text-foreground">Aggiungi alla schermata Home</strong>.</p>
+        <IosInstallGuide />
         <div className="mt-3 flex justify-end"><Button size="sm" variant="secondary" onClick={dismiss}>Capito</Button></div>
       </> : <>
         <p className="mt-3 text-sm text-muted-foreground">Aggiungi ComuniCARE alla schermata Home.</p>

@@ -10,10 +10,10 @@ describe("Installation preferences", () => {
     expect(canOfferNativeInstall(true, null)).toBe(false);
     expect(canShowIosGuide(true, null)).toBe(false);
   });
-  it("keeps the dismissed iOS guide hidden for 30 days", () => {
+  it("keeps the dismissed iOS guide hidden for 7 days", () => {
     const dismissed = 100000000;
-    expect(canShowIosGuide(false, String(dismissed), dismissed + 29 * 86400000)).toBe(false);
-    expect(canShowIosGuide(false, String(dismissed), dismissed + 30 * 86400000)).toBe(true);
+    expect(canShowIosGuide(false, String(dismissed), dismissed + 7 * 86400000 - 1)).toBe(false);
+    expect(canShowIosGuide(false, String(dismissed), dismissed + 7 * 86400000)).toBe(true);
   });
   it("shows the guide only for Safari on Apple mobile devices", () => {
     expect(isIosSafari("iPhone Version/18.0 Mobile Safari/604.1", "iPhone", 5)).toBe(true);

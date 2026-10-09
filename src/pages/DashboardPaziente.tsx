@@ -1035,9 +1035,9 @@ const DashboardPaziente = () => {
           </div>
 
           {/* Professionisti + Ultimi articoli */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 lg:contents">
             {/* Sei un professionista? */}
-            <Card className="mx-auto max-w-xl">
+            <Card className="w-full lg:col-span-2">
               <CardContent className="p-6 flex flex-col gap-3 items-center text-center">
                 <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 justify-center">
                   <BriefcaseMedical className="w-6 h-6 text-primary" aria-hidden="true" />
@@ -1055,11 +1055,13 @@ const DashboardPaziente = () => {
               </CardContent>
             </Card>
 
+            <div id="home-install-guide" className="empty:hidden w-full lg:col-span-2" />
+
             {/* Ultimi articoli */}
-            <div className="flex flex-col min-h-0 flex-1">
+            <div className="flex flex-col min-h-0 flex-1 lg:col-span-2">
               <h2 className="text-xl md:text-2xl font-bold mb-6">&nbsp; &nbsp; &nbsp;Ultimi articoli</h2>
-              <div className="flex-1 lg:min-h-0 lg:relative">
-                <div className="space-y-6 lg:absolute lg:inset-0 lg:overflow-y-auto lg:pr-2">
+              <div className="flex-1 min-h-0">
+                <div className="grid gap-6 lg:grid-cols-2">
                   {articles.map((article) => (
                     <Link to={`/blog/${article.slug}`} key={article.slug} className="block">
                       <Card className="hover:border-primary transition-colors cursor-pointer overflow-hidden">

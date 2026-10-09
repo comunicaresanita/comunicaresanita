@@ -1,6 +1,6 @@
 export const INSTALL_HANDLED_KEY = "comunicare_install_handled";
 export const IOS_DISMISSED_KEY = "comunicare_ios_install_dismissed";
-export const IOS_DISMISS_DAYS = 30;
+export const IOS_DISMISS_DAYS = 7;
 const memory = new Map<string, string>();
 
 export function readPreference(key: string): string | null {

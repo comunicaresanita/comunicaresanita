@@ -1,6 +1,7 @@
 # Requested changes
 - [x] Home-screen installability with icons and manifest, without offline caching.
-- [x] Once-only Android prompt and dismissible iOS guide (30-day preference).
+- [x] Once-only Android prompt and dismissible iOS guide (7-day preference).
+- [x] Updated iOS steps, persistent Home guide, full-width professional section and symmetric footer; verified with four preference tests and desktop/tablet/mobile browser checks.
 - [x] Verify install banner behavior and tests (four rule tests; browser checks for iOS dismissal, simulated native prompt, reload persistence, standalone and icon loading).
 - [x] Contact form messages delivered to the team on Telegram (also saved in admin).
 - [x] "Ripeti ultima prestazione" on Home with login / empty-state handling and prefilled booking.
