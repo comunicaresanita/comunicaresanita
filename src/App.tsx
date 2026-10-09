@@ -27,6 +27,7 @@ import Prestazioni from "./pages/Prestazioni.tsx";
 import BlogArticolo from "./pages/BlogArticolo.tsx";
 import Admin from "./pages/Admin.tsx";
 import ScrollToTop from "./components/ScrollToTop";
+import InstallBanner from "./components/InstallBanner";
 
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ScrollToTop />
+          <InstallBanner />
           <Routes>
             <Route path="/" element={<DashboardPaziente />} />
             <Route path="/login" element={<Login />} />

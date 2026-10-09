@@ -1,3 +1,4 @@
 # Architecture rules
+- Home-screen installability uses a manifest only, with install eligibility and persistent dismissal handled by one shared banner; no app-shell service worker is added because offline support is not requested.
 - Contact submissions are validated and persisted by their dedicated Edge Function and exposed to the team through server-validated admin access, so no message relies on console logs or client-side success alone.
 - Disabled service categories are removed from every catalog and blocked in the services table, so stale clients cannot restore retired offerings while historical bookings remain intact.
