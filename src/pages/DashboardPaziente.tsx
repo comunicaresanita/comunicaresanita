@@ -201,6 +201,7 @@ const DashboardPaziente = () => {
   const [cgCitta, setCgCitta] = useState("");
   const [savingCg, setSavingCg] = useState(false);
   const [sortBy, setSortBy] = useState<"distanza" | "prezzo">("distanza");
+  const [priceDir, setPriceDir] = useState<"asc" | "desc">("asc");
   const [showSort, setShowSort] = useState(false);
   const [repeatEmptyMsg, setRepeatEmptyMsg] = useState(false);
 
@@ -278,11 +279,18 @@ const DashboardPaziente = () => {
     }
     const priceOf = (p: any) =>
       priceWithDistance(p.servizi.find((s: any) => s.name === prestazioneSelezionata)?.price ?? 0, p._distKm);
-    filtered.sort((a: any, b: any) =>
-      sortBy === "prezzo" ? priceOf(a) - priceOf(b) : (a._distKm ?? 999) - (b._distKm ?? 999),
-    );
+    const dist = (p: any) => p._distKm ?? 999;
+    filtered.sort((a: any, b: any) => {
+      if (sortBy === "distanza") return dist(a) - dist(b);
+      const diff = (priceOf(a) - priceOf(b)) * (priceDir === "asc" ? 1 : -1);
+      if (diff !== 0) return diff;
+      // Same price: better reviews first, then closer
+      const ratingDiff = (b.valutazione || 0) - (a.valutazione || 0);
+      if (ratingDiff !== 0) return ratingDiff;
+      return dist(a) - dist(b);
+    });
     return filtered;
-  }, [prestazioneSelezionata, professionisti, refCoords, sortBy]);
+  }, [prestazioneSelezionata, professionisti, refCoords, sortBy, priceDir]);
 
   // When switching mode, reset selections
   const handleModeSwitch = (mode: SearchMode) => {
@@ -802,15 +810,16 @@ const DashboardPaziente = () => {
               {showList && (
                 <div className="flex flex-wrap items-center gap-2 mb-3 text-sm">
                   <span className="text-muted-foreground">
-                    Ordinati per {sortBy === "distanza" ? "distanza" : "prezzo"} dall'indirizzo {searchFor === "other" ? "del familiare" : "di residenza"}
+                    Ordinati per {sortBy === "distanza" ? "distanza" : priceDir === "asc" ? "prezzo (dal più basso)" : "prezzo (dal più alto)"} dall'indirizzo {searchFor === "other" ? "del familiare" : "di residenza"}
                   </span>
                   <Button size="sm" variant="outline" onClick={() => setShowSort((s) => !s)} className="gap-1">
                     <SlidersHorizontal className="w-4 h-4" /> Filtra
                   </Button>
                   {showSort && (
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button size="sm" variant={sortBy === "distanza" ? "default" : "outline"} onClick={() => { setSortBy("distanza"); setShowSort(false); }}>Distanza</Button>
-                      <Button size="sm" variant={sortBy === "prezzo" ? "default" : "outline"} onClick={() => { setSortBy("prezzo"); setShowSort(false); }}>Prezzo</Button>
+                      <Button size="sm" variant={sortBy === "prezzo" && priceDir === "asc" ? "default" : "outline"} onClick={() => { setSortBy("prezzo"); setPriceDir("asc"); setShowSort(false); }}>Prezzo € ↑ (dal più basso)</Button>
+                      <Button size="sm" variant={sortBy === "prezzo" && priceDir === "desc" ? "default" : "outline"} onClick={() => { setSortBy("prezzo"); setPriceDir("desc"); setShowSort(false); }}>Prezzo € ↓ (dal più alto)</Button>
                     </div>
                   )}
                   <button type="button" onClick={() => setSearchFor(null)} className="text-xs underline text-muted-foreground">
