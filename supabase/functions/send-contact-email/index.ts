@@ -31,9 +31,18 @@ Deno.serve(async (req) => {
     const { data, error } = await db.from("contact_submissions")
       .insert({ ...contact, request_fingerprint: fingerprint }).select("id").single();
     if (error || !data) throw new Error("contact_save_failed");
-    // No sender domain is configured. The team reads saved messages in its admin page.
-    // Do not claim email delivery or silently discard submissions.
-    return json({ success: true, submissionId: data.id, emailSent: false });
+    // Notify the team on Telegram (message is already saved, so a Telegram failure is logged only).
+    let telegramSent = false;
+    const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    if (token) {
+      const text = ["✉️ NUOVO MESSAGGIO DAL MODULO CONTATTI", "", `👤 Nome: ${contact.nome}`, `📧 Email: ${contact.email}`, "", `📝 Messaggio:`, contact.messaggio].join("\n");
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${encodeURIComponent("-5497164506")}&text=${encodeURIComponent(text)}`);
+        telegramSent = res.ok;
+        if (!res.ok) console.error(`Telegram error [${res.status}]: ${await res.text()}`);
+      } catch (e) { console.error("Telegram request failed", e); }
+    }
+    return json({ success: true, submissionId: data.id, telegramSent });
   } catch {
     console.error("Contact submission could not be saved");
     return json({ error: "Impossibile ricevere il messaggio. Riprova più tardi." }, 500);
