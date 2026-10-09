@@ -226,6 +226,7 @@ const DashboardPaziente = () => {
       setSearchFor(null);
       return;
     }
+    setAskCaregiverAddr(false);
     setSearchFor(who);
     if (who === "other") setCaregiverCoords(await geocodeAddress(caregiverAddress));
   };
@@ -778,7 +779,7 @@ const DashboardPaziente = () => {
                   </CardContent>
                 </Card>
               )}
-              {user && !searchFor && (
+              {user && !searchFor && !askCaregiverAddr && (
                 <Card className="mb-4 border-2 border-primary/40">
                   <CardContent className="p-5 md:p-6 space-y-3">
                     <p className="text-sm md:text-senior-base font-semibold">Per chi cerchi questa prestazione?</p>
@@ -832,7 +833,7 @@ const DashboardPaziente = () => {
                       </Button>
                     </div>
                   )}
-                  <button type="button" onClick={() => setSearchFor(null)} className="text-xs underline text-muted-foreground">
+                  <button type="button" onClick={() => { setSearchFor(null); setAskCaregiverAddr(false); }} className="text-xs underline text-muted-foreground">
                     Cambia (per me / familiare)
                   </button>
                 </div>
