@@ -33,7 +33,7 @@ const patientFaqItems = [
   },
   {
     q: "Posso cancellare una prenotazione?",
-    a: "Sì, puoi cancellare una prenotazione dalla tua dashboard. È obbligatorio avvisare almeno 24 ore prima della prestazione. In caso contrario, l'importo non sarà rimborsato."
+    a: "Sì, per farlo puoi contattarci su comunicaresanita@gmail.com o chiamandoci al numero +39 338 8121120 . È obbligatorio avvisare almeno 24 ore prima della prestazione."
   },
   {
     q: "Devo pagare online al momento della prenotazione?",
