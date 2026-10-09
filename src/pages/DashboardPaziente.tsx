@@ -666,11 +666,11 @@ const DashboardPaziente = () => {
               )}
             </CardContent>
           </Card>
-          </div>
 
-          <p className="lg:col-span-2 text-center text-sm md:text-base text-muted-foreground/70 mb-4 md:mb-6 -mt-2">
+          <p className="text-center text-sm md:text-base text-muted-foreground/70 mt-3 mb-4 lg:mb-0 px-2">
             Non sai che prestazione scegliere? Nessun problema: chiedi al nostro Assistente digitale, ti aspetta nel pulsante in basso a destra 💙
           </p>
+          </div>
 
           {/* Map always visible */}
           <div ref={mapRef} className="w-full h-56 md:h-80 lg:h-full lg:min-h-0 rounded-lg overflow-hidden border mb-4 md:mb-6 lg:mb-0 bg-secondary relative z-0">
