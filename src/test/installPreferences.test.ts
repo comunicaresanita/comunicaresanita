@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canOfferNativeInstall, canShowIosGuide, isIosSafari } from "@/lib/installPreferences";
+import { canOfferNativeInstall, canShowIosGuide, isIosSafari, mobileInstallPlatform } from "@/lib/installPreferences";
 
 describe("Installation preferences", () => {
   it("offers Android installation only before the first handled prompt", () => {
@@ -21,5 +21,17 @@ describe("Installation preferences", () => {
     expect(isIosSafari("iPhone CriOS/130 Mobile Safari/604.1", "iPhone", 5)).toBe(false);
     expect(isIosSafari("Android Chrome/130 Safari/537.36", "Linux", 5)).toBe(false);
     expect(isIosSafari("Macintosh Safari/605.1", "MacIntel", 0)).toBe(false);
+  });
+  it("makes iOS instructions eligible for Chrome, Google and other Apple browsers too", () => {
+    for (const browser of ["CriOS/130", "GSA/300", "FxiOS/130", "EdgiOS/130", "Version/18 Safari/604.1"]) {
+      expect(mobileInstallPlatform(`iPhone Mobile ${browser}`, "iPhone", 5)).toBe("ios");
+    }
+    expect(mobileInstallPlatform("Macintosh Safari/605.1", "MacIntel", 5)).toBe("ios");
+  });
+  it("offers Android instructions in Google, Chrome and other browsers without a native prompt", () => {
+    for (const browser of ["Chrome/130", "GSA/300", "Firefox/130", "SamsungBrowser/25"]) {
+      expect(mobileInstallPlatform(`Android ${browser}`, "Linux", 5)).toBe("android");
+    }
+    expect(mobileInstallPlatform("Macintosh Safari/605.1", "MacIntel", 0)).toBe(null);
   });
 });

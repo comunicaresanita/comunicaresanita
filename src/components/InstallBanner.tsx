@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Download, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
-import IosInstallGuide from "@/components/IosInstallGuide";
+import InstallGuide from "@/components/InstallGuide";
 import { Button } from "@/components/ui/button";
-import { canOfferNativeInstall, canShowIosGuide, INSTALL_HANDLED_KEY, IOS_DISMISSED_KEY, isIosSafari, readPreference, savePreference } from "@/lib/installPreferences";
+import { canOfferNativeInstall, canShowIosGuide, INSTALL_HANDLED_KEY, IOS_DISMISSED_KEY, mobileInstallPlatform, readPreference, savePreference } from "@/lib/installPreferences";
 
 interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -13,9 +13,19 @@ interface InstallPromptEvent extends Event {
 
 export default function InstallBanner() {
   const [mode, setMode] = useState<"native" | "ios" | null>(null);
-  const [inlineGuide, setInlineGuide] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [guideTarget, setGuideTarget] = useState<HTMLElement | null>(null);
+  const platform = mobileInstallPlatform(navigator.userAgent, navigator.platform, navigator.maxTouchPoints);
   const { pathname } = useLocation();
   const pendingPrompt = useRef<InstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const updateTarget = () => setGuideTarget(document.getElementById("home-install-guide"));
+    updateTarget();
+    const observer = new MutationObserver(updateTarget);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [pathname]);
 
   useEffect(() => {
     const standalone = window.matchMedia("(display-mode: standalone)");
@@ -25,19 +35,21 @@ export default function InstallBanner() {
       savePreference(INSTALL_HANDLED_KEY, "true");
       pendingPrompt.current = null;
       setMode(null);
-      setInlineGuide(false);
+      setIsInstalled(true);
     };
     const beforeInstall = (event: Event) => {
       event.preventDefault();
       if (preview || !canOfferNativeInstall(installed(), readPreference(INSTALL_HANDLED_KEY))) return;
-      if (isIosSafari(navigator.userAgent, navigator.platform, navigator.maxTouchPoints)) return;
+      if (platform === "ios") return;
       pendingPrompt.current = event as InstallPromptEvent;
       setMode("native");
     };
     const displayChanged = () => { if (installed()) clear(); };
     const preferenceChanged = () => {
-      setInlineGuide(!preview && !installed() && isIosSafari(navigator.userAgent, navigator.platform, navigator.maxTouchPoints) && Boolean(readPreference(IOS_DISMISSED_KEY)) && readPreference(INSTALL_HANDLED_KEY) !== "true");
-      if (readPreference(INSTALL_HANDLED_KEY) === "true") {
+      setIsInstalled(installed());
+      if (installed()) {
+        setMode(null);
+      } else if (platform !== "ios" && readPreference(INSTALL_HANDLED_KEY) === "true") {
         pendingPrompt.current = null;
         setMode(null);
       } else if (!canShowIosGuide(installed(), readPreference(IOS_DISMISSED_KEY))) {
@@ -51,8 +63,7 @@ export default function InstallBanner() {
     preferenceChanged();
     if (installed()) clear();
     const timer = window.setTimeout(() => {
-      if (!preview && isIosSafari(navigator.userAgent, navigator.platform, navigator.maxTouchPoints)
-        && readPreference(INSTALL_HANDLED_KEY) !== "true"
+      if (platform === "ios"
         && canShowIosGuide(installed(), readPreference(IOS_DISMISSED_KEY))) setMode("ios");
     }, 4000);
     return () => {
@@ -62,12 +73,11 @@ export default function InstallBanner() {
       window.removeEventListener("storage", preferenceChanged);
       standalone.removeEventListener("change", displayChanged);
     };
-  }, [pathname]);
+  }, [platform]);
 
   function dismiss() {
     if (mode === "ios") {
       savePreference(IOS_DISMISSED_KEY, String(Date.now()));
-      setInlineGuide(true);
     }
     else savePreference(INSTALL_HANDLED_KEY, "true");
     pendingPrompt.current = null;
@@ -88,28 +98,25 @@ export default function InstallBanner() {
     }
   }
 
-  if (!mode) {
-    const target = document.getElementById("home-install-guide");
-    if (!inlineGuide || !target || !["/", "/dashboard-paziente", "/dashboard-professionista"].includes(pathname)) return null;
-    return createPortal(<section aria-label="Guida installazione ComuniCARE" className="w-full rounded-lg border border-border bg-secondary p-6">
+  const inlineGuide = platform && !isInstalled && guideTarget && ["/", "/dashboard-paziente", "/dashboard-professionista"].includes(pathname)
+    ? createPortal(<section aria-label="Guida installazione ComuniCARE" className="w-full rounded-lg border border-border bg-secondary p-6">
       <h2 className="text-xl font-semibold">Aggiungi ComuniCARE alla tua Home</h2>
-      <IosInstallGuide />
-    </section>, target);
-  }
-  return (
-    <aside aria-label="Installazione ComuniCARE" className="fixed bottom-24 left-3 right-3 z-40 max-w-sm rounded-lg border border-border bg-background p-4 shadow-lg sm:bottom-6 sm:left-6 sm:right-auto" role="region">
+      <InstallGuide platform={platform} />
+    </section>, guideTarget) : null;
+  return <>{inlineGuide}{mode && (
+    <aside aria-label="Installazione ComuniCARE" className="fixed bottom-24 left-3 right-3 z-40 max-h-[calc(100dvh-8rem)] max-w-sm overflow-y-auto rounded-lg border border-border bg-background p-4 shadow-lg sm:bottom-6 sm:left-6 sm:right-auto" role="region">
       <Button variant="ghost" size="icon" className="absolute right-1 top-1 h-9 w-9" aria-label="Chiudi avviso di installazione" title="Chiudi" onClick={dismiss}><X /></Button>
       <div className="flex items-center gap-3 pr-7">
         <img src="/icons/app-192.png" alt="" className="h-10 w-10 shrink-0 rounded-md" />
         <h2 className="text-base font-semibold">{mode === "ios" ? "Aggiungi ComuniCARE alla tua Home" : "ComuniCARE sulla tua Home"}</h2>
       </div>
       {mode === "ios" ? <>
-        <IosInstallGuide />
+        <InstallGuide platform="ios" />
         <div className="mt-3 flex justify-end"><Button size="sm" variant="secondary" onClick={dismiss}>Capito</Button></div>
       </> : <>
         <p className="mt-3 text-sm text-muted-foreground">Aggiungi ComuniCARE alla schermata Home.</p>
         <div className="mt-3 flex justify-end"><Button size="sm" onClick={install}><Download /> Installa</Button></div>
       </>}
     </aside>
-  );
+  )}</>;
 }

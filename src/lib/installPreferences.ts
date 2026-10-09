@@ -32,6 +32,12 @@ export function canShowIosGuide(installed: boolean, dismissedAt: string | null, 
 }
 
 export function isIosSafari(userAgent: string, platform: string, touchPoints: number) {
-  const appleMobile = /iPhone|iPad|iPod/.test(userAgent) || (platform === "MacIntel" && touchPoints > 1);
-  return appleMobile && /Safari/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome|Android/.test(userAgent);
+  return mobileInstallPlatform(userAgent, platform, touchPoints) === "ios" && /Safari/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome|Android|GSA\//.test(userAgent);
+}
+
+export type MobileInstallPlatform = "ios" | "android";
+
+export function mobileInstallPlatform(userAgent: string, platform: string, touchPoints: number): MobileInstallPlatform | null {
+  if (/iPhone|iPad|iPod/.test(userAgent) || (platform === "MacIntel" && touchPoints > 1)) return "ios";
+  return /Android/.test(userAgent) ? "android" : null;
 }
