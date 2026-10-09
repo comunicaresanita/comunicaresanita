@@ -668,7 +668,7 @@ const DashboardPaziente = () => {
           </Card>
 
           <p className="text-center text-sm md:text-base text-muted-foreground/70 mt-3 mb-4 lg:mb-0 px-2">
-            Non sai che prestazione scegliere? Nessun problema: chiedi al nostro Assistente digitale, ti aspetta nel pulsante in basso a destra 💙
+            Non sai che prestazione scegliere? Nessun problema: chiedi al nostro Assistente digitale nel pulsante in basso a destra
           </p>
           </div>
 
