@@ -6,17 +6,16 @@ const Footer = () => {
   return (
     <footer className="bg-medical-dark text-primary-foreground">
       <div className="container mx-auto px-4 md:px-6 py-8 md:py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div>
+        <div className="flex flex-col items-center gap-6 text-center">
+          <div className="flex flex-col items-center">
             <Link to="/"><img src={logo} alt="ComuniCARE" className="h-12 md:h-14 mb-4 w-auto object-contain" /></Link>
-            <p className="md:text-senior-sm opacity-80 text-base mx-[10px] text-left">
+            <p className="md:text-senior-sm opacity-80 text-base text-center">
               ​Qualità, professionalità 
               e cura direttamente a casa tua.
             </p>
           </div>
           <div>
-            <h4 className="text-base md:text-senior-lg font-semibold mb-3 md:mb-4">{"\n"}</h4>
-            <ul className="space-y-2 text-sm md:text-senior-sm">
+            <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm md:text-senior-sm">
               <li><Link to="/termini" className="opacity-80 hover:opacity-100 transition-opacity">Termini e Condizioni</Link></li>
               <li><Link to="/privacy" className="opacity-80 hover:opacity-100 transition-opacity">Privacy Policy</Link></li>
             </ul>
@@ -24,8 +23,8 @@ const Footer = () => {
           <div>
             <h4 className="text-base md:text-senior-lg font-semibold mb-3 md:mb-4">Contatti</h4>
             <ul className="space-y-3 text-sm md:text-senior-sm opacity-80">
-              <li className="flex items-center gap-2"><Mail className="w-4 h-4 flex-shrink-0" /> comunicaresanita@gmail.com</li>
-              <li className="flex items-center gap-2"><MapPin className="w-4 h-4 flex-shrink-0" /> Firenze, Italia</li>
+              <li className="flex items-center justify-center gap-2"><Mail className="w-4 h-4 flex-shrink-0" /><a href="mailto:comunicaresanita@gmail.com" className="break-all">comunicaresanita@gmail.com</a></li>
+              <li className="flex items-center justify-center gap-2"><MapPin className="w-4 h-4 flex-shrink-0" /> Firenze, Italia</li>
             </ul>
           </div>
         </div>
