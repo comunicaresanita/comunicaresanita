@@ -257,6 +257,7 @@ export type Database = {
           lat: number | null
           lives_in_condominio: boolean | null
           lng: number | null
+          long_distance_ok: boolean
           medical_notes: string | null
           numero_fnofi: string | null
           numero_opi: string | null
@@ -298,6 +299,7 @@ export type Database = {
           lat?: number | null
           lives_in_condominio?: boolean | null
           lng?: number | null
+          long_distance_ok?: boolean
           medical_notes?: string | null
           numero_fnofi?: string | null
           numero_opi?: string | null
@@ -339,6 +341,7 @@ export type Database = {
           lat?: number | null
           lives_in_condominio?: boolean | null
           lng?: number | null
+          long_distance_ok?: boolean
           medical_notes?: string | null
           numero_fnofi?: string | null
           numero_opi?: string | null
@@ -471,6 +474,7 @@ export type Database = {
           last_name: string | null
           lat: number | null
           lng: number | null
+          long_distance_ok: boolean | null
           photo_url: string | null
           professional_type: string | null
           role: string | null
@@ -485,6 +489,7 @@ export type Database = {
           last_name?: string | null
           lat?: number | null
           lng?: number | null
+          long_distance_ok?: boolean | null
           photo_url?: string | null
           professional_type?: string | null
           role?: string | null
@@ -499,6 +504,7 @@ export type Database = {
           last_name?: string | null
           lat?: number | null
           lng?: number | null
+          long_distance_ok?: boolean | null
           photo_url?: string | null
           professional_type?: string | null
           role?: string | null
