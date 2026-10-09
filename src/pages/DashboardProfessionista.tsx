@@ -51,6 +51,7 @@ const DashboardProfessionista = () => {
               </p>
             </CardContent>
           </Card>
+          <div id="home-install-guide" className="empty:hidden w-full mt-6" />
         </div>
       </main>
       <Footer />

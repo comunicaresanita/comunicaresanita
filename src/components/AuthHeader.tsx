@@ -21,11 +21,7 @@ const AuthHeader = () => {
     navigate("/");
   };
 
-  const logoTarget = user
-    ? profile?.role === "professionista"
-      ? "/dashboard-professionista"
-      : "/"
-    : "/";
+  const logoTarget = "/";
 
   const requireAuth = (to: string, message: string) => {
     navigate("/login", { state: { redirect: to, message } });
@@ -50,10 +46,13 @@ const AuthHeader = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to="/" className="cursor-pointer"><Home className="w-4 h-4 mr-2" />Home</Link>
+                </DropdownMenuItem>
                 {isProfessionista && (
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard-professionista" className="cursor-pointer">
-                      <Home className="w-4 h-4 mr-2" />Dashboard
+                      <ClipboardList className="w-4 h-4 mr-2" />Dashboard
                     </Link>
                   </DropdownMenuItem>
                 )}
