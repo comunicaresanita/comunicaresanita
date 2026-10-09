@@ -1,5 +1,5 @@
 # Requested changes
-- [ ] Installation guide for current and future users of every role, persistent Home instructions and cross-browser phone guidance; verify dismissal and rendering.
+- [x] Role-independent installation guide, persistent Home instructions and cross-browser guidance; six rule tests and Safari/Chrome/Google/Android browser checks passed, including old preference flags, dismissal persistence and professional page slot. Authenticated existing-account check unavailable because session minting found no matching account.
 - [x] Balance desktop Home FAQ/professional columns, complete article rows, and three-column footer with useful links and Facebook; verified at 1920/1280/768/390px without overflow, FAQ/service navigation and fourth article image rendering.
 - [x] Localize app notices and external-service errors in Italian; verified real sign-in rejection, simulated duplicate signup, native validation with an English browser, and the missing-page message.
 - [x] Home-screen installability with icons and manifest, without offline caching.

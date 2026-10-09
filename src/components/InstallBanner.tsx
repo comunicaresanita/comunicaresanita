@@ -104,7 +104,7 @@ export default function InstallBanner() {
       <InstallGuide platform={platform} />
     </section>, guideTarget) : null;
   return <>{inlineGuide}{mode && (
-    <aside aria-label="Installazione ComuniCARE" className="fixed bottom-24 left-3 right-3 z-40 max-w-sm rounded-lg border border-border bg-background p-4 shadow-lg sm:bottom-6 sm:left-6 sm:right-auto" role="region">
+    <aside aria-label="Installazione ComuniCARE" className="fixed bottom-24 left-3 right-3 z-40 max-h-[calc(100dvh-8rem)] max-w-sm overflow-y-auto rounded-lg border border-border bg-background p-4 shadow-lg sm:bottom-6 sm:left-6 sm:right-auto" role="region">
       <Button variant="ghost" size="icon" className="absolute right-1 top-1 h-9 w-9" aria-label="Chiudi avviso di installazione" title="Chiudi" onClick={dismiss}><X /></Button>
       <div className="flex items-center gap-3 pr-7">
         <img src="/icons/app-192.png" alt="" className="h-10 w-10 shrink-0 rounded-md" />
