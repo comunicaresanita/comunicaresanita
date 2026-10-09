@@ -226,6 +226,7 @@ const DashboardPaziente = () => {
       setSearchFor(null);
       return;
     }
+    setAskCaregiverAddr(false);
     setSearchFor(who);
     if (who === "other") setCaregiverCoords(await geocodeAddress(caregiverAddress));
   };
@@ -778,7 +779,7 @@ const DashboardPaziente = () => {
                   </CardContent>
                 </Card>
               )}
-              {user && !searchFor && (
+              {user && !searchFor && !askCaregiverAddr && (
                 <Card className="mb-4 border-2 border-primary/40">
                   <CardContent className="p-5 md:p-6 space-y-3">
                     <p className="text-sm md:text-senior-base font-semibold">Per chi cerchi questa prestazione?</p>
