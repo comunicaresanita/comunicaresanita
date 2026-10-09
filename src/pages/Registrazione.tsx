@@ -61,7 +61,7 @@ const Registrazione = () => {
   const [floorNumber, setFloorNumber] = useState("");
   const [accessNotes, setAccessNotes] = useState("");
   const [housingErrors, setHousingErrors] = useState<HousingInfoErrors>({});
-  
+  const [longDistanceOk, setLongDistanceOk] = useState(false);
   const [mapLat, setMapLat] = useState<number | null>(null);
   const [mapLng, setMapLng] = useState<number | null>(null);
   const { toast } = useToast();
@@ -173,20 +173,26 @@ const Registrazione = () => {
       return;
     }
 
-    // Persist patient-only housing fields after signup (not handled by trigger)
-    if (ruolo === "paziente") {
-      const { data: { user: signedUser } } = await supabase.auth.getUser();
-      if (signedUser) {
-        await supabase
-          .from("profiles")
-          .update({
-            lives_in_condominio: livesInCondominio,
-            intercom_name: livesInCondominio ? intercomName : null,
-            floor_number: livesInCondominio ? floorNumber : null,
-            access_notes: livesInCondominio ? accessNotes : null,
-          } as any)
-          .eq("user_id", signedUser.id);
-      }
+    // Persist extra fields after signup (not handled by trigger)
+    const { data: { user: signedUser } } = await supabase.auth.getUser();
+    if (signedUser && ruolo === "paziente") {
+      const caregiverAddress = isCaregiver && caregiverVia.trim()
+        ? composeAddress(caregiverVia, caregiverCivico, caregiverCap, caregiverCitta)
+        : null;
+      await supabase
+        .from("profiles")
+        .update({
+          lives_in_condominio: livesInCondominio,
+          intercom_name: livesInCondominio ? intercomName : null,
+          floor_number: livesInCondominio ? floorNumber : null,
+          access_notes: livesInCondominio ? accessNotes : null,
+          is_caregiver: isCaregiver,
+          ...(caregiverAddress ? { caregiver_address: caregiverAddress } : {}),
+        } as any)
+        .eq("user_id", signedUser.id);
+    }
+    if (signedUser && ruolo === "professionista") {
+      await supabase.from("profiles").update({ long_distance_ok: longDistanceOk }).eq("user_id", signedUser.id);
     }
 
     toast({ title: "Registrazione completata!", description: "Il tuo account è stato creato con successo." });
@@ -484,6 +490,15 @@ const Registrazione = () => {
                           setMapLng(lng);
                         }}
                       />
+                    </div>
+                    <div className="border-t pt-6">
+                      <h3 className="text-senior-lg font-semibold mb-2">Prestazioni a lunga distanza</h3>
+                      <div className="flex items-start space-x-3">
+                        <Checkbox id="long_distance" checked={longDistanceOk} onCheckedChange={(c) => setLongDistanceOk(c === true)} className="mt-1" />
+                        <Label htmlFor="long_distance" className="text-senior-sm leading-relaxed cursor-pointer">
+                          Sono disponibile a effettuare prestazioni a più di 10 km dalla mia zona. Su queste prestazioni il prezzo avrà una maggiorazione del 10%. Se non accetti, ti vedranno solo gli utenti entro 10 km. Potrai cambiare questa scelta dal tuo profilo.
+                        </Label>
+                      </div>
                     </div>
                     <div className="border-t pt-6">
                       <h3 className="text-senior-lg font-semibold mb-4">Documenti di verifica</h3>
