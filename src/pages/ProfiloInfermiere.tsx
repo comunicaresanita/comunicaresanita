@@ -14,6 +14,8 @@ import HousingInfoFields, { HousingInfoErrors } from "@/components/HousingInfoFi
 import MedicalNotesField from "@/components/MedicalNotesField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { haversineKm } from "@/lib/searchUtils";
+import { priceWithDistance, isLongDistance } from "@/lib/distancePricing";
 
 const NIGHT_START_HOUR = 20;
 
