@@ -44,6 +44,7 @@ const Profilo = () => {
   const [cap, setCap] = useState("");
   const [citta, setCitta] = useState("");
   const [bio, setBio] = useState("");
+  const [longDistanceOk, setLongDistanceOk] = useState(false);
   const [numeroOpi, setNumeroOpi] = useState("");
   const [numeroFnofi, setNumeroFnofi] = useState("");
   const [partitaIva, setPartitaIva] = useState("");
@@ -94,6 +95,7 @@ const Profilo = () => {
       setAge((profile as any).age ? String((profile as any).age) : "");
       setAdditionalInfo((profile as any).additional_info || "");
       setIsCaregiver((profile as any).is_caregiver || false);
+      setLongDistanceOk(!!(profile as any).long_distance_ok);
       setLivesInCondominio(
         (profile as any).lives_in_condominio === null || (profile as any).lives_in_condominio === undefined
           ? null
@@ -203,6 +205,7 @@ const Profilo = () => {
     };
     updates.phone = phone;
     if (profile.role === "professionista") {
+      updates.long_distance_ok = longDistanceOk;
       updates.numero_opi = numeroOpi;
       updates.numero_fnofi = numeroFnofi;
       updates.partita_iva = partitaIva;
@@ -370,6 +373,12 @@ const Profilo = () => {
 
               {profile.role === "professionista" && (
                 <>
+                  <div className="flex items-start space-x-3 p-3 rounded-lg border">
+                    <Checkbox id="long_distance_profile" checked={longDistanceOk} onCheckedChange={(c) => setLongDistanceOk(c === true)} className="mt-1" />
+                    <Label htmlFor="long_distance_profile" className="text-senior-sm leading-relaxed cursor-pointer">
+                      Disponibile per prestazioni a lunga distanza (oltre 10 km, prezzo maggiorato del 10%)
+                    </Label>
+                  </div>
                   {professionalType === "infermiere" && (
                     <div className="space-y-2">
                       <Label className="text-senior-sm">Numero iscrizione OPI</Label>
