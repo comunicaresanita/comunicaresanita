@@ -56,10 +56,15 @@ const StoricoPrestazioni = () => {
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">
                         <p className="font-semibold text-base break-words">{b.service_name}</p>
-                        <p className="text-sm text-foreground">
-                          📅 {(() => { const d = new Date(b.day); return isNaN(d.getTime()) ? b.day : d.toLocaleDateString("it-IT"); })()} — 🕒 {b.time_slot}
+                        <p className="mt-1">
+                          <span className="inline-block bg-accent text-accent-foreground rounded-md border border-primary/30 px-2 py-0.5 text-sm font-medium mr-2">
+                            {(() => { const d = new Date(b.day); return isNaN(d.getTime()) ? b.day : d.toLocaleDateString("it-IT"); })()}
+                          </span>
+                          <span className="inline-block bg-accent text-accent-foreground rounded-md border border-primary/30 px-2 py-0.5 text-sm font-medium">
+                            {b.time_slot}
+                          </span>
                         </p>
-                        <p className="text-sm font-medium text-foreground">€ {b.price}</p>
+                        <p className="mt-1 text-base font-semibold text-primary">{b.price} €</p>
                         {b.professional && (
                           <p className="text-xs text-muted-foreground">
                             {b.professional.first_name} {b.professional.last_name}
