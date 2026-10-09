@@ -14,10 +14,23 @@ import HousingInfoFields, { HousingInfoErrors } from "@/components/HousingInfoFi
 import MedicalNotesField from "@/components/MedicalNotesField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { haversineKm } from "@/lib/searchUtils";
+import { priceWithDistance, isLongDistance } from "@/lib/distancePricing";
 
 const NIGHT_START_HOUR = 20;
 
 const BOOKING_DRAFT_KEY = "comunicare_booking_draft";
+
+const geocode = async (address: string) => {
+  try {
+    const { data } = await supabase.functions.invoke("places-autocomplete", {
+      body: { action: "geocode", address: `${address}, Italia` },
+    });
+    return (data?.location as { lat: number; lng: number } | null) ?? null;
+  } catch {
+    return null;
+  }
+};
 
 const getSlotStartHour = (slot: string | null) => {
   if (!slot) return null;
@@ -223,6 +236,67 @@ const ProfiloInfermiere = () => {
     setCgMedicalNotes(p.caregiver_medical_notes || "");
   }, [userProfile]);
 
+  // Recipient type from the search page (?per=self|other)
+  useEffect(() => {
+    const per = searchParams.get("per");
+    if (!draftAppliedRef.current && (per === "self" || per === "other")) setRecipient(per);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // "Ripeti ultima prestazione": prefill all data from a previous booking (time is chosen again)
+  const repeatId = searchParams.get("ripeti");
+  useEffect(() => {
+    if (!repeatId || !userProfile?.id) return;
+    (async () => {
+      const { data: b } = await supabase.from("bookings").select("*").eq("id", repeatId).maybeSingle();
+      if (!b) return;
+      const r = b as any;
+      draftAppliedRef.current = true;
+      setServizioSelezionato(r.service_name);
+      setRecipient(r.recipient_type === "other" ? "other" : "self");
+      if (r.recipient_type === "other") {
+        setCgFirstName(r.recipient_first_name || "");
+        setCgLastName(r.recipient_last_name || "");
+        if (r.recipient_address) {
+          const parsed = parseAddressToFields(r.recipient_address);
+          setCgVia(parsed.via); setCgCivico(parsed.civico); setCgCap(parsed.cap); setCgCitta(parsed.citta);
+        }
+        setCgLivesInCondominio(r.lives_in_condominio ?? null);
+        setCgIntercomName(r.intercom_name || "");
+        setCgFloorNumber(r.floor_number || "");
+        setCgAccessNotes(r.access_notes || "");
+        setCgEmergencyName(r.emergency_contact_name || "");
+        setCgEmergencyPhone(r.emergency_contact_phone || "");
+        setCgMedicalNotes(r.medical_notes || "");
+      } else {
+        setSelfMedicalNotes(r.medical_notes || "");
+      }
+      toast({ title: "Dati della prestazione precedente inseriti", description: "Scegli un nuovo giorno e orario. Puoi modificare tutti i dati." });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repeatId, userProfile?.id]);
+
+  // Distance between the recipient's address and the professional (10 km rule)
+  const [recipientKm, setRecipientKm] = useState<number | null>(null);
+  const cgAddressKey = recipient === "other" && cgVia && cgCitta ? composeAddress(cgVia, cgCivico, cgCap, cgCitta) : "";
+  useEffect(() => {
+    const prof = professional as any;
+    if (!prof?.lat || !prof?.lng) { setRecipientKm(null); return; }
+    let cancelled = false;
+    (async () => {
+      let coords: { lat: number; lng: number } | null = null;
+      const up = userProfile as any;
+      if (recipient === "self") {
+        if (up?.lat && up?.lng) coords = { lat: up.lat, lng: up.lng };
+        else if (up?.address) coords = await geocode(up.address);
+      } else if (cgAddressKey) {
+        coords = await geocode(cgAddressKey);
+      }
+      if (!cancelled) setRecipientKm(coords ? haversineKm(coords.lat, coords.lng, prof.lat, prof.lng) : null);
+    })();
+    return () => { cancelled = true; };
+  }, [professional, recipient, cgAddressKey, userProfile]);
+
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
@@ -358,6 +432,7 @@ const ProfiloInfermiere = () => {
 
   const selectedService = services.find(s => s.name === servizioSelezionato);
   const bookingPricing = getBookingPricing(selectedService?.price || 0, selectedDate, slotSelezionato);
+  const finalPrice = priceWithDistance(bookingPricing.finalPrice, recipientKm);
 
   const typeLabel = professional.professional_type === "oss" ? "OSS"
     : professional.professional_type === "fisioterapista" ? "Fisioterapista"
@@ -490,7 +565,7 @@ const ProfiloInfermiere = () => {
           patient_id: userProfile.id,
           professional_id: professional.id,
           service_name: servizioSelezionato,
-          price: bookingPricing.finalPrice,
+          price: finalPrice,
           day: dayStr,
           time_slot: slotSelezionato,
           status: "pending",
@@ -893,10 +968,15 @@ const ProfiloInfermiere = () => {
                   <p><strong>Giorno:</strong> {formatSelectedDate(selectedDate)}</p>
                   <p><strong>Orario:</strong> {slotSelezionato}</p>
                   <p><strong>Tariffa base:</strong> €{bookingPricing.basePrice}</p>
-                  <p><strong>Prezzo finale:</strong> €{bookingPricing.finalPrice}</p>
+                  <p><strong>Prezzo finale:</strong> €{finalPrice}</p>
                   {bookingPricing.surchargeReason && (
                     <p className="text-xs text-muted-foreground">
                       {bookingPricing.surchargeReason}
+                    </p>
+                  )}
+                  {isLongDistance(recipientKm) && (
+                    <p className="text-xs text-muted-foreground">
+                      Prestazione a lunga distanza (circa {Math.round(recipientKm!)} km): maggiorazione del 10%.
                     </p>
                   )}
                 </div>
