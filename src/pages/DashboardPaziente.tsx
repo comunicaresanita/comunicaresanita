@@ -484,9 +484,9 @@ const DashboardPaziente = () => {
           <h1 className="md:text-senior-3xl mb-2 font-semibold text-xl font-sans">Trova la prestazione o il professionista</h1>
 
           <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:items-stretch lg:mb-6">
-          <div className="mb-6 md:mb-8 lg:mb-0 lg:contents">
+          <div className="mb-6 md:mb-8 lg:mb-0 lg:flex lg:flex-col">
 
-          <Card className="lg:col-span-1 flex flex-col">
+          <Card className="flex flex-col flex-1">
 
             <CardHeader className="p-4 md:p-6">
               <CardTitle className="text-lg md:text-senior-lg flex items-center gap-2">
