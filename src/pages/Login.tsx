@@ -1,3 +1,4 @@
+import { italianError } from "@/lib/italianErrors";
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,7 @@ const Login = () => {
     setLoading(false);
 
     if (error) {
-      toast({ title: "Errore di accesso", description: error.message, variant: "destructive" });
+      toast({ title: "Errore di accesso", description: italianError(error, "login"), variant: "destructive" });
       return;
     }
 
@@ -100,7 +101,7 @@ const Login = () => {
     const { error } = await resetPassword(email);
     setLoading(false);
     if (error) {
-      toast({ title: "Errore", description: error.message, variant: "destructive" });
+      toast({ title: "Errore", description: italianError(error, "recovery"), variant: "destructive" });
     } else {
       toast({ title: "Email inviata", description: "Controlla la tua casella email per il link di recupero." });
       setIsRecovery(false);

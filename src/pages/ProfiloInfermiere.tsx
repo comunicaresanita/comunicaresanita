@@ -1,3 +1,4 @@
+import { italianError } from "@/lib/italianErrors";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -601,7 +602,7 @@ const ProfiloInfermiere = () => {
       localStorage.removeItem(BOOKING_DRAFT_KEY);
       navigate(`/prenotazione-confermata?booking=${newId}`);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Errore durante la prenotazione.";
+      const message = italianError(err, "booking");
       toast({ title: "Errore", description: message, variant: "destructive" });
     } finally {
       setPaymentLoading(false);

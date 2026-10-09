@@ -1,4 +1,5 @@
 # Requested changes
+- [x] Localize app notices and external-service errors in Italian; verified real sign-in rejection, simulated duplicate signup, native validation with an English browser, and the missing-page message.
 - [x] Home-screen installability with icons and manifest, without offline caching.
 - [x] Once-only Android prompt and dismissible iOS guide (7-day preference).
 - [x] Updated iOS steps, persistent Home guide, full-width professional section and symmetric footer; verified with four preference tests and desktop/tablet/mobile browser checks.
