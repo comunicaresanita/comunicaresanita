@@ -154,6 +154,11 @@ const ProfiloInfermiere = () => {
   const [cgCitta, setCgCitta] = useState("");
   const [cgErrors, setCgErrors] = useState<{ firstName?: boolean; lastName?: boolean; via?: boolean; civico?: boolean; cap?: boolean; citta?: boolean }>({});
   const hasSavedCaregiverAddr = Boolean((userProfile as any)?.caregiver_address);
+  const cgComplete = Boolean(
+    (userProfile as any)?.caregiver_first_name && (userProfile as any)?.caregiver_last_name && (userProfile as any)?.caregiver_address
+  );
+  // Recipient already chosen on the search page: don't ask again
+  const recipientPreset = searchParams.get("per") === "self" || searchParams.get("per") === "other";
 
   // "Per me" medical notes (prefilled from profile, persisted on booking)
   const [selfMedicalNotes, setSelfMedicalNotes] = useState("");
@@ -809,9 +814,10 @@ const ProfiloInfermiere = () => {
           {userProfile?.role !== "professionista" && servizioSelezionato && slotSelezionato && selectedDate && (
             <Card className="mb-6 md:mb-8">
               <CardHeader>
-                <CardTitle className="text-base md:text-senior-lg">Per chi stai prenotando?</CardTitle>
+                <CardTitle className="text-base md:text-senior-lg">{recipientPreset ? "Note importanti (consigliato)" : "Per chi stai prenotando?"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {!recipientPreset && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -840,8 +846,20 @@ const ProfiloInfermiere = () => {
                     </p>
                   </button>
                 </div>
+                )}
 
-                {recipient === "other" && (
+                {recipient === "other" && recipientPreset && cgComplete && (
+                  <div className="p-4 rounded-lg border border-primary/30 bg-secondary/30">
+                    <MedicalNotesField
+                      value={cgMedicalNotes}
+                      onChange={setCgMedicalNotes}
+                      label="Note importanti sulla condizione del familiare / assistito (consigliato)"
+                      idPrefix="cg-medical-notes"
+                    />
+                  </div>
+                )}
+
+                {recipient === "other" && !(recipientPreset && cgComplete) && (
                   <div className="p-4 rounded-lg border border-primary/30 bg-secondary/30 space-y-5">
                     <p className="text-sm text-muted-foreground">
                       Inserisci i dati della persona che riceverà la prestazione. Il professionista si recherà a questo indirizzo.
@@ -946,7 +964,7 @@ const ProfiloInfermiere = () => {
                     <MedicalNotesField
                       value={selfMedicalNotes}
                       onChange={setSelfMedicalNotes}
-                      label="Note importanti sulla tua condizione"
+                      label="Note importanti sulla tua condizione (consigliato)"
                       idPrefix="self-medical-notes"
                     />
                     <p className="text-xs text-muted-foreground mt-2">

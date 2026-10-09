@@ -832,7 +832,7 @@ const DashboardPaziente = () => {
                       </Button>
                     </div>
                   )}
-                  <button type="button" onClick={() => setSearchFor(null)} className="text-xs underline text-muted-foreground">
+                  <button type="button" onClick={() => { setSearchFor(null); setAskCaregiverAddr(false); }} className="text-xs underline text-muted-foreground">
                     Cambia (per me / familiare)
                   </button>
                 </div>
