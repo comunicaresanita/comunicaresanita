@@ -32,12 +32,6 @@ const Footer = () => {
                 href="https://www.facebook.com/profile.php?id=61594047286315"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const url = "https://www.facebook.com/profile.php?id=61594047286315";
-                  const win = window.open(url, "_blank", "noopener,noreferrer");
-                  if (!win) window.location.href = url;
-                }}
                 className="inline-flex items-center gap-2 hover:opacity-100 transition-opacity"
                 aria-label="ComuniCARE su Facebook (si apre in una nuova scheda)"><Facebook className="w-5 h-5 flex-shrink-0" aria-hidden="true" /> Facebook</a></li>
             </ul>
