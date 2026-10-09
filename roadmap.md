@@ -1,7 +1,7 @@
 # Requested changes
-- [ ] Home-screen installability with icons and manifest, without offline caching.
-- [ ] Once-only Android prompt and dismissible iOS guide (30-day preference).
-- [ ] Verify install banner behavior and tests.
+- [x] Home-screen installability with icons and manifest, without offline caching.
+- [x] Once-only Android prompt and dismissible iOS guide (30-day preference).
+- [x] Verify install banner behavior and tests (four rule tests; browser checks for iOS dismissal, simulated native prompt, reload persistence, standalone and icon loading).
 - [x] Contact form messages delivered to the team on Telegram (also saved in admin).
 - [x] "Ripeti ultima prestazione" on Home with login / empty-state handling and prefilled booking.
 - [x] Login required to see professionals; "per me / familiare" choice; save missing family address.
