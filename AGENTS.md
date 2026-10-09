@@ -1,5 +1,5 @@
 # Architecture rules
-- Desktop-only Home additions use responsive visibility in the shared article catalog and footer; FAQ navigation uses a native Home hash link so it works from every page without changing mobile/tablet layout.
+- Desktop-only Home additions use responsive visibility in the shared article catalog and footer; shared scroll handling resolves page hash targets after rendering so FAQ links work from every page without changing mobile/tablet layout.
 - External errors must pass through the shared Italian error mapper before display, and native form validation uses a shared Italian adapter, so provider and browser language cannot leak into app notices.
 - Home-screen installability uses a manifest only and one shared banner that portals its reusable iOS guide into the Home slot after dismissal; this keeps install eligibility and preferences consistent without an app-shell service worker.
 - Contact submissions are validated and persisted by their dedicated Edge Function and exposed to the team through server-validated admin access, so no message relies on console logs or client-side success alone.

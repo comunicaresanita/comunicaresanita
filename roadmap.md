@@ -1,5 +1,5 @@
 # Requested changes
-- [ ] Balance desktop Home FAQ/professional columns, complete article rows, and three-column footer with useful links and Facebook; preserve mobile/tablet layout and verify navigation.
+- [x] Balance desktop Home FAQ/professional columns, complete article rows, and three-column footer with useful links and Facebook; verified at 1920/1280/768/390px without overflow, FAQ/service navigation and fourth article image rendering.
 - [x] Localize app notices and external-service errors in Italian; verified real sign-in rejection, simulated duplicate signup, native validation with an English browser, and the missing-page message.
 - [x] Home-screen installability with icons and manifest, without offline caching.
 - [x] Once-only Android prompt and dismissible iOS guide (7-day preference).
