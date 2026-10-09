@@ -90,7 +90,7 @@ export default function InstallBanner() {
 
   if (!mode) {
     const target = document.getElementById("home-install-guide");
-    if (!inlineGuide || !target || !["/", "/dashboard-paziente"].includes(pathname)) return null;
+    if (!inlineGuide || !target || !["/", "/dashboard-paziente", "/dashboard-professionista"].includes(pathname)) return null;
     return createPortal(<section aria-label="Guida installazione ComuniCARE" className="w-full rounded-lg border border-border bg-secondary p-6">
       <h2 className="text-xl font-semibold">Aggiungi ComuniCARE alla tua Home</h2>
       <IosInstallGuide />
