@@ -11,6 +11,10 @@ import ChatbotWidget from "@/components/ChatbotWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { fuzzySearchServices, haversineKm } from "@/lib/searchUtils";
+import { priceWithDistance, isLongDistance, isReachable } from "@/lib/distancePricing";
+import StructuredAddressInput, { composeAddress } from "@/components/StructuredAddressInput";
+import { useToast } from "@/hooks/use-toast";
+import { SlidersHorizontal, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { prestazioniDisponibili } from "@/data/prestazioni";
 import { articles } from "@/data/blogArticles";
@@ -69,7 +73,8 @@ type SearchMode = "prestazione" | "professionista";
 const DashboardPaziente = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { profile } = useAuth();
+  const { profile, user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [prestazioneSelezionata, setPrestazioneSelezionata] = useState("");
   const [professionistaSelezionato, setProfessionistaSelezionato] = useState<ProfessionistaData | null>(null);
   const [ricerca, setRicerca] = useState("");
@@ -184,18 +189,99 @@ const DashboardPaziente = () => {
     return professionisti.filter((p) => p.nome.toLowerCase().includes(q)).slice(0, 10);
   }, [ricerca, searchMode, professionisti]);
 
-  // Filter professionals by selected service
+  // Who the search is for, and the address used to measure distance
+  const [searchFor, setSearchFor] = useState<"self" | "other" | null>(null);
+  const [caregiverAddress, setCaregiverAddress] = useState<string>("");
+  const [caregiverCoords, setCaregiverCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [askCaregiverAddr, setAskCaregiverAddr] = useState(false);
+  const [cgVia, setCgVia] = useState("");
+  const [cgCivico, setCgCivico] = useState("");
+  const [cgCap, setCgCap] = useState("");
+  const [cgCitta, setCgCitta] = useState("");
+  const [savingCg, setSavingCg] = useState(false);
+  const [sortBy, setSortBy] = useState<"distanza" | "prezzo">("distanza");
+  const [showSort, setShowSort] = useState(false);
+  const [repeatEmptyMsg, setRepeatEmptyMsg] = useState(false);
+
+  useEffect(() => {
+    setCaregiverAddress(((profile as any)?.caregiver_address as string) || "");
+  }, [profile]);
+
+  const geocodeAddress = async (address: string) => {
+    try {
+      const { data } = await supabase.functions.invoke("places-autocomplete", {
+        body: { action: "geocode", address: `${address}, Italia` },
+      });
+      return (data?.location as { lat: number; lng: number } | null) ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  const chooseSearchFor = async (who: "self" | "other") => {
+    if (who === "other" && !caregiverAddress) {
+      setAskCaregiverAddr(true);
+      setSearchFor(null);
+      return;
+    }
+    setSearchFor(who);
+    if (who === "other") setCaregiverCoords(await geocodeAddress(caregiverAddress));
+  };
+
+  const saveCaregiverAddress = async () => {
+    if (!cgVia.trim() || !cgCivico.trim() || !cgCap.trim() || !cgCitta.trim()) {
+      toast({ title: "Indirizzo incompleto", description: "Compila via, numero civico, CAP e città.", variant: "destructive" });
+      return;
+    }
+    setSavingCg(true);
+    const addr = composeAddress(cgVia, cgCivico, cgCap, cgCitta);
+    if (profile?.id) {
+      await supabase.from("profiles").update({ caregiver_address: addr, is_caregiver: true } as any).eq("id", profile.id);
+    }
+    setCaregiverAddress(addr);
+    setCaregiverCoords(await geocodeAddress(addr));
+    setSavingCg(false);
+    setAskCaregiverAddr(false);
+    setSearchFor("other");
+  };
+
+  const handleRepeatLast = () => {
+    if (!user) {
+      navigate("/login", { state: { redirect: "/", message: "Accedi per ripetere la tua ultima prestazione." } });
+      return;
+    }
+    const last = [...bookings].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))[0];
+    if (!last) {
+      setRepeatEmptyMsg(true);
+      return;
+    }
+    navigate(
+      `/profilo-infermiere/${last.professional_id}?servizio=${encodeURIComponent(last.service_name)}&per=${last.recipient_type === "other" ? "other" : "self"}&ripeti=${last.id}`,
+    );
+  };
+
+  const refCoords = searchFor === "other" ? caregiverCoords : userCoords;
+  const showList = Boolean(user && searchFor);
+
+  // Filter professionals by selected service, reachability (10 km rule) and sort
   const professionistiFiltrati = useMemo(() => {
     if (!prestazioneSelezionata) return [];
-    const filtered = professionisti.filter((p) => p.servizi.some((s) => s.name === prestazioneSelezionata));
-    if (userCoords) {
+    let filtered = professionisti.filter((p) => p.servizi.some((s) => s.name === prestazioneSelezionata));
+    if (refCoords) {
       filtered.forEach((p: any) => {
-        p._distKm = haversineKm(userCoords.lat, userCoords.lng, p.lat, p.lng);
+        p._distKm = haversineKm(refCoords.lat, refCoords.lng, p.lat, p.lng);
       });
-      filtered.sort((a: any, b: any) => (a._distKm ?? 999) - (b._distKm ?? 999));
+      filtered = filtered.filter((p: any) => isReachable(p._distKm, p.longDistanceOk));
+    } else {
+      filtered.forEach((p: any) => { delete p._distKm; });
     }
+    const priceOf = (p: any) =>
+      priceWithDistance(p.servizi.find((s: any) => s.name === prestazioneSelezionata)?.price ?? 0, p._distKm);
+    filtered.sort((a: any, b: any) =>
+      sortBy === "prezzo" ? priceOf(a) - priceOf(b) : (a._distKm ?? 999) - (b._distKm ?? 999),
+    );
     return filtered;
-  }, [prestazioneSelezionata, professionisti, userCoords]);
+  }, [prestazioneSelezionata, professionisti, refCoords, sortBy]);
 
   // When switching mode, reset selections
   const handleModeSwitch = (mode: SearchMode) => {
@@ -544,15 +630,30 @@ const DashboardPaziente = () => {
               )}
 
               {/* "Tutti i servizi" link – always visible at the bottom of the card */}
+              <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1">
               <button
                 type="button"
                 onClick={() => navigate("/prestazioni")}
-                className="mt-4 inline-flex items-center gap-1 px-1 py-2 text-primary hover:underline transition-colors"
+                className="inline-flex items-center gap-1 px-1 py-2 text-primary hover:underline transition-colors"
                 aria-label="Vai alla pagina con tutte le prestazioni offerte"
               >
                 <span className="text-sm md:text-senior-sm font-medium">Tutti i servizi</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
+              <button
+                type="button"
+                onClick={handleRepeatLast}
+                className="inline-flex items-center gap-1 px-1 py-2 text-primary hover:underline transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span className="text-sm md:text-senior-sm font-medium">Ripeti ultima prestazione</span>
+              </button>
+              </div>
+              {repeatEmptyMsg && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Questa sezione è ancora vuota: apparirà quando avrai eseguito la tua prima prestazione.
+                </p>
+              )}
             </CardContent>
           </Card>
           </div>
