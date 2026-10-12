@@ -142,6 +142,7 @@ const ProfiloInfermiere = () => {
   const [calendarMonth, setCalendarMonth] = useState(today.getMonth());
   const [calendarYear, setCalendarYear] = useState(today.getFullYear());
 
+  const slotPanelRef = useRef<HTMLDivElement>(null);
   const [overrides, setOverrides] = useState<{ specific_date: string; start_time: string; end_time: string; is_unavailable: boolean }[]>([]);
   const [bookedSlots, setBookedSlots] = useState<{ day: string; time_slot: string }[]>([]);
 
@@ -389,6 +390,10 @@ const ProfiloInfermiere = () => {
     const date = new Date(calendarYear, calendarMonth, day);
     setSelectedDate(date);
     setSlotSelezionato(null);
+    // Porta in vista il pannello degli orari subito dopo la scelta del giorno
+    requestAnimationFrame(() => {
+      slotPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
   };
 
   
