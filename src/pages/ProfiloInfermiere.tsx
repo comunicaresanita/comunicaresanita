@@ -390,11 +390,15 @@ const ProfiloInfermiere = () => {
     const date = new Date(calendarYear, calendarMonth, day);
     setSelectedDate(date);
     setSlotSelezionato(null);
-    // Porta in vista il pannello degli orari subito dopo la scelta del giorno
-    requestAnimationFrame(() => {
-      slotPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
   };
+
+  // Porta in vista il pannello degli orari quando si sceglie un nuovo giorno
+  useEffect(() => {
+    if (selectedDate) {
+      slotPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate]);
 
   
   const slotsForSelectedDay = selectedDate ? getSlotsForDate(selectedDate) : [];
