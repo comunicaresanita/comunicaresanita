@@ -794,7 +794,7 @@ const ProfiloInfermiere = () => {
                     <Clock className="w-4 h-4 shrink-0" />
                     {slotSelezionato
                       ? `Orario scelto: ${slotSelezionato} — per cambiarlo tocca un altro orario`
-                      : `Ora scegli l'orario per ${formatSelectedDate(selectedDate)}`}
+                      : "Scegli l'orario"}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {slotsForSelectedDay.map(slot => (
