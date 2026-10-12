@@ -785,21 +785,25 @@ const ProfiloInfermiere = () => {
 
               {/* Time slots for selected date */}
               {selectedDate && slotsForSelectedDay.length > 0 && (
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm font-medium mb-2">
-                    Orari disponibili per {formatSelectedDate(selectedDate)}:
+                <div ref={slotPanelRef} className="mt-4 rounded-lg bg-secondary border-2 border-primary/30 p-4">
+                  <p className="flex items-center gap-2 text-sm md:text-base font-semibold text-secondary-foreground mb-3">
+                    <Clock className="w-4 h-4 shrink-0" />
+                    {slotSelezionato
+                      ? `Orario scelto: ${slotSelezionato} — per cambiarlo tocca un altro orario`
+                      : `Ora scegli l'orario per ${formatSelectedDate(selectedDate)}`}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {slotsForSelectedDay.map(slot => (
                       <button
                         key={slot}
                         onClick={() => setSlotSelezionato(slot)}
-                        className={`flex items-center gap-1 px-3 md:px-4 py-2 rounded-full text-xs md:text-sm transition-colors ${
+                        className={`flex items-center gap-1.5 px-4 md:px-5 py-2.5 rounded-full text-sm md:text-base font-semibold transition-colors ${
                           slotSelezionato === slot
-                            ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-secondary/80"
+                            ? "bg-primary text-primary-foreground shadow"
+                            : "bg-background border border-border hover:border-primary hover:bg-secondary/80"
                         }`}
                       >
-                        <Clock className="w-3 h-3" />{slot}
+                        <Clock className="w-4 h-4" />{slot}
                       </button>
                     ))}
                   </div>
