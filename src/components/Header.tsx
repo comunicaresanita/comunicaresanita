@@ -10,11 +10,11 @@ const Header = () => {
           <img src={logo} alt="ComuniCARE" className="h-10 sm:h-14 md:h-20 w-auto object-contain flex-shrink-0" />
         </Link>
         <div className="flex items-center gap-1 md:gap-2">
-          <Button asChild size="sm" className="px-3 md:px-8 h-9 md:h-10 text-sm md:text-base">
-            <Link to="/login">Accedi</Link>
-          </Button>
           <Button asChild variant="outline" size="sm" className="px-3 md:px-8 h-9 md:h-10 text-sm md:text-base bg-card">
             <Link to="/registrazione">Registrati</Link>
+          </Button>
+          <Button asChild size="sm" className="px-3 md:px-8 h-9 md:h-10 text-sm md:text-base">
+            <Link to="/login">Accedi</Link>
           </Button>
         </div>
       </div>
