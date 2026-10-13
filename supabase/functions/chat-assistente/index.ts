@@ -60,7 +60,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, recipient } = await req.json();
     if (!messages || !Array.isArray(messages)) throw new Error("Invalid messages");
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -73,18 +73,41 @@ serve(async (req) => {
 
     const { data: professionals } = await sb
       .from("profiles")
-      .select("id, first_name, last_name, professional_type, zona, bio")
+      .select("id, first_name, last_name, professional_type, zona, bio, lat, lng")
       .eq("role", "professionista");
 
     const { data: allServices } = await sb
       .from("services")
       .select("professional_id, name, price");
 
+    // Resolve the recipient's position (self or family member)
+    let refLat: number | null = typeof recipient?.lat === "number" ? recipient.lat : null;
+    let refLng: number | null = typeof recipient?.lng === "number" ? recipient.lng : null;
+    const refAddress = typeof recipient?.address === "string" ? recipient.address.slice(0, 200) : "";
+    if ((refLat === null || refLng === null) && refAddress) {
+      try {
+        const g = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(refAddress)}&limit=1&lang=it`);
+        const gj = await g.json();
+        const c = gj?.features?.[0]?.geometry?.coordinates;
+        if (c) { refLng = c[0]; refLat = c[1]; }
+      } catch { /* ignore */ }
+    }
+    const km = (lat?: number | null, lng?: number | null) => {
+      if (refLat === null || refLng === null || lat == null || lng == null) return null;
+      const R = 6371, dLat = (lat - refLat) * Math.PI / 180, dLng = (lng - refLng) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(refLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+      return 2 * R * Math.asin(Math.sqrt(a));
+    };
+    const sortedProfs = (professionals || [])
+      .map(p => ({ ...p, dist: km(p.lat, p.lng) }))
+      .sort((a, b) => (a.dist ?? 1e9) - (b.dist ?? 1e9));
+    const recipientLabel = recipient?.type === "other" ? "un familiare / assistito dell'utente" : "l'utente stesso";
+
     // Build a directory of professionals with their services
     let professionalsDirectory = "";
     if (professionals && professionals.length > 0) {
       professionalsDirectory = "\n\n**Professionisti attualmente disponibili sulla piattaforma:**\n";
-      for (const prof of professionals) {
+      for (const prof of sortedProfs) {
         const profServices = allServices?.filter(s => s.professional_id === prof.id) || [];
         const typeLabel = prof.professional_type === "infermiere" ? "Infermiere" 
           : prof.professional_type === "fisioterapista" ? "Fisioterapista" 
@@ -92,6 +115,7 @@ serve(async (req) => {
         
         professionalsDirectory += `\n- **${prof.first_name} ${prof.last_name}** (${typeLabel})`;
         if (prof.zona) professionalsDirectory += ` — Zona: ${prof.zona}`;
+        if (prof.dist !== null) professionalsDirectory += ` — Distanza: ${prof.dist.toFixed(1)} km`;
         if (profServices.length > 0) {
           professionalsDirectory += `\n  Servizi: ${profServices.map(s => `${s.name} (€${s.price})`).join(", ")}`;
         }
@@ -114,7 +138,11 @@ ${SERVIZI_FISIOTERAPIA.map(p => `- ${p}`).join("\n")}
 ${SERVIZI_OSS.map(p => `- ${p}`).join("\n")}
 ${professionalsDirectory}
 
+La prestazione è per ${recipientLabel}. ${refLat !== null ? "I professionisti sono ordinati dal più vicino alla persona che riceverà la prestazione." : "La posizione della persona non è nota."}
+
 Regole:
+- Dopo aver individuato la prestazione adatta, consiglia 1-3 professionisti tra i più vicini che offrono quella prestazione (o del tipo giusto), indicando la distanza in km se nota
+- Riferisciti alla persona giusta (l'utente o il suo familiare/assistito)
 - Rispondi SEMPRE in italiano
 - Sii empatico, chiaro e conciso (max 3-4 frasi per risposta)
 - NON fare diagnosi mediche
