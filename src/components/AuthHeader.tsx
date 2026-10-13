@@ -23,10 +23,6 @@ const AuthHeader = () => {
 
   const logoTarget = "/";
 
-  const requireAuth = (to: string, message: string) => {
-    navigate("/login", { state: { redirect: to, message } });
-  };
-
   const isProfessionista = profile?.role === "professionista";
 
   return (
