@@ -23,10 +23,6 @@ const AuthHeader = () => {
 
   const logoTarget = "/";
 
-  const requireAuth = (to: string, message: string) => {
-    navigate("/login", { state: { redirect: to, message } });
-  };
-
   const isProfessionista = profile?.role === "professionista";
 
   return (
@@ -79,45 +75,14 @@ const AuthHeader = () => {
           </div>
         ) : (
           <div className="flex items-center gap-1 md:gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1 px-2 md:px-3 h-9 md:h-10">
-                  <Menu className="w-4 h-4" />
-                  <span className="text-sm md:text-base">Menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <button
-                    onClick={() => requireAuth("/profilo", "Accedi o registrati per visualizzare il tuo profilo.")}
-                    className="w-full text-left cursor-pointer"
-                  >
-                    <User className="w-4 h-4 mr-2" />Profilo
-                  </button>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <button
-                    onClick={() => requireAuth("/storico-prestazioni", "Accedi o registrati per visualizzare lo storico delle tue prestazioni.")}
-                    className="w-full text-left cursor-pointer"
-                  >
-                    <ClipboardList className="w-4 h-4 mr-2" />Storico
-                  </button>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/contatti" className="cursor-pointer"><Phone className="w-4 h-4 mr-2" />Contatti</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/contatti#faq" className="cursor-pointer"><HelpCircle className="w-4 h-4 mr-2" />FAQ</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
             {!hideAccedi && (
               <Button asChild size="sm" className="px-3 md:px-6 h-9 md:h-10 text-sm md:text-base">
                 <Link to="/login">Accedi</Link>
               </Button>
             )}
-
+            <Button asChild variant="outline" size="sm" className="px-3 md:px-6 h-9 md:h-10 text-sm md:text-base bg-card">
+              <Link to="/registrazione">Registrati</Link>
+            </Button>
           </div>
         )}
       </div>

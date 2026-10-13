@@ -490,6 +490,8 @@ const Registrazione = () => {
                           setMapLat(lat);
                           setMapLng(lng);
                         }}
+                        initialLat={mapLat ?? undefined}
+                        initialLng={mapLng ?? undefined}
                       />
                     </div>
                     <div className="border-t pt-6">
