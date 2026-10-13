@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -66,6 +67,19 @@ const ChatbotWidget = ({ onSelectService, professionals = [] }: ChatbotWidgetPro
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, profile } = useAuth();
+  const [recipient, setRecipient] = useState<"self" | "other" | null>(null);
+  const [familyAddress, setFamilyAddress] = useState("");
+  const [familyConfirmed, setFamilyConfirmed] = useState(false);
+  const savedFamilyAddress = (profile as any)?.caregiver_address || "";
+
+  useEffect(() => {
+    if (savedFamilyAddress && !familyAddress) setFamilyAddress(savedFamilyAddress);
+  }, [savedFamilyAddress]);
+
+  const ready = !!user && (recipient === "self" || (recipient === "other" && familyConfirmed));
+  const gateState = { redirect: location.pathname, message: "Accedi o registrati per usare l'Assistente digitale." };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,7 +95,12 @@ const ChatbotWidget = ({ onSelectService, professionals = [] }: ChatbotWidgetPro
 
     try {
       const { data, error } = await supabase.functions.invoke("chat-assistente", {
-        body: { messages: newMessages.map(m => ({ role: m.role, content: m.content })) },
+        body: {
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+          recipient: recipient === "other"
+            ? { type: "other", address: familyAddress.trim() }
+            : { type: "self", lat: profile?.lat ?? null, lng: profile?.lng ?? null, address: profile?.address ?? "" },
+        },
       });
 
       if (error) throw error;
@@ -165,13 +184,45 @@ const ChatbotWidget = ({ onSelectService, professionals = [] }: ChatbotWidgetPro
           <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
-              <span className="font-semibold text-sm">Assistente</span>
+              <span className="font-semibold text-sm">Assistente{ready ? (recipient === "other" ? " · per un familiare" : " · per te") : ""}</span>
             </div>
             <button onClick={() => setOpen(false)}>
               <X className="w-5 h-5" />
             </button>
           </div>
 
+          {!user ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
+              <p className="text-sm text-foreground">Per scrivere all'Assistente digitale e ricevere i consigli sui professionisti più vicini, accedi o registrati.</p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => navigate("/registrazione", { state: gateState })}>Registrati</Button>
+                <Button onClick={() => navigate("/login", { state: gateState })}>Accedi</Button>
+              </div>
+            </div>
+          ) : !ready ? (
+            <div className="flex-1 flex flex-col justify-center gap-3 p-6">
+              {recipient !== "other" ? (
+                <>
+                  <p className="text-sm font-medium text-foreground text-center">La domanda riguarda te o un familiare / assistito?</p>
+                  <Button onClick={() => setRecipient("self")}>Per me</Button>
+                  <Button variant="outline" onClick={() => setRecipient("other")}>Per un familiare / assistito</Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-foreground">Indirizzo del familiare / assistito</p>
+                  <p className="text-xs text-muted-foreground">Ci serve per consigliarti i professionisti più vicini a lui/lei.</p>
+                  <input
+                    value={familyAddress}
+                    onChange={e => setFamilyAddress(e.target.value)}
+                    placeholder="Es. Via Roma 10, Firenze"
+                    className="bg-secondary rounded-lg px-3 py-2 text-sm outline-none"
+                  />
+                  <Button disabled={!familyAddress.trim()} onClick={() => setFamilyConfirmed(true)}>Continua</Button>
+                  <button className="text-xs text-muted-foreground underline" onClick={() => setRecipient(null)}>Indietro</button>
+                </>
+              )}
+            </div>
+          ) : (<>
           <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -207,6 +258,7 @@ const ChatbotWidget = ({ onSelectService, professionals = [] }: ChatbotWidgetPro
               <Send className="w-4 h-4" />
             </Button>
           </div>
+          </>)}
         </div>
       )}
     </>
