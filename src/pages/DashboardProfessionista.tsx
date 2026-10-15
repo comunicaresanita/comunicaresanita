@@ -98,7 +98,7 @@ const DashboardProfessionista = () => {
     const inner = (
       <span className="relative flex h-full w-full items-center justify-center">
         {props.date.getDate()}
-        {list && <span className="absolute bottom-0.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-accent-foreground" />}
+        {list && <span className="absolute bottom-0.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-primary" />}
       </span>
     );
     if (!list) return inner;
@@ -174,7 +174,7 @@ const DashboardProfessionista = () => {
               </div>
               <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mt-2">
                 <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-secondary border" />Giorni disponibili</span>
-                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-accent-foreground" />Prenotazione ricevuta</span>
+                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" />Prenotazione ricevuta</span>
               </div>
             </CardContent>
           </Card>
