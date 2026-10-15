@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -472,6 +472,8 @@ const DashboardPaziente = () => {
   const typeLabel = (t: string) => (t === "oss" ? "OSS" : t === "fisioterapista" ? "Fisioterapista" : "Infermiere");
 
   const isPaziente = profile?.role !== "professionista";
+  // Professionals never see the patient search page: their Home is the dashboard
+  if (profile?.role === "professionista") return <Navigate to="/dashboard-professionista" replace />;
 
 
   return (

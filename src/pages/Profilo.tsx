@@ -1,5 +1,6 @@
 import { italianError } from "@/lib/italianErrors";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +70,17 @@ const Profilo = () => {
   const [medicalNotes, setMedicalNotes] = useState("");
   const [housingErrors, setHousingErrors] = useState<HousingInfoErrors>({});
   const [deleting, setDeleting] = useState(false);
+  const [initialSnapshot, setInitialSnapshot] = useState<string | null>(null);
+  const currentSnapshot = useMemo(() => JSON.stringify({
+    firstName, lastName, address, via, civico, cap, citta, bio, longDistanceOk, numeroOpi, numeroFnofi,
+    partitaIva, phone, age, additionalInfo, livesInCondominio, intercomName, floorNumber, accessNotes, medicalNotes,
+  }), [firstName, lastName, address, via, civico, cap, citta, bio, longDistanceOk, numeroOpi, numeroFnofi,
+    partitaIva, phone, age, additionalInfo, livesInCondominio, intercomName, floorNumber, accessNotes, medicalNotes]);
+  const [snapshotPending, setSnapshotPending] = useState(false);
+  useEffect(() => {
+    if (snapshotPending) { setInitialSnapshot(currentSnapshot); setSnapshotPending(false); }
+  }, [snapshotPending, currentSnapshot]);
+  const isDirty = initialSnapshot !== null && currentSnapshot !== initialSnapshot;
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -115,16 +127,17 @@ const Profilo = () => {
         setCaregiverCap(cParsed.cap);
         setCaregiverCitta(cParsed.citta);
       }
+      setSnapshotPending(true);
     }
   }, [profile]);
 
-  const handleBack = () => {
+  const handleBack = () => guard(() => {
     if (profile?.role === "professionista") {
       navigate("/dashboard-professionista");
     } else {
-      navigate("/dashboard-paziente");
+      navigate("/");
     }
-  };
+  });
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -148,8 +161,8 @@ const Profilo = () => {
     toast({ title: "Foto aggiornata" });
   };
 
-  const handleSave = async () => {
-    if (!profile) return;
+  const handleSave = async (): Promise<boolean> => {
+    if (!profile) return false;
 
     // Validate required address fields for patients
     if (profile.role === "paziente") {
@@ -168,7 +181,7 @@ const Profilo = () => {
         const firstErrorId = addrErr.via ? "via-field" : addrErr.civico ? "civico-field" : addrErr.cap ? "cap-field" : "citta-field";
         document.getElementById(firstErrorId)?.scrollIntoView({ behavior: "smooth", block: "center" });
         document.getElementById(firstErrorId)?.focus();
-        return;
+        return false;
       }
     }
 
@@ -177,7 +190,7 @@ const Profilo = () => {
       toast({ title: "Cellulare obbligatorio", description: "Inserisci il tuo numero di cellulare.", variant: "destructive" });
       document.getElementById("phone-field")?.scrollIntoView({ behavior: "smooth", block: "center" });
       document.getElementById("phone-field")?.focus();
-      return;
+      return false;
     }
 
     // Validate housing info for patients
@@ -193,7 +206,7 @@ const Profilo = () => {
         const firstId = housingErr.livesInCondominio ? "housing-cond-yes" : housingErr.intercomName ? "housing-intercom" : "housing-floor";
         document.getElementById(firstId)?.scrollIntoView({ behavior: "smooth", block: "center" });
         document.getElementById(firstId)?.focus();
-        return;
+        return false;
       }
     }
 
@@ -224,11 +237,15 @@ const Profilo = () => {
     setSaving(false);
     if (error) {
       toast({ title: "Errore", description: italianError(error, "profile"), variant: "destructive" });
-    } else {
-      await refreshProfile();
-      toast({ title: "Profilo aggiornato" });
+      return false;
     }
+    setInitialSnapshot(currentSnapshot);
+    await refreshProfile();
+    toast({ title: "Profilo aggiornato" });
+    return true;
   };
+
+    const { guard, dialog: unsavedDialog } = useUnsavedChangesGuard(isDirty, handleSave);
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
@@ -268,6 +285,7 @@ const Profilo = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <AuthHeader />
+      {unsavedDialog}
       <main className="flex-1 bg-background md:py-12 py-0">
         <div className="container mx-auto px-4 md:px-6 max-w-2xl">
           <Button variant="ghost" onClick={handleBack} className="mb-4 gap-2">
@@ -403,9 +421,11 @@ const Profilo = () => {
                 </>
               )}
 
-              <Button onClick={handleSave} className="w-full py-5 text-primary-foreground" disabled={saving}>
-                {saving ? "Salvataggio..." : "Salva modifiche"}
-              </Button>
+              {isDirty && (
+                <Button onClick={handleSave} className="w-full py-5 text-primary-foreground" disabled={saving}>
+                  {saving ? "Salvataggio..." : "Salva modifiche"}
+                </Button>
+              )}
 
               <div className="h-16" />
 

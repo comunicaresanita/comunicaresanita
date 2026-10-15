@@ -575,6 +575,32 @@ export type Database = {
         Returns: undefined
       }
       ensure_my_profile: { Args: never; Returns: undefined }
+      get_professional_bookings: {
+        Args: never
+        Returns: {
+          access_notes: string
+          created_at: string
+          day: string
+          emergency_contact_name: string
+          emergency_contact_phone: string
+          floor_number: string
+          id: string
+          intercom_name: string
+          lives_in_condominio: boolean
+          medical_notes: string
+          patient_first_name: string
+          patient_last_name: string
+          patient_phone: string
+          price: number
+          recipient_address: string
+          recipient_first_name: string
+          recipient_last_name: string
+          recipient_type: string
+          service_name: string
+          status: string
+          time_slot: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
