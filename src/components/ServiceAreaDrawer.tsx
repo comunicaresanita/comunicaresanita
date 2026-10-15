@@ -129,10 +129,6 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
   }, [drawing]);
 
   useEffect(() => {
-    if (mapRef.current && centerLat && centerLng) mapRef.current.setView([centerLat, centerLng], mapRef.current.getZoom());
-  }, [centerLat, centerLng]);
-
-  useEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
     layer.clearLayers();
