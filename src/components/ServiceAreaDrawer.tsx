@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@/components/ui/button";
-import { Undo2, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Lock, Move } from "lucide-react";
 import { bluePinIcon } from "@/lib/leafletPin";
 import { LONG_DISTANCE_KM, type ServiceArea } from "@/lib/distancePricing";
 
@@ -14,14 +14,24 @@ interface Props {
   onChange: (area: ServiceArea | null) => void;
 }
 
+const MIN_PX = 6;
+const MAX_POINTS = 300;
+
 const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChange }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
-  const valueRef = useRef<ServiceArea>(value ?? []);
-  valueRef.current = value ?? [];
+  const strokeRef = useRef<L.Polyline | null>(null);
   const changeRef = useRef(onChange);
   changeRef.current = onChange;
+  const [drawing, setDrawing] = useState(false);
+  const drawingRef = useRef(false);
+  drawingRef.current = drawing;
+
+  const color = () => {
+    const primary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
+    return primary ? `hsl(${primary})` : "currentColor";
+  };
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -31,14 +41,81 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
-    map.on("click", (e: L.LeafletMouseEvent) => {
-      changeRef.current([...valueRef.current, [e.latlng.lat, e.latlng.lng]]);
-    });
     mapRef.current = map;
     setTimeout(() => map.invalidateSize(), 200);
     return () => { map.remove(); mapRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Lock the map while drawing so finger/mouse movements trace the zone instead of panning.
+  useEffect(() => {
+    const map = mapRef.current;
+    const el = containerRef.current;
+    if (!map || !el) return;
+    const handlers = [map.dragging, map.touchZoom, map.doubleClickZoom, map.scrollWheelZoom, map.boxZoom, map.keyboard];
+    if (!drawing) {
+      handlers.forEach((h) => h?.enable());
+      el.style.touchAction = "";
+      return;
+    }
+    handlers.forEach((h) => h?.disable());
+    el.style.touchAction = "none";
+
+    let pts: L.LatLng[] = [];
+    let lastPx: L.Point | null = null;
+    let active = false;
+
+    const toLatLng = (e: PointerEvent) => {
+      const rect = el.getBoundingClientRect();
+      return map.containerPointToLatLng(L.point(e.clientX - rect.left, e.clientY - rect.top));
+    };
+    const down = (e: PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      el.setPointerCapture?.(e.pointerId);
+      active = true;
+      pts = [toLatLng(e)];
+      lastPx = map.latLngToContainerPoint(pts[0]);
+      strokeRef.current?.remove();
+      strokeRef.current = L.polyline(pts, { color: color(), weight: 3 }).addTo(map);
+    };
+    const move = (e: PointerEvent) => {
+      if (!active) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const ll = toLatLng(e);
+      const px = map.latLngToContainerPoint(ll);
+      if (lastPx && px.distanceTo(lastPx) < MIN_PX) return;
+      lastPx = px;
+      pts.push(ll);
+      strokeRef.current?.setLatLngs(pts);
+    };
+    const up = (e: PointerEvent) => {
+      if (!active) return;
+      e.preventDefault();
+      active = false;
+      strokeRef.current?.remove();
+      strokeRef.current = null;
+      if (pts.length >= 3) {
+        const step = Math.max(1, Math.ceil(pts.length / MAX_POINTS));
+        const area = pts.filter((_, i) => i % step === 0).map((p) => [p.lat, p.lng] as [number, number]);
+        changeRef.current(area.length >= 3 ? area : null);
+        setDrawing(false);
+      }
+    };
+    el.addEventListener("pointerdown", down, true);
+    el.addEventListener("pointermove", move, true);
+    el.addEventListener("pointerup", up, true);
+    el.addEventListener("pointercancel", up, true);
+    return () => {
+      el.removeEventListener("pointerdown", down, true);
+      el.removeEventListener("pointermove", move, true);
+      el.removeEventListener("pointerup", up, true);
+      el.removeEventListener("pointercancel", up, true);
+      strokeRef.current?.remove();
+      strokeRef.current = null;
+    };
+  }, [drawing]);
 
   useEffect(() => {
     if (mapRef.current && centerLat && centerLng) mapRef.current.setView([centerLat, centerLng], mapRef.current.getZoom());
@@ -48,37 +125,44 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     const layer = layerRef.current;
     if (!layer) return;
     layer.clearLayers();
-    const primary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
-    const color = primary ? `hsl(${primary})` : "currentColor";
+    const c = color();
     if (centerLat && centerLng) {
       L.marker([centerLat, centerLng], { icon: bluePinIcon(), interactive: false }).addTo(layer);
       if (!longDistanceOk) {
-        L.circle([centerLat, centerLng], { radius: LONG_DISTANCE_KM * 1000, color, weight: 1, dashArray: "6 6", fillOpacity: 0.04, interactive: false }).addTo(layer);
+        L.circle([centerLat, centerLng], { radius: LONG_DISTANCE_KM * 1000, color: c, weight: 1, dashArray: "6 6", fillOpacity: 0.04, interactive: false }).addTo(layer);
       }
     }
-    const pts = value ?? [];
-    if (pts.length >= 3) L.polygon(pts, { color, weight: 2, fillOpacity: 0.2, interactive: false }).addTo(layer);
-    else if (pts.length === 2) L.polyline(pts, { color, weight: 2, interactive: false }).addTo(layer);
-    pts.forEach((p) => L.circleMarker(p, { radius: 5, color, fillOpacity: 1, interactive: false }).addTo(layer));
+    if (value && value.length >= 3) L.polygon(value, { color: c, weight: 2, fillOpacity: 0.2, interactive: false }).addTo(layer);
   }, [value, centerLat, centerLng, longDistanceOk]);
 
-  const pts = value ?? [];
+  const hasArea = !!value && value.length >= 3;
   return (
     <div className="space-y-3">
       <p className="text-senior-sm text-muted-foreground">
-        Facoltativo. Tocca la mappa per segnare i punti che delimitano la zona in cui vuoi lavorare (almeno 3 punti). Gli utenti fuori dalla zona disegnata non ti vedranno. Se non disegni nulla, conta solo il raggio impostato{longDistanceOk ? "" : " (cerchio tratteggiato di 10 km)"}.
+        Facoltativo. Prima sposta e ingrandisci la mappa sulla zona che ti interessa, poi tocca «Disegna la zona»: la mappa si blocca e puoi tracciare il contorno a mano libera con il dito o il mouse. Gli utenti fuori dalla zona disegnata non ti vedranno. Se non disegni nulla, conta solo il raggio impostato{longDistanceOk ? "" : " (cerchio tratteggiato di 10 km)"}.
       </p>
-      <div ref={containerRef} className="w-full h-72 rounded-lg border z-0" />
+      <div className="relative">
+        <div ref={containerRef} className={`w-full h-80 rounded-lg border z-0 ${drawing ? "ring-2 ring-primary cursor-crosshair" : ""}`} />
+        {drawing && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[500] flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-sm shadow pointer-events-none">
+            <Lock className="w-4 h-4" /> Mappa bloccata: traccia la zona
+          </div>
+        )}
+      </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" size="sm" disabled={!pts.length} onClick={() => onChange(pts.length > 1 ? pts.slice(0, -1) : null)} className="gap-2">
-          <Undo2 className="w-4 h-4" /> Annulla ultimo punto
-        </Button>
-        <Button type="button" variant="outline" size="sm" disabled={!pts.length} onClick={() => onChange(null)} className="gap-2">
+        {drawing ? (
+          <Button type="button" variant="outline" onClick={() => setDrawing(false)} className="gap-2">
+            <Move className="w-4 h-4" /> Sblocca la mappa
+          </Button>
+        ) : (
+          <Button type="button" onClick={() => setDrawing(true)} className="gap-2 text-primary-foreground">
+            <Pencil className="w-4 h-4" /> {hasArea ? "Ridisegna la zona" : "Disegna la zona"}
+          </Button>
+        )}
+        <Button type="button" variant="outline" disabled={!hasArea} onClick={() => onChange(null)} className="gap-2">
           <Trash2 className="w-4 h-4" /> Cancella zona
         </Button>
-        <span className="text-sm text-muted-foreground">
-          {pts.length === 0 ? "Nessuna zona disegnata" : pts.length < 3 ? `Aggiungi ancora ${3 - pts.length} punto/i` : "Zona disegnata"}
-        </span>
+        <span className="text-sm text-muted-foreground">{hasArea ? "Zona disegnata" : "Nessuna zona disegnata"}</span>
       </div>
     </div>
   );
