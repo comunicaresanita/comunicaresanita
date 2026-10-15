@@ -12,6 +12,8 @@ import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import OpenStreetMapPicker from "@/components/OpenStreetMapPicker";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import ServiceAreaDrawer from "@/components/ServiceAreaDrawer";
+import type { ServiceArea } from "@/lib/distancePricing";
 import StructuredAddressInput, { composeAddress } from "@/components/StructuredAddressInput";
 import HousingInfoFields, { HousingInfoErrors } from "@/components/HousingInfoFields";
 import { User, Stethoscope, Upload, Eye, EyeOff } from "lucide-react";
@@ -65,6 +67,7 @@ const Registrazione = () => {
   const [longDistanceOk, setLongDistanceOk] = useState(false);
   const [mapLat, setMapLat] = useState<number | null>(null);
   const [mapLng, setMapLng] = useState<number | null>(null);
+  const [serviceArea, setServiceArea] = useState<ServiceArea | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { signUp } = useAuth();
@@ -193,7 +196,7 @@ const Registrazione = () => {
         .eq("user_id", signedUser.id);
     }
     if (signedUser && ruolo === "professionista") {
-      await supabase.from("profiles").update({ long_distance_ok: longDistanceOk }).eq("user_id", signedUser.id);
+      await supabase.from("profiles").update({ long_distance_ok: longDistanceOk, service_area: serviceArea && serviceArea.length >= 3 ? serviceArea : null } as any).eq("user_id", signedUser.id);
     }
 
     toast({ title: "Registrazione completata!", description: "Il tuo account è stato creato con successo." });
@@ -429,6 +432,7 @@ const Registrazione = () => {
                   <div className="space-y-2">
                     <Label htmlFor="indirizzo" className="text-senior-sm">Indirizzo *</Label>
                     <AddressAutocomplete
+                      withHouseNumber
                       value={indirizzo}
                       onChange={(val) => setIndirizzo(val)}
                       onPlaceSelect={(details) => {
@@ -502,6 +506,17 @@ const Registrazione = () => {
                           Sono disponibile a effettuare prestazioni a più di 10 km dalla mia zona. Su queste prestazioni il prezzo avrà una maggiorazione del 10%. Se non accetti, ti vedranno solo gli utenti entro 10 km. Potrai cambiare questa scelta dal tuo profilo.
                         </Label>
                       </div>
+                    </div>
+                    <div className="border-t pt-6">
+                      <h3 className="text-senior-lg font-semibold mb-2">Zona in cui vuoi operare (facoltativo)</h3>
+                      <ServiceAreaDrawer
+                        centerLat={mapLat ?? undefined}
+                        centerLng={mapLng ?? undefined}
+                        longDistanceOk={longDistanceOk}
+                        value={serviceArea}
+                        onChange={setServiceArea}
+                      />
+                      <p className="text-sm text-muted-foreground mt-2">Potrai disegnarla o modificarla anche dopo, dalla pagina «La tua posizione».</p>
                     </div>
                     <div className="border-t pt-6">
                       <h3 className="text-senior-lg font-semibold mb-4">Documenti di verifica</h3>

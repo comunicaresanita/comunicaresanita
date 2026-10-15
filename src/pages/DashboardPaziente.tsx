@@ -11,7 +11,7 @@ import ChatbotWidget from "@/components/ChatbotWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { fuzzySearchServices, haversineKm } from "@/lib/searchUtils";
-import { priceWithDistance, isLongDistance, isReachable } from "@/lib/distancePricing";
+import { priceWithDistance, isLongDistance, isReachable, isInServiceArea } from "@/lib/distancePricing";
 import StructuredAddressInput, { composeAddress } from "@/components/StructuredAddressInput";
 import { useToast } from "@/hooks/use-toast";
 import { SlidersHorizontal, RotateCcw, MoveHorizontal, ArrowUpNarrowWide, ArrowDownWideNarrow } from "lucide-react";
@@ -274,7 +274,7 @@ const DashboardPaziente = () => {
       filtered.forEach((p: any) => {
         p._distKm = haversineKm(refCoords.lat, refCoords.lng, p.lat, p.lng);
       });
-      filtered = filtered.filter((p: any) => isReachable(p._distKm, p.longDistanceOk));
+      filtered = filtered.filter((p: any) => isReachable(p._distKm, p.longDistanceOk) && isInServiceArea(refCoords.lat, refCoords.lng, p.serviceArea));
     } else {
       filtered.forEach((p: any) => { delete p._distKm; });
     }
@@ -374,7 +374,7 @@ const DashboardPaziente = () => {
     const fetchProfessionisti = async () => {
       const { data: professionalsRaw } = await supabase
         .from("public_professionals" as any)
-        .select("id, first_name, last_name, bio, lat, lng, zona, professional_type, photo_url, verified, long_distance_ok");
+        .select("id, first_name, last_name, bio, lat, lng, zona, professional_type, photo_url, verified, long_distance_ok, service_area");
       const professionals = (professionalsRaw as any[] | null);
 
       if (!professionals || professionals.length === 0) return;
@@ -409,6 +409,7 @@ const DashboardPaziente = () => {
             photoUrl: (p as any).photo_url || null,
             verified: (p as any).verified || false,
             longDistanceOk: !!(p as any).long_distance_ok,
+            serviceArea: (p as any).service_area ?? null,
           };
         });
       setProfessionisti(mapped);
