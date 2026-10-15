@@ -15,8 +15,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { bookingId } = await req.json();
+    const { bookingId, event } = await req.json();
     if (!bookingId || typeof bookingId !== "string") return json({ error: "Missing bookingId" }, 400);
+    const isCancel = event === "cancelled";
 
     const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!token) throw new Error("TELEGRAM_BOT_TOKEN is not configured");
@@ -25,10 +26,12 @@ serve(async (req) => {
 
     const { data: b, error } = await supabase.from("bookings").select("*").eq("id", bookingId).single();
     if (error || !b) return json({ error: "Booking not found" }, 404);
+    // Cancellation notices are sent only for bookings actually cancelled in the database
+    if (isCancel && b.status !== "cancelled") return json({ error: "Booking not cancelled" }, 409);
 
     const [{ data: patient }, { data: prof }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", b.patient_id).single(),
-      supabase.from("profiles").select("first_name, last_name, role").eq("id", b.professional_id).single(),
+      supabase.from("profiles").select("first_name, last_name, role, professional_type").eq("id", b.professional_id).single(),
     ]);
 
     let email = patient?.email ?? "";
@@ -38,7 +41,20 @@ serve(async (req) => {
     }
 
     const v = (x: unknown) => (x === null || x === undefined || x === "" ? "—" : String(x));
-    const lines = [
+    const lines = isCancel
+      ? [
+          "❌ PRENOTAZIONE ANNULLATA DAL PROFESSIONISTA",
+          "",
+          `👩‍⚕️ Professionista: ${v(prof?.first_name)} ${v(prof?.last_name)} (${v(prof?.professional_type)})`,
+          `🩺 Prestazione: ${v(b.service_name)}`,
+          `📅 Data: ${v(b.day)}  ⏰ Ora: ${v(b.time_slot)}`,
+          `💶 Prezzo: €${v(b.price)}`,
+          "",
+          `👤 Utente: ${v(patient?.first_name)} ${v(patient?.last_name)}`,
+          `📧 Email: ${v(email)}`,
+          `📞 Telefono: ${v(patient?.phone)}`,
+        ]
+      : [
       "🆕 NUOVA PRENOTAZIONE",
       "",
       `👤 Utente: ${v(patient?.first_name)} ${v(patient?.last_name)}`,
