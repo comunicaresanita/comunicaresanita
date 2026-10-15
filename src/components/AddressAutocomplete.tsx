@@ -26,6 +26,8 @@ interface AddressAutocompleteProps {
   placeholder?: string;
   required?: boolean;
   className?: string;
+  /** Suggest full addresses including the house number (professionals only). */
+  withHouseNumber?: boolean;
 }
 
 const AddressAutocomplete = ({
@@ -35,6 +37,7 @@ const AddressAutocomplete = ({
   placeholder = "Inizia a digitare il tuo indirizzo...",
   required = false,
   className = "",
+  withHouseNumber = false,
 }: AddressAutocompleteProps) => {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -62,7 +65,7 @@ const AddressAutocomplete = ({
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("places-autocomplete", {
-        body: { action: "autocomplete", input },
+        body: { action: "autocomplete", input, ...(withHouseNumber ? { types: ["address"] } : {}) },
       });
       if (!error && data?.predictions) {
         setPredictions(data.predictions);
@@ -72,7 +75,7 @@ const AddressAutocomplete = ({
       // silently fail
     }
     setLoading(false);
-  }, []);
+  }, [withHouseNumber]);
 
   const handleInputChange = (val: string) => {
     onChange(val);

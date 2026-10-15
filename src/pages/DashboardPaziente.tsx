@@ -67,6 +67,7 @@ interface ProfessionistaData {
   photoUrl: string | null;
   verified: boolean;
   longDistanceOk: boolean;
+  serviceArea?: [number, number][] | null;
 }
 
 type SearchMode = "prestazione" | "professionista";
