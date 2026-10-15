@@ -57,7 +57,7 @@ const DashboardProfessionista = () => {
       supabase.from("availability").select("day_of_week").eq("professional_id", profile.id),
       supabase.from("availability_overrides").select("specific_date, is_unavailable").eq("professional_id", profile.id),
     ]);
-    if (error) toast({ title: "Errore", description: italianError(error, "generic"), variant: "destructive" });
+    if (error) toast({ title: "Errore", description: italianError(error, "booking"), variant: "destructive" });
     setBookings((b as Booking[]) ?? []);
     setWeekdays(new Set((av ?? []).map((a: any) => a.day_of_week)));
     setExtraDays(new Set((ov ?? []).filter((o: any) => !o.is_unavailable).map((o: any) => o.specific_date)));
@@ -121,7 +121,7 @@ const DashboardProfessionista = () => {
     const { error } = await supabase.from("bookings").update({ status: "cancelled" }).eq("id", b.id);
     if (error) {
       setCancelling(null);
-      toast({ title: "Impossibile annullare", description: italianError(error, "generic"), variant: "destructive" });
+      toast({ title: "Impossibile annullare", description: italianError(error, "booking"), variant: "destructive" });
       return;
     }
     await supabase.functions.invoke("send-booking-notifications", { body: { bookingId: b.id, event: "cancelled" } });
