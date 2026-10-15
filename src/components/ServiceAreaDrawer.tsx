@@ -35,7 +35,9 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
 
   const fitTenKm = (map: L.Map, lat: number, lng: number) => {
     // Frame an area of ~10 km around the pin so the working radius is visible right away.
-    map.fitBounds(L.latLng(lat, lng).toBounds(LONG_DISTANCE_KM * 2), { animate: false });
+    const bounds = L.latLng(lat, lng).toBounds(LONG_DISTANCE_KM * 2);
+    console.log("[fitTenKm] size:", JSON.stringify(map.getSize()), "bounds:", bounds.toBBoxString());
+    map.fitBounds(bounds, { animate: false });
   };
 
   useEffect(() => {
