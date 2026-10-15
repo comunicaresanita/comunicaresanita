@@ -148,8 +148,10 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
       <p className="text-senior-sm text-muted-foreground">
         Facoltativo. Prima sposta e ingrandisci la mappa sulla zona che ti interessa, poi tocca «Disegna la zona»: la mappa si blocca e puoi tracciare il contorno a mano libera con il dito o il mouse. Gli utenti fuori dalla zona disegnata non ti vedranno. Se non disegni nulla, conta solo il raggio impostato{longDistanceOk ? "" : " (cerchio tratteggiato di 10 km)"}.
       </p>
-      <div className="relative">
-        <div ref={containerRef} className={`w-full h-80 rounded-lg border z-0 ${drawing ? "ring-2 ring-primary cursor-crosshair" : ""}`} />
+      <div className={`relative rounded-lg transition-shadow ${drawing ? "ring-2 ring-primary cursor-crosshair" : ""}`}>
+        {/* NB: the map container classes must never change after L.map() init — React would
+            reset className and wipe Leaflet's own classes, breaking tiles and controls. */}
+        <div ref={containerRef} className="w-full h-80 rounded-lg border z-0" />
         {drawing && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[500] flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-sm shadow pointer-events-none">
             <Lock className="w-4 h-4" /> Mappa bloccata: traccia la zona
