@@ -67,10 +67,12 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     if (!drawing) {
       handlers.forEach((h) => h?.enable());
       el.style.touchAction = "";
+      el.style.cursor = "";
       return;
     }
     handlers.forEach((h) => h?.disable());
     el.style.touchAction = "none";
+    el.style.cursor = "crosshair";
 
     let pts: L.LatLng[] = [];
     let lastPx: L.Point | null = null;
