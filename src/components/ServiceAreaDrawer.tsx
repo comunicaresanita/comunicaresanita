@@ -33,6 +33,11 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     return primary ? `hsl(${primary})` : "currentColor";
   };
 
+  const fitTenKm = (map: L.Map, lat: number, lng: number) => {
+    // Frame an area of ~10 km around the pin so the working radius is visible right away.
+    map.fitBounds(L.latLng(lat, lng).toBounds(LONG_DISTANCE_KM * 2 * 1000), { animate: false });
+  };
+
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { center: [centerLat ?? 43.7696, centerLng ?? 11.2558], zoom: 11 });
@@ -42,10 +47,16 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
+    if (centerLat && centerLng) fitTenKm(map, centerLat, centerLng);
     setTimeout(() => map.invalidateSize(), 200);
     return () => { map.remove(); mapRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map && centerLat && centerLng) fitTenKm(map, centerLat, centerLng);
+  }, [centerLat, centerLng]);
 
   // Lock the map while drawing so finger/mouse movements trace the zone instead of panning.
   useEffect(() => {
@@ -56,10 +67,12 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     if (!drawing) {
       handlers.forEach((h) => h?.enable());
       el.style.touchAction = "";
+      el.style.cursor = "";
       return;
     }
     handlers.forEach((h) => h?.disable());
     el.style.touchAction = "none";
+    el.style.cursor = "crosshair";
 
     let pts: L.LatLng[] = [];
     let lastPx: L.Point | null = null;
@@ -118,10 +131,6 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
   }, [drawing]);
 
   useEffect(() => {
-    if (mapRef.current && centerLat && centerLng) mapRef.current.setView([centerLat, centerLng], mapRef.current.getZoom());
-  }, [centerLat, centerLng]);
-
-  useEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
     layer.clearLayers();
@@ -141,8 +150,10 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
       <p className="text-senior-sm text-muted-foreground">
         Facoltativo. Prima sposta e ingrandisci la mappa sulla zona che ti interessa, poi tocca «Disegna la zona»: la mappa si blocca e puoi tracciare il contorno a mano libera con il dito o il mouse. Gli utenti fuori dalla zona disegnata non ti vedranno. Se non disegni nulla, conta solo il raggio impostato{longDistanceOk ? "" : " (cerchio tratteggiato di 10 km)"}.
       </p>
-      <div className="relative">
-        <div ref={containerRef} className={`w-full h-80 rounded-lg border z-0 ${drawing ? "ring-2 ring-primary cursor-crosshair" : ""}`} />
+      <div className={`relative rounded-lg transition-shadow ${drawing ? "ring-2 ring-primary cursor-crosshair" : ""}`}>
+        {/* NB: the map container classes must never change after L.map() init — React would
+            reset className and wipe Leaflet's own classes, breaking tiles and controls. */}
+        <div ref={containerRef} className="w-full h-80 rounded-lg border z-0" />
         {drawing && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[500] flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-sm shadow pointer-events-none">
             <Lock className="w-4 h-4" /> Mappa bloccata: traccia la zona
