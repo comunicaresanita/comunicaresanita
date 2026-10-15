@@ -21,9 +21,8 @@ const AuthHeader = () => {
     navigate("/");
   };
 
-  const logoTarget = "/";
-
   const isProfessionista = profile?.role === "professionista";
+  const logoTarget = isProfessionista ? "/dashboard-professionista" : "/";
 
   return (
     <header className="bg-card shadow-sm sticky top-0 z-50">
@@ -42,14 +41,15 @@ const AuthHeader = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link to="/" className="cursor-pointer"><Home className="w-4 h-4 mr-2" />Home</Link>
-                </DropdownMenuItem>
-                {isProfessionista && (
+                {isProfessionista ? (
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard-professionista" className="cursor-pointer">
-                      <ClipboardList className="w-4 h-4 mr-2" />Dashboard
+                      <Home className="w-4 h-4 mr-2" />Dashboard
                     </Link>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem asChild>
+                    <Link to="/" className="cursor-pointer"><Home className="w-4 h-4 mr-2" />Home</Link>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild>
