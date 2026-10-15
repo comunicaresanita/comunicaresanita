@@ -472,6 +472,8 @@ const DashboardPaziente = () => {
   const typeLabel = (t: string) => (t === "oss" ? "OSS" : t === "fisioterapista" ? "Fisioterapista" : "Infermiere");
 
   const isPaziente = profile?.role !== "professionista";
+  // Professionals never see the patient search page: their Home is the dashboard
+  if (profile?.role === "professionista") return <Navigate to="/dashboard-professionista" replace />;
 
 
   return (
