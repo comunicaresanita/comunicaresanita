@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import AuthHeader from "@/components/AuthHeader";
 import Footer from "@/components/Footer";
 import OpenStreetMapPicker from "@/components/OpenStreetMapPicker";
+import ServiceAreaDrawer from "@/components/ServiceAreaDrawer";
+import type { ServiceArea } from "@/lib/distancePricing";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +19,7 @@ const SetupPosizione = () => {
   const { profile, refreshProfile } = useAuth();
   const [mapLat, setMapLat] = useState<number | undefined>(profile?.lat ?? undefined);
   const [mapLng, setMapLng] = useState<number | undefined>(profile?.lng ?? undefined);
+  const [serviceArea, setServiceArea] = useState<ServiceArea | null>(((profile as any)?.service_area as ServiceArea) ?? null);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -27,14 +30,14 @@ const SetupPosizione = () => {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ lat: mapLat, lng: mapLng } as any)
+      .update({ lat: mapLat, lng: mapLng, service_area: serviceArea && serviceArea.length >= 3 ? serviceArea : null } as any)
       .eq("user_id", profile.user_id);
     setSaving(false);
     if (error) {
       toast({ title: "Errore", description: italianError(error, "location"), variant: "destructive" });
     } else {
       await refreshProfile();
-      toast({ title: "Posizione aggiornata" });
+      toast({ title: "Posizione e zona aggiornate" });
     }
   };
 
@@ -76,6 +79,22 @@ const SetupPosizione = () => {
                 }}
                 initialLat={mapLat}
                 initialLng={mapLng}
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-senior-lg">Zona in cui vuoi operare</CardTitle>
+              <CardDescription className="text-senior-sm">Disegna, modifica o cancella la zona in cui vuoi lavorare.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ServiceAreaDrawer
+                centerLat={mapLat}
+                centerLng={mapLng}
+                longDistanceOk={!!(profile as any)?.long_distance_ok}
+                value={serviceArea}
+                onChange={setServiceArea}
               />
             </CardContent>
           </Card>

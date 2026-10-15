@@ -73,7 +73,7 @@ serve(async (req) => {
 
     const { data: professionals } = await sb
       .from("profiles")
-      .select("id, first_name, last_name, professional_type, zona, bio, lat, lng")
+      .select("id, first_name, last_name, professional_type, zona, bio, lat, lng, long_distance_ok, service_area")
       .eq("role", "professionista");
 
     const { data: allServices } = await sb
@@ -100,6 +100,18 @@ serve(async (req) => {
     };
     const sortedProfs = (professionals || [])
       .map(p => ({ ...p, dist: km(p.lat, p.lng) }))
+      .filter((p: any) => {
+        if (refLat === null || refLng === null) return true;
+        if (p.dist !== null && p.dist > 10 && !p.long_distance_ok) return false;
+        const area = p.service_area;
+        if (!Array.isArray(area) || area.length < 3) return true;
+        let inside = false;
+        for (let i = 0, j = area.length - 1; i < area.length; j = i++) {
+          const [yi, xi] = area[i], [yj, xj] = area[j];
+          if ((yi > refLat) !== (yj > refLat) && refLng < ((xj - xi) * (refLat - yi)) / (yj - yi) + xi) inside = !inside;
+        }
+        return inside;
+      })
       .sort((a, b) => (a.dist ?? 1e9) - (b.dist ?? 1e9));
     const recipientLabel = recipient?.type === "other" ? "un familiare / assistito dell'utente" : "l'utente stesso";
 

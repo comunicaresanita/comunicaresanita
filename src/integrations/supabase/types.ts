@@ -268,6 +268,7 @@ export type Database = {
           recent_professional_searches: string[]
           recent_service_searches: string[]
           role: string
+          service_area: Json | null
           user_id: string
           verified: boolean
           zona: string | null
@@ -310,6 +311,7 @@ export type Database = {
           recent_professional_searches?: string[]
           recent_service_searches?: string[]
           role: string
+          service_area?: Json | null
           user_id: string
           verified?: boolean
           zona?: string | null
@@ -352,6 +354,7 @@ export type Database = {
           recent_professional_searches?: string[]
           recent_service_searches?: string[]
           role?: string
+          service_area?: Json | null
           user_id?: string
           verified?: boolean
           zona?: string | null
@@ -478,6 +481,7 @@ export type Database = {
           photo_url: string | null
           professional_type: string | null
           role: string | null
+          service_area: Json | null
           verified: boolean | null
           zona: string | null
         }
@@ -493,6 +497,7 @@ export type Database = {
           photo_url?: string | null
           professional_type?: string | null
           role?: string | null
+          service_area?: Json | null
           verified?: boolean | null
           zona?: string | null
         }
@@ -508,6 +513,7 @@ export type Database = {
           photo_url?: string | null
           professional_type?: string | null
           role?: string | null
+          service_area?: Json | null
           verified?: boolean | null
           zona?: string | null
         }

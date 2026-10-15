@@ -11,3 +11,17 @@ export const priceWithDistance = (price: number, km: number | null | undefined) 
 
 export const isReachable = (km: number | null | undefined, longDistanceOk: boolean) =>
   !isLongDistance(km) || longDistanceOk;
+
+// Optional service area drawn by the professional: list of [lat, lng] vertices.
+export type ServiceArea = [number, number][];
+
+export const isInServiceArea = (lat: number, lng: number, area: unknown) => {
+  if (!Array.isArray(area) || area.length < 3) return true; // no drawing → only the range counts
+  let inside = false;
+  for (let i = 0, j = area.length - 1; i < area.length; j = i++) {
+    const [yi, xi] = area[i] as [number, number];
+    const [yj, xj] = area[j] as [number, number];
+    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+};

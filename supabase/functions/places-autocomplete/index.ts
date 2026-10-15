@@ -50,17 +50,23 @@ serve(async (req) => {
 
     if (action === "autocomplete") {
       const streetOnly = Array.isArray(types) && types.includes("route");
+      const withNumber = Array.isArray(types) && types.includes("address");
+      const typedNumber = withNumber ? (String(input || "").match(/(?:^|[\s,])(\d{1,4}[a-zA-Z]?(?:\/\w+)?)(?=[\s,]|$)/)?.[1] || "") : "";
       // For street-only search, drop house numbers: they belong in their own field.
       const raw = String(input || "").slice(0, 200);
       const q = (streetOnly ? raw.replace(/(^|[\s,])\d{1,4}[a-zA-Z]?(\/\w+)?(?=[\s,]|$)/g, " ") : raw).replace(/\s+/g, " ").trim();
       if (q.length < 3) return json({ predictions: [] });
-      const features = await photon(q, 12, streetOnly ? "street" : undefined);
+      const features = await photon(q, 12, streetOnly ? "street" : withNumber ? "house&layer=street" : undefined);
       const seen = new Set<string>();
       const predictions: any[] = [];
       for (const f of features) {
         const p = f.properties;
         const c = comps(p);
         if (streetOnly && !c.street) continue;
+        if (withNumber) {
+          if (!c.street) continue;
+          if (!c.streetNumber && typedNumber) c.streetNumber = typedNumber;
+        }
         const description = streetOnly ? describe({ ...c, streetNumber: "" }, p) : describe(c, p);
         const key = streetOnly ? `${c.street}|${c.city}`.toLowerCase() : description.toLowerCase();
         if (!description || seen.has(key)) continue;
