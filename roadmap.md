@@ -13,3 +13,4 @@
 - [x] Professionals choose long-distance availability at signup and in profile.
 - [x] Family member data prefilled when booking "per un familiare" (also saved at signup).
 - [x] Street suggestions while typing, house number kept in its own field.
+- [x] Drawn service zone now stays visible while and after tracing (map container classes no longer reset by React, which wiped Leaflet's CSS and turned the map grey); the zone map also frames a ~10 km area around the pin when placed. Verified on the signup flow with a real trace and unit tests (23 passed).
