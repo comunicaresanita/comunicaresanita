@@ -33,6 +33,11 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     return primary ? `hsl(${primary})` : "currentColor";
   };
 
+  const fitTenKm = (map: L.Map, lat: number, lng: number) => {
+    // Frame an area of ~10 km around the pin so the working radius is visible right away.
+    map.fitBounds(L.latLng(lat, lng).toBounds(LONG_DISTANCE_KM * 2), { animate: false });
+  };
+
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { center: [centerLat ?? 43.7696, centerLng ?? 11.2558], zoom: 11 });
@@ -42,10 +47,16 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
+    if (centerLat && centerLng) fitTenKm(map, centerLat, centerLng);
     setTimeout(() => map.invalidateSize(), 200);
     return () => { map.remove(); mapRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map && centerLat && centerLng) fitTenKm(map, centerLat, centerLng);
+  }, [centerLat, centerLng]);
 
   // Lock the map while drawing so finger/mouse movements trace the zone instead of panning.
   useEffect(() => {
