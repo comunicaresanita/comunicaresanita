@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { password, action, userId }: AdminRequest = await req.json();
+    const { password, action, userId, bookingId }: AdminRequest = await req.json();
     const adminPassword = Deno.env.get("ADMIN_PASSWORD");
 
     if (!adminPassword || password !== adminPassword) {
