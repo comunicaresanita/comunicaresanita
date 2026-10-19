@@ -73,8 +73,43 @@ const Admin = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
   const [bookings, setBookings] = useState<AdminBooking[]>([]);
-  const activeBookings = bookings.filter(b => b.status !== "cancelled");
-  const cancelledBookings = bookings.filter(b => b.status === "cancelled");
+  const [hiddenBookingIds, setHiddenBookingIds] = useState<Set<string>>(new Set());
+  const deleteTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const visibleBookings = bookings.filter(b => !hiddenBookingIds.has(b.id));
+  const activeBookings = visibleBookings.filter(b => b.status !== "cancelled");
+  const cancelledBookings = visibleBookings.filter(b => b.status === "cancelled");
+
+  const unhideBooking = (id: string) => setHiddenBookingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+
+  const handleRemoveBooking = (b: AdminBooking) => {
+    setHiddenBookingIds(prev => new Set(prev).add(b.id));
+    const timer = setTimeout(async () => {
+      deleteTimers.current.delete(b.id);
+      const { data, error: fnError } = await supabase.functions.invoke("admin-data", {
+        body: { password, action: "deleteBooking", bookingId: b.id },
+      });
+      if (fnError || data?.error) {
+        unhideBooking(b.id);
+        toast.error("Impossibile cancellare la prenotazione", { description: italianError(data?.error || fnError, "admin") });
+        return;
+      }
+      setBookings(prev => prev.filter(x => x.id !== b.id));
+      unhideBooking(b.id);
+    }, 6000);
+    deleteTimers.current.set(b.id, timer);
+    toast("Prenotazione cancellata dal registro", {
+      duration: 6000,
+      action: {
+        label: "Annulla",
+        onClick: () => {
+          const t = deleteTimers.current.get(b.id);
+          if (t) clearTimeout(t);
+          deleteTimers.current.delete(b.id);
+          unhideBooking(b.id);
+        },
+      },
+    });
+  };
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);

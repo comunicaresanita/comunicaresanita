@@ -7,8 +7,9 @@ const corsHeaders = {
 
 type AdminRequest = {
   password?: string;
-  action?: "delete";
+  action?: "delete" | "deleteBooking";
   userId?: string;
+  bookingId?: string;
 };
 
 const ADMIN_EMAIL = "msm446@gmail.com";
@@ -110,6 +111,13 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    if (action === "deleteBooking") {
+      if (!bookingId) return jsonResponse({ error: "Prenotazione non specificata" }, 400);
+      ensureNoError((await supabase.from("reviews").delete().eq("booking_id", bookingId)).error, "Impossibile eliminare le recensioni collegate");
+      ensureNoError((await supabase.from("bookings").delete().eq("id", bookingId)).error, "Impossibile eliminare la prenotazione");
+      return jsonResponse({ success: true });
+    }
 
     if (action === "delete") {
       if (!userId) {
