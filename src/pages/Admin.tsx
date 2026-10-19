@@ -1,5 +1,5 @@
 import { italianError } from "@/lib/italianErrors";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Lock, Users, UserCheck, Activity, TrendingUp, Trash2, Download } from "lucide-react";
+import { Lock, Users, UserCheck, Activity, TrendingUp, Trash2, Download, X } from "lucide-react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { format, parseISO } from "date-fns";
@@ -263,33 +263,6 @@ const Admin = () => {
           ))}
         </section>
 
-        <section className="space-y-4" aria-labelledby="bookings-heading">
-          <h2 id="bookings-heading" className="text-lg font-bold">Prestazioni prenotate</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Prestazioni (non annullate)</p><p className="text-2xl font-bold text-primary">{activeBookings.length}</p></CardContent></Card>
-            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Annullate</p><p className="text-2xl font-bold text-destructive">{cancelledBookings.length}</p></CardContent></Card>
-          </div>
-          {bookings.length === 0 ? <p className="text-muted-foreground">Nessuna prestazione prenotata.</p> : (
-            <div className="space-y-3">
-              {bookings.map(b => (
-                <Card key={b.id}>
-                  <CardContent className="p-4 space-y-1 text-sm">
-                    <div className="flex flex-wrap justify-between gap-2">
-                      <p className="font-semibold">{b.service_name}</p>
-                      <span className={b.status === "cancelled" ? "text-destructive font-medium" : "text-primary font-medium"}>
-                        {b.status === "cancelled" ? "Annullata" : b.status === "completed" ? "Eseguita" : "Prenotata"}
-                      </span>
-                    </div>
-                    <p className="text-muted-foreground">{b.day} · {b.time_slot}</p>
-                    <p><span className="font-medium">Utente:</span> {[b.patient_first_name, b.patient_last_name].filter(Boolean).join(" ") || "Account eliminato"}{b.patient_email ? <> · <a href={`mailto:${b.patient_email}`} className="text-primary underline break-all">{b.patient_email}</a></> : null}</p>
-                    <p><span className="font-medium">Professionista:</span> {[b.professional_first_name, b.professional_last_name].filter(Boolean).join(" ") || "Account eliminato"} · {professionalTypeLabel(b.professional_type)}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </section>
-
         {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
@@ -387,6 +360,39 @@ const Admin = () => {
             </div>
           </CardContent>
         </Card>
+
+        <section className="space-y-4" aria-labelledby="bookings-heading">
+          <h2 id="bookings-heading" className="text-lg font-bold">Prenotazioni</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Prenotazioni effettuate</p><p className="text-2xl font-bold text-primary">{activeBookings.length}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Prenotazioni annullate</p><p className="text-2xl font-bold text-destructive">{cancelledBookings.length}</p></CardContent></Card>
+          </div>
+          <details className="group rounded-lg border bg-card">
+            <summary className="cursor-pointer select-none p-4 font-medium text-primary">Ulteriori dettagli</summary>
+            <div className="p-4 pt-0 space-y-3">
+              {visibleBookings.length === 0 ? <p className="text-muted-foreground">Nessuna prenotazione.</p> : visibleBookings.map(b => (
+                <Card key={b.id}>
+                  <CardContent className="p-4 space-y-1 text-sm">
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <p className="font-semibold">{b.service_name}</p>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={b.status === "cancelled" ? "text-destructive font-medium" : "text-primary font-medium"}>
+                          {b.status === "cancelled" ? "Annullata" : b.status === "completed" ? "Eseguita" : "Prenotata"}
+                        </span>
+                        <button type="button" onClick={() => handleRemoveBooking(b)} aria-label="Cancella dal registro" title="Cancella dal registro" className="text-destructive hover:opacity-70 p-1">
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground">{b.day} · {b.time_slot}</p>
+                    <p><span className="font-medium">Utente:</span> {[b.patient_first_name, b.patient_last_name].filter(Boolean).join(" ") || "Account eliminato"}{b.patient_email ? <> · <a href={`mailto:${b.patient_email}`} className="text-primary underline break-all">{b.patient_email}</a></> : null}</p>
+                    <p><span className="font-medium">Professionista:</span> {[b.professional_first_name, b.professional_last_name].filter(Boolean).join(" ") || "Account eliminato"} · {professionalTypeLabel(b.professional_type)}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </details>
+        </section>
 
         {/* Users table */}
         <Card>
