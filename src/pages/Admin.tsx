@@ -48,6 +48,12 @@ type ContactSubmission = {
   messaggio: string;
 };
 
+type AdminBooking = {
+  id: string; created_at: string; service_name: string; price: number; day: string; time_slot: string; status: string;
+  patient_first_name: string | null; patient_last_name: string | null; patient_email: string | null;
+  professional_first_name: string | null; professional_last_name: string | null; professional_type: string | null;
+};
+
 const COLORS = ["#0097B2", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6"];
 
 const professionalTypeLabel = (type: string | null) => {
@@ -66,6 +72,9 @@ const Admin = () => {
   const [error, setError] = useState("");
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
+  const [bookings, setBookings] = useState<AdminBooking[]>([]);
+  const activeBookings = bookings.filter(b => b.status !== "cancelled");
+  const cancelledBookings = bookings.filter(b => b.status === "cancelled");
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -83,6 +92,7 @@ const Admin = () => {
       }
       setProfiles(data.profiles);
       setContacts(data.contacts ?? []);
+      setBookings(data.bookings ?? []);
       setAuthenticated(true);
     } catch {
       setError("Errore di connessione");
@@ -251,6 +261,33 @@ const Admin = () => {
               </CardContent>
             </Card>
           ))}
+        </section>
+
+        <section className="space-y-4" aria-labelledby="bookings-heading">
+          <h2 id="bookings-heading" className="text-lg font-bold">Prestazioni prenotate</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Prestazioni (non annullate)</p><p className="text-2xl font-bold text-primary">{activeBookings.length}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Annullate</p><p className="text-2xl font-bold text-destructive">{cancelledBookings.length}</p></CardContent></Card>
+          </div>
+          {bookings.length === 0 ? <p className="text-muted-foreground">Nessuna prestazione prenotata.</p> : (
+            <div className="space-y-3">
+              {bookings.map(b => (
+                <Card key={b.id}>
+                  <CardContent className="p-4 space-y-1 text-sm">
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <p className="font-semibold">{b.service_name}</p>
+                      <span className={b.status === "cancelled" ? "text-destructive font-medium" : "text-primary font-medium"}>
+                        {b.status === "cancelled" ? "Annullata" : b.status === "completed" ? "Eseguita" : "Prenotata"}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground">{b.day} · {b.time_slot}</p>
+                    <p><span className="font-medium">Utente:</span> {[b.patient_first_name, b.patient_last_name].filter(Boolean).join(" ") || "Account eliminato"}{b.patient_email ? <> · <a href={`mailto:${b.patient_email}`} className="text-primary underline break-all">{b.patient_email}</a></> : null}</p>
+                    <p><span className="font-medium">Professionista:</span> {[b.professional_first_name, b.professional_last_name].filter(Boolean).join(" ") || "Account eliminato"} · {professionalTypeLabel(b.professional_type)}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Stats cards */}

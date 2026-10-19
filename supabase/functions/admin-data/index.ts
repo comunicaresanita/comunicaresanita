@@ -135,7 +135,26 @@ Deno.serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(100);
     if (contactsError) return jsonResponse({ error: "Impossibile leggere i messaggi di contatto" }, 500);
-    return jsonResponse({ profiles, contacts });
+
+    const { data: bookingRows, error: bookingsError } = await supabase
+      .from("bookings")
+      .select("id, created_at, service_name, price, day, time_slot, status, patient_id, professional_id")
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    if (bookingsError) return jsonResponse({ error: "Impossibile leggere le prenotazioni" }, 500);
+    const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+    const bookings = (bookingRows ?? []).map((b: any) => {
+      const pat: any = byId.get(b.patient_id);
+      const pro: any = byId.get(b.professional_id);
+      return {
+        id: b.id, created_at: b.created_at, service_name: b.service_name, price: b.price,
+        day: b.day, time_slot: b.time_slot, status: b.status,
+        patient_first_name: pat?.first_name ?? null, patient_last_name: pat?.last_name ?? null, patient_email: pat?.email ?? null,
+        professional_first_name: pro?.first_name ?? null, professional_last_name: pro?.last_name ?? null,
+        professional_type: pro?.professional_type ?? null,
+      };
+    });
+    return jsonResponse({ profiles, contacts, bookings });
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : "Errore sconosciuto";
     return jsonResponse({ error: errorMessage }, 500);
