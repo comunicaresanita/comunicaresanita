@@ -59,6 +59,8 @@ const Profilo = () => {
   const [caregiverCivico, setCaregiverCivico] = useState("");
   const [caregiverCap, setCaregiverCap] = useState("");
   const [caregiverCitta, setCaregiverCitta] = useState("");
+  const [caregiverFirstName, setCaregiverFirstName] = useState("");
+  const [caregiverLastName, setCaregiverLastName] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [addressErrors, setAddressErrors] = useState<{ via?: boolean; civico?: boolean; cap?: boolean; citta?: boolean }>({});
@@ -74,8 +76,10 @@ const Profilo = () => {
   const currentSnapshot = useMemo(() => JSON.stringify({
     firstName, lastName, address, via, civico, cap, citta, bio, longDistanceOk, numeroOpi, numeroFnofi,
     partitaIva, phone, age, additionalInfo, livesInCondominio, intercomName, floorNumber, accessNotes, medicalNotes,
+    isCaregiver, caregiverFirstName, caregiverLastName, caregiverVia, caregiverCivico, caregiverCap, caregiverCitta,
   }), [firstName, lastName, address, via, civico, cap, citta, bio, longDistanceOk, numeroOpi, numeroFnofi,
-    partitaIva, phone, age, additionalInfo, livesInCondominio, intercomName, floorNumber, accessNotes, medicalNotes]);
+    partitaIva, phone, age, additionalInfo, livesInCondominio, intercomName, floorNumber, accessNotes, medicalNotes,
+    isCaregiver, caregiverFirstName, caregiverLastName, caregiverVia, caregiverCivico, caregiverCap, caregiverCitta]);
   const [snapshotPending, setSnapshotPending] = useState(false);
   useEffect(() => {
     if (snapshotPending) { setInitialSnapshot(currentSnapshot); setSnapshotPending(false); }
@@ -118,6 +122,8 @@ const Profilo = () => {
       setFloorNumber((profile as any).floor_number || "");
       setAccessNotes((profile as any).access_notes || "");
       setMedicalNotes((profile as any).medical_notes || "");
+      setCaregiverFirstName((profile as any).caregiver_first_name || "");
+      setCaregiverLastName((profile as any).caregiver_last_name || "");
       // Parse caregiver address if available
       const caregiverAddr = (profile as any).caregiver_address || "";
       if (caregiverAddr) {
@@ -208,6 +214,15 @@ const Profilo = () => {
         document.getElementById(firstId)?.focus();
         return false;
       }
+      if (isCaregiver) {
+        const cgErr = { via: !caregiverVia.trim(), civico: !caregiverCivico.trim(), cap: !caregiverCap.trim(), citta: !caregiverCitta.trim() };
+        setCaregiverErrors(cgErr);
+        if (!caregiverFirstName.trim() || !caregiverLastName.trim() || Object.values(cgErr).some(Boolean)) {
+          toast({ title: "Dati del familiare mancanti", description: "Compila nome, cognome e indirizzo completo del familiare.", variant: "destructive" });
+          document.getElementById("is_caregiver_profile")?.scrollIntoView({ behavior: "smooth", block: "center" });
+          return false;
+        }
+      }
     }
 
     setSaving(true);
@@ -232,6 +247,12 @@ const Profilo = () => {
       updates.floor_number = livesInCondominio ? floorNumber : null;
       updates.access_notes = livesInCondominio ? accessNotes : null;
       updates.medical_notes = medicalNotes || null;
+      updates.is_caregiver = isCaregiver;
+      if (isCaregiver) {
+        updates.caregiver_first_name = caregiverFirstName.trim() || null;
+        updates.caregiver_last_name = caregiverLastName.trim() || null;
+        updates.caregiver_address = composeAddress(caregiverVia, caregiverCivico, caregiverCap, caregiverCitta);
+      }
     }
     const { error } = await supabase.from("profiles").update(updates).eq("user_id", user!.id);
     setSaving(false);
@@ -356,7 +377,42 @@ const Profilo = () => {
                     <Label className="text-senior-sm">Età</Label>
                     <Input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="Es. 72" className="text-senior-sm py-3" min="1" max="120" />
                   </div>
-                  {/* La scelta "sono un caregiver" è ora gestita in fase di prenotazione */}
+                  <div className="space-y-4 p-3 rounded-lg border">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox id="is_caregiver_profile" checked={isCaregiver} onCheckedChange={(c) => setIsCaregiver(c === true)} className="mt-1" />
+                      <Label htmlFor="is_caregiver_profile" className="text-senior-sm leading-relaxed cursor-pointer">
+                        Sono un caregiver (assisto un familiare)
+                      </Label>
+                    </div>
+                    {isCaregiver && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="cg-first" className="text-senior-sm">Nome del familiare</Label>
+                            <Input id="cg-first" value={caregiverFirstName} onChange={(e) => setCaregiverFirstName(e.target.value)} className="text-senior-sm py-3" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="cg-last" className="text-senior-sm">Cognome del familiare</Label>
+                            <Input id="cg-last" value={caregiverLastName} onChange={(e) => setCaregiverLastName(e.target.value)} className="text-senior-sm py-3" />
+                          </div>
+                        </div>
+                        <StructuredAddressInput
+                          via={caregiverVia}
+                          civico={caregiverCivico}
+                          cap={caregiverCap}
+                          citta={caregiverCitta}
+                          onViaChange={(v) => { setCaregiverVia(v); setCaregiverErrors(e => ({ ...e, via: false })); }}
+                          onCivicoChange={(v) => { setCaregiverCivico(v); setCaregiverErrors(e => ({ ...e, civico: false })); }}
+                          onCapChange={(v) => { setCaregiverCap(v); setCaregiverErrors(e => ({ ...e, cap: false })); }}
+                          onCittaChange={(v) => { setCaregiverCitta(v); setCaregiverErrors(e => ({ ...e, citta: false })); }}
+                          label="Indirizzo del familiare"
+                          errors={caregiverErrors}
+                          idPrefix="caregiver"
+                        />
+                      </div>
+                    )}
+                  </div>
+
 
                   <HousingInfoFields
                     livesInCondominio={livesInCondominio}
@@ -430,15 +486,15 @@ const Profilo = () => {
               <div className="h-16" />
 
               {/* Delete account section */}
-              <div className="border-t border-border pt-6 mx-2 pb-6">
-                <h3 className="text-senior-lg font-semibold text-destructive mb-2">Cancella account</h3>
-                <p className="text-sm text-foreground mb-4">
+              <div className="border-t border-border pt-5 mx-2 pb-5">
+                <h3 className="text-base font-semibold text-destructive mb-1.5">Cancella account</h3>
+                <p className="text-xs text-foreground mb-3">
                   Eliminando il tuo account, tutti i tuoi dati verranno rimossi permanentemente dal server, inclusi profilo, prenotazioni, recensioni e servizi. Questa azione è irreversibile.
                 </p>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" className="gap-2" disabled={deleting}>
-                      <Trash2 className="w-3.5 h-3.5" />
+                    <Button variant="destructive" size="sm" className="gap-1.5 h-8 px-3 text-xs" disabled={deleting}>
+                      <Trash2 className="w-3 h-3" />
                       {deleting ? "Eliminazione..." : "Elimina il mio account"}
                     </Button>
                   </AlertDialogTrigger>
