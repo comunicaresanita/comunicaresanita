@@ -96,7 +96,7 @@ const StoricoPrestazioni = () => {
                       </div>
                       {(() => {
                         const st = userBookingStatus(b);
-                        const label = st === "cancelled" ? "Annullata" : st === "done" ? "Effettuata" : st === "confirmed" ? "Confermata" : st === "pending" ? "Prenotata" : b.status;
+                        const label = st === "cancelled" ? "Annullata" : st === "done" ? "Effettuata" : st === "confirmed" ? "Confermato" : st === "pending" ? "In attesa" : b.status;
                         const cls = st === "done" ? "bg-success/15 text-success" : st === "confirmed" || st === "pending" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground";
                         return <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium flex-shrink-0 ${cls}`}>{label}</span>;
                       })()}
