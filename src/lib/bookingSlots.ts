@@ -24,3 +24,16 @@ export function canUserCancel(b: { status: string; day: string }, now = new Date
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return d.getTime() >= today.getTime();
 }
+
+/** Status shown to the user: an active booking whose day has passed counts as done. */
+export function userBookingStatus(b: { status: string; day: string }, now = new Date()):
+  "cancelled" | "done" | "confirmed" | "pending" | "other" {
+  if (isCancelledStatus(b.status)) return "cancelled";
+  if (DONE.includes(b.status)) return "done";
+  const d = parseBookingDay(b.day);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (d && d.getTime() < today.getTime()) return "done";
+  if (["paid", "confermato", "confirmed"].includes(b.status)) return "confirmed";
+  if (b.status === "pending") return "pending";
+  return "other";
+}
