@@ -93,55 +93,50 @@ const StoricoPrestazioni = () => {
                             {b.time_slot}
                           </span>
                         </p>
-                        <p className="mt-1 text-base font-semibold text-primary">{b.price} €</p>
-                        {b.professional && (
-                          <p className="text-xs text-muted-foreground">
-                            {b.professional.first_name} {b.professional.last_name}
-                          </p>
-                        )}
                       </div>
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium ${
-                          b.status === "paid" || b.status === "confermato" ? "bg-primary/10 text-primary" :
-                          b.status === "completato" ? "bg-emerald-100 text-emerald-700" :
-                          "bg-muted text-muted-foreground"
-                        }`}>
-                          {b.status === "paid" || b.status === "confermato" ? "Confermato" :
-                           b.status === "completato" ? "Completato" :
-                           b.status === "pending" ? "In attesa" :
-                           b.status === "cancelled" || b.status === "cancellato" ? "Annullata" :
-                           b.status}
-                        </span>
-                        {canUserCancel(b) && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-auto px-1 py-0.5 text-xs font-normal text-muted-foreground underline underline-offset-2 hover:text-destructive hover:bg-transparent"
-                                disabled={cancelling === b.id}
-                              >
-                                {cancelling === b.id ? "Annullamento..." : "Annulla prenotazione"}
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Vuoi annullare la prenotazione?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {b.service_name} del {formatDay(b.day)} alle {b.time_slot}. Se confermi, la prenotazione verrà cancellata e l'orario tornerà disponibile.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>No, torna indietro</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => cancelBooking(b)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                  Sì, annulla la prenotazione
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
+                      {(() => {
+                        const st = userBookingStatus(b);
+                        const label = st === "cancelled" ? "Annullata" : st === "done" ? "Effettuata" : st === "confirmed" ? "Confermata" : st === "pending" ? "Prenotata" : b.status;
+                        const cls = st === "done" ? "bg-success/15 text-success" : st === "confirmed" || st === "pending" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground";
+                        return <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium flex-shrink-0 ${cls}`}>{label}</span>;
+                      })()}
                     </div>
+                    <div className="mt-1 flex items-center justify-between gap-2">
+                      <p className="text-base font-semibold text-primary">{b.price} €</p>
+                      {canUserCancel(b) && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto px-1 py-0.5 text-sm font-medium text-destructive underline underline-offset-2 hover:text-destructive hover:bg-transparent"
+                              disabled={cancelling === b.id}
+                            >
+                              {cancelling === b.id ? "Annullamento..." : "Annulla prenotazione"}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Vuoi annullare la prenotazione?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {b.service_name} del {formatDay(b.day)} alle {b.time_slot}. Se confermi, la prenotazione verrà cancellata e l'orario tornerà disponibile.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>No, torna indietro</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => cancelBooking(b)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Sì, annulla la prenotazione
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
+                    {b.professional && (
+                      <p className="text-xs text-muted-foreground">
+                        {b.professional.first_name} {b.professional.last_name}
+                      </p>
+                    )}
                   </Card>
                 ))
               )}
