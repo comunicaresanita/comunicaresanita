@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { italianError } from "@/lib/italianErrors";
-import { canUserCancel } from "@/lib/bookingSlots";
+import { canUserCancel, userBookingStatus } from "@/lib/bookingSlots";
 
 const StoricoPrestazioni = () => {
   const navigate = useNavigate();
