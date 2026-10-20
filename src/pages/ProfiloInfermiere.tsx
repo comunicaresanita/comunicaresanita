@@ -1,3 +1,4 @@
+import { freeSlots } from "@/lib/bookingSlots";
 import { italianError } from "@/lib/italianErrors";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -314,7 +315,7 @@ const ProfiloInfermiere = () => {
         supabase.from("availability").select("*").eq("professional_id", id),
         supabase.from("public_reviews" as any).select("*").eq("professional_id", id).order("created_at", { ascending: false }),
         supabase.from("availability_overrides").select("*").eq("professional_id", id),
-        supabase.from("bookings").select("day, time_slot").eq("professional_id", id).in("status", ["pending", "confirmed"]),
+        (supabase.rpc as any)("get_booked_slots", { _professional_id: id }),
       ]);
 
       if (profileRes.data) setProfessional(profileRes.data as unknown as ProfessionalProfile);
@@ -322,7 +323,7 @@ const ProfiloInfermiere = () => {
       if (availRes.data) setAvailability(availRes.data);
       if (reviewsRes.data) setReviews(reviewsRes.data as unknown as Review[]);
       if (overridesRes.data) setOverrides(overridesRes.data);
-      if (bookingsRes.data) setBookedSlots(bookingsRes.data);
+      if (bookingsRes.data) setBookedSlots(bookingsRes.data as { day: string; time_slot: string }[]);
 
       setLoading(false);
     };
@@ -374,9 +375,7 @@ const ProfiloInfermiere = () => {
     };
     const dayLabel = formatDateLabel(date);
 
-    return sorted
-      .map(h => `${h}-${h + 1}`)
-      .filter(slot => !bookedSlots.some(b => b.day === dayLabel && b.time_slot === slot));
+    return freeSlots(sorted.map(h => `${h}-${h + 1}`), bookedSlots, dayLabel);
   };
 
   const isDateAvailable = (day: number) => {

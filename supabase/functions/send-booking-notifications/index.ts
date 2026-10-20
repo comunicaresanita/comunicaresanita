@@ -43,7 +43,7 @@ serve(async (req) => {
     const v = (x: unknown) => (x === null || x === undefined || x === "" ? "—" : String(x));
     const lines = isCancel
       ? [
-          "❌ PRENOTAZIONE ANNULLATA DAL PROFESSIONISTA",
+          b.cancelled_by === "patient" ? "❌ PRENOTAZIONE ANNULLATA DALL'UTENTE" : "❌ PRENOTAZIONE ANNULLATA DAL PROFESSIONISTA",
           "",
           `👩‍⚕️ Professionista: ${v(prof?.first_name)} ${v(prof?.last_name)} (${v(prof?.professional_type)})`,
           `🩺 Prestazione: ${v(b.service_name)}`,
