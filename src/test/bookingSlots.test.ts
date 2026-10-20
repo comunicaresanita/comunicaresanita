@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { freeSlots, canUserCancel } from "@/lib/bookingSlots";
+import { freeSlots, canUserCancel, userBookingStatus } from "@/lib/bookingSlots";
 
 const day = "Giovedì 22 Ottobre 2026";
 
@@ -22,5 +22,18 @@ describe("user cancellation", () => {
   });
   it("does not offer cancelling a past booking", () => {
     expect(canUserCancel({ status: "pending", day: "Lunedì 19 Ottobre 2026" }, now)).toBe(false);
+  });
+});
+
+describe("user booking status", () => {
+  const now = new Date(2026, 9, 20, 19, 0);
+  it("a not-cancelled booking whose day has passed is shown as done", () => {
+    expect(userBookingStatus({ status: "pending", day: "Lunedì 19 Ottobre 2026" }, now)).toBe("done");
+  });
+  it("a cancelled booking stays cancelled after its day", () => {
+    expect(userBookingStatus({ status: "cancelled", day: "Lunedì 19 Ottobre 2026" }, now)).toBe("cancelled");
+  });
+  it("today's booking is not yet done", () => {
+    expect(userBookingStatus({ status: "pending", day: "Martedì 20 Ottobre 2026" }, now)).toBe("pending");
   });
 });
