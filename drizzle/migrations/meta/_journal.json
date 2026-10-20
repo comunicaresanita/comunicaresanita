@@ -43,6 +43,13 @@
       "when": 1792056481347,
       "tag": "0005_professional_bookings_rpc",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792517228435,
+      "tag": "0006_booking_cancellation_and_slots",
+      "breakpoints": true
     }
   ]
 }

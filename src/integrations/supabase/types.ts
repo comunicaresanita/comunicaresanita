@@ -104,6 +104,8 @@ export type Database = {
       bookings: {
         Row: {
           access_notes: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           day: string
           emergency_contact_name: string | null
@@ -127,6 +129,8 @@ export type Database = {
         }
         Insert: {
           access_notes?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           day: string
           emergency_contact_name?: string | null
@@ -150,6 +154,8 @@ export type Database = {
         }
         Update: {
           access_notes?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           day?: string
           emergency_contact_name?: string | null
@@ -570,11 +576,19 @@ export type Database = {
       }
     }
     Functions: {
+      cancel_booking: { Args: { _booking_id: string }; Returns: string }
       create_profile_from_auth_user: {
         Args: { _user_id: string }
         Returns: undefined
       }
       ensure_my_profile: { Args: never; Returns: undefined }
+      get_booked_slots: {
+        Args: { _professional_id: string }
+        Returns: {
+          day: string
+          time_slot: string
+        }[]
+      }
       get_professional_bookings: {
         Args: never
         Returns: {
