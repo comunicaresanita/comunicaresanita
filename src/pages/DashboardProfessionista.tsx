@@ -118,13 +118,15 @@ const DashboardProfessionista = () => {
 
   const cancelBooking = async (b: Booking) => {
     setCancelling(b.id);
-    const { error } = await supabase.from("bookings").update({ status: "cancelled" }).eq("id", b.id);
+    const { error } = await (supabase.rpc as any)("cancel_booking", { _booking_id: b.id });
     if (error) {
       setCancelling(null);
-      toast({ title: "Impossibile annullare", description: italianError(error, "booking"), variant: "destructive" });
+      toast({ title: "Impossibile annullare", description: italianError(error, "cancellation"), variant: "destructive" });
       return;
     }
-    await supabase.functions.invoke("send-booking-notifications", { body: { bookingId: b.id, event: "cancelled" } });
+    try {
+      await supabase.functions.invoke("send-booking-notifications", { body: { bookingId: b.id, event: "cancelled" } });
+    } catch (e) { console.error(e); }
     setCancelling(null);
     toast({ title: "Prenotazione annullata", description: "Il team ComuniCARE è stato avvisato." });
     load();
