@@ -278,7 +278,7 @@ const SetupProfessionista = () => {
                 const sorted = [...servizi].sort((a, b) => {
                   if (a.attivo && !b.attivo) return -1;
                   if (!a.attivo && b.attivo) return 1;
-                  return 0;
+                  return compareServiceNames(a.nome, b.nome);
                 });
                 const attivi = sorted.filter(s => s.attivo);
                 const nonAttivi = sorted.filter(s => !s.attivo);
