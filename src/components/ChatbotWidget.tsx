@@ -4,54 +4,15 @@ import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { prestazioniDisponibili } from "@/data/prestazioni";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-// All available services for matching
-const ALL_SERVICES = [
-  "Iniezione intramuscolare", "Iniezione sottocutanea", "Iniezione endovenosa",
-  "Medicazione semplice", "Medicazione complessa",
-  "Medicazione ferita chirurgica", "Medicazione ulcera da pressione", "Medicazione ulcera venosa",
-  "Rimozione punti di sutura", "Rimozione graffette chirurgiche",
-  "Cateterismo vescicale maschile", "Cateterismo vescicale femminile",
-  "Gestione e sostituzione catetere vescicale", "Clistere evacuativo",
-  "Infusione endovenosa (flebo)", "Terapia infusionale sottocutanea",
-  "Somministrazione terapia intramuscolare", "Somministrazione terapia orale",
-  "Somministrazione insulina", "Misurazione glicemia capillare",
-  "Misurazione parametri vitali completa", "Misurazione pressione arteriosa",
-  "ECG a domicilio", "Gestione stomie (colostomia, ileostomia, urostomia)",
-  "Sostituzione sacca stomia", "Gestione nutrizione enterale (SNG/PEG)",
-  "Gestione nutrizione parenterale", "Aspirazione tracheale", "Gestione tracheostomia",
-  "Gestione drenaggi", "Bendaggio compressivo", "Bendaggio elastocompressivo arti inferiori",
-  "Assistenza post-operatoria a domicilio", "Assistenza post-dimissione ospedaliera",
-  "Educazione sanitaria al paziente e caregiver", "Educazione alla gestione del diabete",
-  "Lavaggio auricolare",
-  "Aerosolterapia a domicilio", "Ossigenoterapia domiciliare - avvio e monitoraggio",
-  "Assistenza domiciliare continuativa (per ora)", "Assistenza infermieristica notturna (per ora)",
-  "Assistenza infermieristica diurna (per ora)",
-  "Riabilitazione motoria a domicilio", "Riabilitazione post-operatoria (protesi anca/ginocchio)",
-  "Riabilitazione post-frattura", "Riabilitazione post-ictus", "Riabilitazione neurologica",
-  "Riabilitazione respiratoria", "Riabilitazione pavimento pelvico", "Riabilitazione sportiva",
-  "Linfodrenaggio manuale", "Massoterapia decontratturante", "Terapia manuale ortopedica",
-  "Ginnastica posturale a domicilio", "Ginnastica dolce per anziani",
-  "Rieducazione alla deambulazione", "Mobilizzazione articolare",
-  "Trattamento cervicalgia/lombalgia", "Kinesio taping",
-  "Esercizio terapeutico personalizzato", "Stretching terapeutico",
-  "Laser terapia", "Laser terapia YAG", "Tecar terapia",
-  "Onde d'urto", "Elettrostimolazione", "Ultrasuono", "Valutazione ecografica",
-  "Igiene personale completa a letto", "Bagno assistito in vasca/doccia",
-  "Vestizione e svestizione assistita", "Cambio pannolone e igiene intima",
-  "Mobilizzazione e cambio postura a letto", "Trasferimento letto-carrozzina/poltrona",
-  "Assistenza alla deambulazione", "Assistenza ai pasti e imboccamento",
-  "Preparazione pasti a domicilio", "Compagnia e sorveglianza diurna (per ora)",
-  "Sorveglianza notturna (per ora)", "Accompagnamento a visite mediche",
-  "Accompagnamento a passeggiate", "Piccola spesa e commissioni",
-  "Stimolazione cognitiva e attività ricreative", "Supporto nella gestione della casa leggera",
-  "Assistenza continuativa diurna (per ora)", "Assistenza continuativa notturna (per ora)",
-];
+// All available services for matching (shared catalog, always up to date)
+const ALL_SERVICES = prestazioniDisponibili;
 
 interface ChatbotWidgetProps {
   onSelectService?: (service: string) => void;
