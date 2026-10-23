@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import AuthHeader from "@/components/AuthHeader";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import ServiceInfoButton from "@/components/ServiceInfoButton";
 import { ArrowLeft, Stethoscope, Activity, HeartHandshake } from "lucide-react";
 import { prestazioniPerProfessione } from "@/data/prestazioni";
 
@@ -67,14 +68,19 @@ const Prestazioni = () => {
                   <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                       {gruppo.items.map((s) => (
-                        <button
+                        <div
                           key={s}
-                          type="button"
-                          onClick={() => handleSelect(s)}
-                          className="text-left p-2.5 md:p-3 rounded-lg border border-border hover:border-primary hover:bg-secondary/40 transition-colors text-sm md:text-senior-sm break-words whitespace-normal leading-snug"
+                          className="flex items-start gap-1 rounded-lg border border-border hover:border-primary hover:bg-secondary/40 transition-colors"
                         >
-                          {s}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelect(s)}
+                            className="flex-1 min-w-0 text-left p-2.5 md:p-3 text-sm md:text-senior-sm break-words whitespace-normal leading-snug"
+                          >
+                            {s}
+                          </button>
+                          <ServiceInfoButton name={s} className="mt-1.5 mr-1.5" />
+                        </div>
                       ))}
                     </div>
                   </CardContent>

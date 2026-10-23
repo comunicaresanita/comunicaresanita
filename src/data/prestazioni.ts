@@ -1,50 +1,11 @@
 // Centralized catalog of all services offered on the platform,
 // grouped by professional type. Update here to add/remove services.
+import { catalogoInfermiere } from "./catalogoInfermiere";
 
-export const prestazioniInfermiere: string[] = [
-  "Aerosolterapia a domicilio",
-  "Aspirazione tracheale",
-  "Assistenza domiciliare continuativa (per ora)",
-  "Assistenza infermieristica diurna (per ora)",
-  "Assistenza infermieristica notturna (per ora)",
-  "Assistenza post-dimissione ospedaliera",
-  "Assistenza post-operatoria a domicilio",
-  "Bendaggio compressivo",
-  "Bendaggio elastocompressivo arti inferiori",
-  "Cateterismo vescicale femminile",
-  "Cateterismo vescicale maschile",
-  "Clistere evacuativo",
-  "ECG a domicilio",
-  "Educazione alla gestione del diabete",
-  "Educazione sanitaria al paziente e caregiver",
-  "Gestione drenaggi",
-  "Gestione e sostituzione catetere vescicale",
-  "Gestione nutrizione enterale (SNG/PEG)",
-  "Gestione nutrizione parenterale",
-  "Gestione stomie (colostomia, ileostomia, urostomia)",
-  "Gestione tracheostomia",
-  "Iniezione endovenosa",
-  "Iniezione intramuscolare",
-  "Iniezione sottocutanea",
-  "Infusione endovenosa (flebo)",
-  "Lavaggio auricolare",
-  "Medicazione complessa",
-  "Medicazione ferita chirurgica",
-  "Medicazione semplice",
-  "Medicazione ulcera da pressione",
-  "Medicazione ulcera venosa",
-  "Misurazione glicemia capillare",
-  "Misurazione parametri vitali completa",
-  "Misurazione pressione arteriosa",
-  "Ossigenoterapia domiciliare - avvio e monitoraggio",
-  "Rimozione graffette chirurgiche",
-  "Rimozione punti di sutura",
-  "Somministrazione insulina",
-  "Somministrazione terapia intramuscolare",
-  "Somministrazione terapia orale",
-  "Sostituzione sacca stomia",
-  "Terapia infusionale sottocutanea",
-].sort((a, b) => a.localeCompare(b, "it"));
+// Nurse services come from the official catalog (names + price bands + info sheets).
+export const prestazioniInfermiere: string[] = catalogoInfermiere
+  .map((c) => c.nome)
+  .sort((a, b) => a.localeCompare(b, "it"));
 
 export const prestazioniFisioterapista: string[] = [
   "Elettrostimolazione",
@@ -96,12 +57,10 @@ export const prestazioniOss: string[] = [
   "Vestizione e svestizione assistita",
 ].sort((a, b) => a.localeCompare(b, "it"));
 
-// Flat list used by the search bar (preserves the existing behaviour)
-export const prestazioniDisponibili: string[] = [
-  ...prestazioniInfermiere,
-  ...prestazioniFisioterapista,
-  ...prestazioniOss,
-];
+// Flat alphabetical list used by the search bar
+export const prestazioniDisponibili: string[] = Array.from(
+  new Set([...prestazioniInfermiere, ...prestazioniFisioterapista, ...prestazioniOss]),
+).sort((a, b) => a.localeCompare(b, "it"));
 
 export const prestazioniPerProfessione: {
   type: "infermiere" | "fisioterapista" | "oss";

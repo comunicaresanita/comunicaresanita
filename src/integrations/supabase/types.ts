@@ -615,6 +615,14 @@ export type Database = {
           time_slot: string
         }[]
       }
+      nurse_service_catalog: {
+        Args: never
+        Returns: {
+          max_price: number
+          min_price: number
+          name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

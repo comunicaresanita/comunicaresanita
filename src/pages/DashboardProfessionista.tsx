@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AuthHeader from "@/components/AuthHeader";
 import Footer from "@/components/Footer";
+import ServiceInfoButton from "@/components/ServiceInfoButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -199,7 +200,10 @@ const DashboardProfessionista = () => {
                 <CardContent className="p-4 md:p-6 space-y-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="text-lg font-semibold">{b.service_name}</p>
+                      <p className="text-lg font-semibold flex items-start gap-1">
+                        <span className="min-w-0">{b.service_name}</span>
+                        <ServiceInfoButton name={b.service_name} audience="professionista" />
+                      </p>
                       <p className="flex items-center gap-1.5 text-muted-foreground"><Clock className="w-4 h-4" />{b.day} · ore {b.time_slot}</p>
                     </div>
                     <span className="text-lg font-bold text-primary">€{b.price}</span>

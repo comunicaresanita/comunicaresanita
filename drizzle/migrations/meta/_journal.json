@@ -50,6 +50,13 @@
       "when": 1792517228435,
       "tag": "0006_booking_cancellation_and_slots",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792776247063,
+      "tag": "0007_nurse_service_catalog",
+      "breakpoints": true
     }
   ]
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthHeader from "@/components/AuthHeader";
 import Footer from "@/components/Footer";
+import ServiceInfoButton from "@/components/ServiceInfoButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,7 +85,10 @@ const StoricoPrestazioni = () => {
                   <Card key={b.id} className="p-3">
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">
-                        <p className="font-semibold text-base break-words">{b.service_name}</p>
+                        <p className="font-semibold text-base break-words flex items-start gap-1">
+                          <span className="min-w-0">{b.service_name}</span>
+                          <ServiceInfoButton name={b.service_name} className="-mt-0.5" />
+                        </p>
                         <p className="mt-1">
                           <span className="inline-block bg-accent text-accent-foreground rounded-md border border-primary/30 px-2 py-0.5 text-sm font-medium mr-2">
                             {formatDay(b.day)}

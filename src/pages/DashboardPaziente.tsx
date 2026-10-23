@@ -17,6 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 import { SlidersHorizontal, RotateCcw, MoveHorizontal, ArrowUpNarrowWide, ArrowDownWideNarrow } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { prestazioniDisponibili } from "@/data/prestazioni";
+import ServiceInfoButton from "@/components/ServiceInfoButton";
+import { compareServiceNames } from "@/lib/serviceInfo";
 import { articles } from "@/data/blogArticles";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -180,7 +182,7 @@ const DashboardPaziente = () => {
 
   // Fuzzy search for services
   const prestazioniFiltrate = useMemo(
-    () => (searchMode === "prestazione" ? fuzzySearchServices(ricerca, prestazioniDisponibili) : []),
+    () => (searchMode === "prestazione" ? [...fuzzySearchServices(ricerca, prestazioniDisponibili)].sort(compareServiceNames) : []),
     [ricerca, searchMode],
   );
 
@@ -403,7 +405,7 @@ const DashboardPaziente = () => {
             lat: p.lat!,
             lng: p.lng!,
             zona: p.zona || "",
-            servizi: profServices.map((s) => ({ name: s.name, price: s.price })),
+            servizi: profServices.map((s) => ({ name: s.name, price: s.price })).sort((a, b) => compareServiceNames(a.name, b.name)),
             valutazione: avg,
             recensioni: profReviews.length,
             professionalType: (p as any).professional_type || "infermiere",
@@ -570,13 +572,19 @@ const DashboardPaziente = () => {
                 prestazioniFiltrate.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 md:max-h-64 overflow-y-auto mt-2">
                     {prestazioniFiltrate.map((p) => (
-                      <button
+                      <div
                         key={p}
-                        onClick={() => handleSelectPrestazione(p)}
-                        className="text-left p-2.5 md:p-3 rounded-lg border border-border hover:border-primary/50 transition-colors text-sm md:text-senior-sm break-words whitespace-normal leading-snug"
+                        className="flex items-start gap-1 rounded-lg border border-border hover:border-primary/50 transition-colors"
                       >
-                        {p}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectPrestazione(p)}
+                          className="flex-1 min-w-0 text-left p-2.5 md:p-3 text-sm md:text-senior-sm break-words whitespace-normal leading-snug"
+                        >
+                          {p}
+                        </button>
+                        <ServiceInfoButton name={p} className="mt-1.5 mr-1.5" />
+                      </div>
                     ))}
                   </div>
                 )}
@@ -585,6 +593,7 @@ const DashboardPaziente = () => {
                   <span className="text-sm text-primary font-medium break-words">
                     Prestazione selezionata: {prestazioneSelezionata}
                   </span>
+                  <ServiceInfoButton name={prestazioneSelezionata} />
                   <button
                     onClick={() => {
                       setPrestazioneSelezionata("");
@@ -598,11 +607,11 @@ const DashboardPaziente = () => {
               )}
 
               {/* Recent searches */}
-              {searchMode === "prestazione" && !prestazioneSelezionata && recentSearches.length > 0 && (
+              {searchMode === "prestazione" && !prestazioneSelezionata && recentSearches.some((r) => prestazioniDisponibili.includes(r)) && (
                 <div className="mt-3">
                   <p className="text-xs text-muted-foreground mb-1.5">Ultime ricerche:</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {recentSearches.map((r) => (
+                    {recentSearches.filter((r) => prestazioniDisponibili.includes(r)).map((r) => (
                       <button
                         key={r}
                         type="button"
@@ -994,19 +1003,21 @@ const DashboardPaziente = () => {
                 </p>
                 <div className="space-y-1.5">
                   {professionistaSelezionato.servizi.map((s) => (
-                    <button
-                      key={s.name}
-                      type="button"
-                      onClick={() =>
-                        navigate(
-                          `/profilo-infermiere/${professionistaSelezionato.profileId}?servizio=${encodeURIComponent(s.name)}`,
-                        )
-                      }
-                      className="flex w-full justify-between items-start gap-2 p-2 rounded-md bg-secondary/50 text-xs md:text-sm text-left transition-colors hover:bg-secondary"
-                    >
-                      <span className="break-words whitespace-normal leading-snug flex-1 min-w-0">{s.name}</span>
-                      <span className="font-bold text-primary flex-shrink-0">€{s.price}</span>
-                    </button>
+                    <div key={s.name} className="flex items-start gap-1 rounded-md bg-secondary/50 transition-colors hover:bg-secondary">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(
+                            `/profilo-infermiere/${professionistaSelezionato.profileId}?servizio=${encodeURIComponent(s.name)}`,
+                          )
+                        }
+                        className="flex flex-1 min-w-0 justify-between items-start gap-2 p-2 text-xs md:text-sm text-left"
+                      >
+                        <span className="break-words whitespace-normal leading-snug flex-1 min-w-0">{s.name}</span>
+                        <span className="font-bold text-primary flex-shrink-0">€{s.price}</span>
+                      </button>
+                      <ServiceInfoButton name={s.name} className="mt-0.5 mr-1" />
+                    </div>
                   ))}
                   {professionistaSelezionato.servizi.length === 0 && (
                     <p className="text-sm text-muted-foreground">Nessuna prestazione configurata.</p>
