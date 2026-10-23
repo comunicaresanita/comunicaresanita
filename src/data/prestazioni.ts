@@ -57,12 +57,10 @@ export const prestazioniOss: string[] = [
   "Vestizione e svestizione assistita",
 ].sort((a, b) => a.localeCompare(b, "it"));
 
-// Flat list used by the search bar (preserves the existing behaviour)
-export const prestazioniDisponibili: string[] = [
-  ...prestazioniInfermiere,
-  ...prestazioniFisioterapista,
-  ...prestazioniOss,
-];
+// Flat alphabetical list used by the search bar
+export const prestazioniDisponibili: string[] = Array.from(
+  new Set([...prestazioniInfermiere, ...prestazioniFisioterapista, ...prestazioniOss]),
+).sort((a, b) => a.localeCompare(b, "it"));
 
 export const prestazioniPerProfessione: {
   type: "infermiere" | "fisioterapista" | "oss";

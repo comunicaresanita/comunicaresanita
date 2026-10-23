@@ -7,10 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import AuthHeader from "@/components/AuthHeader";
 import Footer from "@/components/Footer";
+import ServiceInfoButton from "@/components/ServiceInfoButton";
 import { Info, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { catalogoInfermiere } from "@/data/catalogoInfermiere";
+import { compareServiceNames } from "@/lib/serviceInfo";
 
 interface ServizioBase {
   nome: string;
@@ -38,50 +41,11 @@ function buildServizio(s: ServizioBase, i: number): Servizio {
   };
 }
 
-const serviziInfermiere: ServizioBase[] = [
-  { nome: "Iniezione intramuscolare", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Iniezione sottocutanea", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Iniezione endovenosa", prezzo: 20, prezzoConsigliato: 20 },
-  { nome: "Medicazione semplice", prezzo: 20, prezzoConsigliato: 20 },
-  { nome: "Medicazione complessa", prezzo: 35, prezzoConsigliato: 35 },
-  { nome: "Medicazione ferita chirurgica", prezzo: 30, prezzoConsigliato: 30 },
-  { nome: "Medicazione ulcera da pressione", prezzo: 35, prezzoConsigliato: 35 },
-  { nome: "Medicazione ulcera venosa", prezzo: 35, prezzoConsigliato: 35 },
-  { nome: "Rimozione punti di sutura", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Rimozione graffette chirurgiche", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Cateterismo vescicale maschile", prezzo: 45, prezzoConsigliato: 45 },
-  { nome: "Cateterismo vescicale femminile", prezzo: 40, prezzoConsigliato: 40 },
-  { nome: "Gestione e sostituzione catetere vescicale", prezzo: 35, prezzoConsigliato: 35 },
-  { nome: "Clistere evacuativo", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Infusione endovenosa (flebo)", prezzo: 40, prezzoConsigliato: 40 },
-  { nome: "Terapia infusionale sottocutanea", prezzo: 35, prezzoConsigliato: 35 },
-  { nome: "Somministrazione terapia intramuscolare", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Somministrazione terapia orale", prezzo: 12, prezzoConsigliato: 12 },
-  { nome: "Somministrazione insulina", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Misurazione glicemia capillare", prezzo: 10, prezzoConsigliato: 10 },
-  { nome: "Misurazione parametri vitali completa", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Misurazione pressione arteriosa", prezzo: 10, prezzoConsigliato: 10 },
-  { nome: "ECG a domicilio", prezzo: 50, prezzoConsigliato: 50 },
-  { nome: "Gestione stomie (colostomia, ileostomia, urostomia)", prezzo: 35, prezzoConsigliato: 35 },
-  { nome: "Sostituzione sacca stomia", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Gestione nutrizione enterale (SNG/PEG)", prezzo: 40, prezzoConsigliato: 40 },
-  { nome: "Gestione nutrizione parenterale", prezzo: 45, prezzoConsigliato: 45 },
-  { nome: "Aspirazione tracheale", prezzo: 30, prezzoConsigliato: 30 },
-  { nome: "Gestione tracheostomia", prezzo: 40, prezzoConsigliato: 40 },
-  { nome: "Gestione drenaggi", prezzo: 30, prezzoConsigliato: 30 },
-  { nome: "Bendaggio compressivo", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Bendaggio elastocompressivo arti inferiori", prezzo: 30, prezzoConsigliato: 30 },
-  { nome: "Assistenza post-operatoria a domicilio", prezzo: 45, prezzoConsigliato: 45 },
-  { nome: "Assistenza post-dimissione ospedaliera", prezzo: 40, prezzoConsigliato: 40 },
-  { nome: "Educazione sanitaria al paziente e caregiver", prezzo: 30, prezzoConsigliato: 30 },
-  { nome: "Educazione alla gestione del diabete", prezzo: 30, prezzoConsigliato: 30 },
-  { nome: "Lavaggio auricolare", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Aerosolterapia a domicilio", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Ossigenoterapia domiciliare - avvio e monitoraggio", prezzo: 35, prezzoConsigliato: 35 },
-  { nome: "Assistenza domiciliare continuativa (per ora)", prezzo: 30, prezzoConsigliato: 30 },
-  { nome: "Assistenza infermieristica notturna (per ora)", prezzo: 35, prezzoConsigliato: 35 },
-  { nome: "Assistenza infermieristica diurna (per ora)", prezzo: 30, prezzoConsigliato: 30 },
-];
+// Nurse services and price bands come from the official catalog.
+const serviziInfermiere: ServizioBase[] = catalogoInfermiere.map((c) => {
+  const consigliato = Math.round((c.min + c.max) / 2);
+  return { nome: c.nome, prezzo: consigliato, prezzoConsigliato: consigliato, minPrezzo: c.min, maxPrezzo: c.max };
+});
 
 const serviziFisioterapista: ServizioBase[] = [
   { nome: "Riabilitazione motoria a domicilio", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
