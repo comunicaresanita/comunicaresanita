@@ -96,6 +96,9 @@ const ServiceInfoButton = ({ name, audience, className }: Props) => {
             {scheda.modalita && (
               <p className="text-sm"><span className="font-semibold text-primary">Modalità: </span>{scheda.modalita}</p>
             )}
+            {scheda.durata && (
+              <p className="text-sm"><span className="font-semibold text-primary">Durata indicativa: </span>{scheda.durata}</p>
+            )}
             {sezioni.map((s) => (
               <div key={s.titolo}>
                 <p className="text-sm font-semibold text-primary">{s.titolo}</p>

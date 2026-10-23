@@ -1,40 +1,17 @@
 // Centralized catalog of all services offered on the platform,
 // grouped by professional type. Update here to add/remove services.
 import { catalogoInfermiere } from "./catalogoInfermiere";
+import { catalogoFisioterapista } from "./catalogoFisioterapista";
 
 // Nurse services come from the official catalog (names + price bands + info sheets).
 export const prestazioniInfermiere: string[] = catalogoInfermiere
   .map((c) => c.nome)
   .sort((a, b) => a.localeCompare(b, "it"));
 
-export const prestazioniFisioterapista: string[] = [
-  "Elettrostimolazione",
-  "Esercizio terapeutico personalizzato",
-  "Ginnastica dolce per anziani",
-  "Ginnastica posturale a domicilio",
-  "Kinesio taping",
-  "Laser terapia",
-  "Laser terapia YAG",
-  "Linfodrenaggio manuale",
-  "Massoterapia decontratturante",
-  "Mobilizzazione articolare",
-  "Onde d'urto",
-  "Riabilitazione motoria a domicilio",
-  "Riabilitazione neurologica",
-  "Riabilitazione pavimento pelvico",
-  "Riabilitazione post-frattura",
-  "Riabilitazione post-ictus",
-  "Riabilitazione post-operatoria (protesi anca/ginocchio)",
-  "Riabilitazione respiratoria",
-  "Riabilitazione sportiva",
-  "Rieducazione alla deambulazione",
-  "Stretching terapeutico",
-  "Tecar terapia",
-  "Terapia manuale ortopedica",
-  "Trattamento cervicalgia/lombalgia",
-  "Ultrasuono",
-  "Valutazione ecografica",
-].sort((a, b) => a.localeCompare(b, "it"));
+// Physiotherapy services come from the official catalog (names + price bands + info sheets).
+export const prestazioniFisioterapista: string[] = catalogoFisioterapista
+  .map((c) => c.nome)
+  .sort((a, b) => a.localeCompare(b, "it"));
 
 export const prestazioniOss: string[] = [
   "Accompagnamento a passeggiate",

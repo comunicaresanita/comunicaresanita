@@ -73,16 +73,27 @@ const SERVIZI_INFERMIERISTICI = [
 ];
 
 const SERVIZI_FISIOTERAPIA = [
-  "Riabilitazione motoria a domicilio", "Riabilitazione post-operatoria (protesi anca/ginocchio)",
-  "Riabilitazione post-frattura", "Riabilitazione post-ictus", "Riabilitazione neurologica",
-  "Riabilitazione respiratoria", "Riabilitazione pavimento pelvico", "Riabilitazione sportiva",
-  "Linfodrenaggio manuale", "Massoterapia decontratturante", "Terapia manuale ortopedica",
-  "Ginnastica posturale a domicilio", "Ginnastica dolce per anziani",
-  "Rieducazione alla deambulazione", "Mobilizzazione articolare",
-  "Trattamento cervicalgia/lombalgia", "Kinesio taping",
-  "Esercizio terapeutico personalizzato", "Stretching terapeutico",
-  "Laser terapia", "Laser terapia YAG", "Tecar terapia",
-  "Onde d'urto", "Elettrostimolazione", "Ultrasuono", "Valutazione ecografica",
+  "Elettrostimolazione neuromuscolare",
+  "Esercizio terapeutico personalizzato",
+  "Ginnastica dolce per anziani",
+  "Ginnastica posturale a domicilio",
+  "Kinesio taping",
+  "Laserterapia",
+  "Laserterapia Nd YAG",
+  "Linfodrenaggio manuale",
+  "Massoterapia decontratturante",
+  "Onde d’urto radiali",
+  "Riabilitazione del pavimento pelvico",
+  "Riabilitazione neurologica",
+  "Riabilitazione post frattura",
+  "Riabilitazione post operatoria",
+  "Riabilitazione respiratoria",
+  "Riabilitazione sportiva",
+  "Tecarterapia",
+  "Trattamento fisioterapico di cervicalgia o lombalgia",
+  "Ultrasuonoterapia",
+  "Valutazione ecografica funzionale RUSI",
+  "Valutazione fisioterapica iniziale",
 ];
 
 const SERVIZI_OSS = [
