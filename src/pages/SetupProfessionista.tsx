@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { catalogoInfermiere } from "@/data/catalogoInfermiere";
+import { catalogoFisioterapista } from "@/data/catalogoFisioterapista";
 import { compareServiceNames } from "@/lib/serviceInfo";
 
 interface ServizioBase {
@@ -47,34 +48,11 @@ const serviziInfermiere: ServizioBase[] = catalogoInfermiere.map((c) => {
   return { nome: c.nome, prezzo: consigliato, prezzoConsigliato: consigliato, minPrezzo: c.min, maxPrezzo: c.max };
 });
 
-const serviziFisioterapista: ServizioBase[] = [
-  { nome: "Riabilitazione motoria a domicilio", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Riabilitazione post-operatoria (protesi anca/ginocchio)", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Riabilitazione post-frattura", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Riabilitazione post-ictus", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Riabilitazione neurologica", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Riabilitazione respiratoria", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Riabilitazione pavimento pelvico", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Riabilitazione sportiva", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Linfodrenaggio manuale", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Massoterapia decontratturante", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Terapia manuale ortopedica", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Ginnastica posturale a domicilio", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Ginnastica dolce per anziani", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Rieducazione alla deambulazione", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Mobilizzazione articolare", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Trattamento cervicalgia/lombalgia", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Kinesio taping", prezzo: 35, prezzoConsigliato: 35, minPrezzo: 30, maxPrezzo: 40 },
-  { nome: "Esercizio terapeutico personalizzato", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Stretching terapeutico", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Laser terapia", prezzo: 65, prezzoConsigliato: 65, minPrezzo: 50, maxPrezzo: 80 },
-  { nome: "Laser terapia YAG", prezzo: 65, prezzoConsigliato: 65, minPrezzo: 50, maxPrezzo: 80 },
-  { nome: "Tecar terapia", prezzo: 50, prezzoConsigliato: 50, minPrezzo: 40, maxPrezzo: 60 },
-  { nome: "Onde d'urto", prezzo: 70, prezzoConsigliato: 70, minPrezzo: 60, maxPrezzo: 80 },
-  { nome: "Elettrostimolazione", prezzo: 60, prezzoConsigliato: 60, minPrezzo: 50, maxPrezzo: 70 },
-  { nome: "Ultrasuono", prezzo: 50, prezzoConsigliato: 50, minPrezzo: 40, maxPrezzo: 60 },
-  { nome: "Valutazione ecografica", prezzo: 85, prezzoConsigliato: 85, minPrezzo: 70, maxPrezzo: 100 },
-];
+// Physiotherapy services and price bands come from the official catalog.
+const serviziFisioterapista: ServizioBase[] = catalogoFisioterapista.map((c) => {
+  const consigliato = Math.round((c.min + c.max) / 2);
+  return { nome: c.nome, prezzo: consigliato, prezzoConsigliato: consigliato, minPrezzo: c.min, maxPrezzo: c.max };
+});
 
 const serviziOSS: ServizioBase[] = [
   { nome: "Igiene personale completa a letto", prezzo: 25, prezzoConsigliato: 25 },

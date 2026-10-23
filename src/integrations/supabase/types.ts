@@ -623,6 +623,14 @@ export type Database = {
           name: string
         }[]
       }
+      physio_service_catalog: {
+        Args: never
+        Returns: {
+          max_price: number
+          min_price: number
+          name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
