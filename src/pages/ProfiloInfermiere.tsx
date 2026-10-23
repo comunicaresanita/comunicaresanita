@@ -698,9 +698,10 @@ const ProfiloInfermiere = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between p-3 md:p-4 rounded-lg border border-primary bg-secondary">
-                  <span className="text-sm md:text-senior-sm font-medium">{selectedService.name}</span>
-                  <span className="text-base md:text-senior-base font-bold text-primary">€{selectedService.price}</span>
+                <div className="flex items-center justify-between gap-2 p-3 md:p-4 rounded-lg border border-primary bg-secondary">
+                  <span className="text-sm md:text-senior-sm font-medium flex-1 min-w-0 break-words">{selectedService.name}</span>
+                  <span className="text-base md:text-senior-base font-bold text-primary flex-shrink-0">€{selectedService.price}</span>
+                  <ServiceInfoButton name={selectedService.name} />
                 </div>
               </CardContent>
             </Card>
@@ -714,16 +715,21 @@ const ProfiloInfermiere = () => {
                   Seleziona una prestazione per procedere con la prenotazione.
                 </p>
                 <div className="space-y-1.5">
-                  {services.map((s) => (
-                    <button
+                  {[...services].sort((a, b) => compareServiceNames(a.name, b.name)).map((s) => (
+                    <div
                       key={s.id ?? s.name}
-                      type="button"
-                      onClick={() => { setServizioSelezionato(s.name); setSlotSelezionato(null); }}
-                      className="flex w-full justify-between items-start gap-2 p-3 rounded-md border border-border hover:border-primary text-xs md:text-sm text-left transition-colors"
+                      className="flex items-start gap-1 rounded-md border border-border hover:border-primary transition-colors"
                     >
-                      <span className="break-words whitespace-normal leading-snug flex-1 min-w-0">{s.name}</span>
-                      <span className="font-bold text-primary flex-shrink-0">€{s.price}</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => { setServizioSelezionato(s.name); setSlotSelezionato(null); }}
+                        className="flex flex-1 min-w-0 justify-between items-start gap-2 p-3 text-xs md:text-sm text-left"
+                      >
+                        <span className="break-words whitespace-normal leading-snug flex-1 min-w-0">{s.name}</span>
+                        <span className="font-bold text-primary flex-shrink-0">€{s.price}</span>
+                      </button>
+                      <ServiceInfoButton name={s.name} className="mt-2 mr-1.5" />
+                    </div>
                   ))}
                 </div>
               </CardContent>

@@ -607,11 +607,11 @@ const DashboardPaziente = () => {
               )}
 
               {/* Recent searches */}
-              {searchMode === "prestazione" && !prestazioneSelezionata && recentSearches.length > 0 && (
+              {searchMode === "prestazione" && !prestazioneSelezionata && recentSearches.some((r) => prestazioniDisponibili.includes(r)) && (
                 <div className="mt-3">
                   <p className="text-xs text-muted-foreground mb-1.5">Ultime ricerche:</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {recentSearches.map((r) => (
+                    {recentSearches.filter((r) => prestazioniDisponibili.includes(r)).map((r) => (
                       <button
                         key={r}
                         type="button"
