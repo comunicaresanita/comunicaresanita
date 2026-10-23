@@ -339,6 +339,7 @@ const SetupProfessionista = () => {
                           </div>
                         </div>
                       )}
+                      <ServiceInfoButton name={servizio.nome} audience="professionista" />
                     </div>
                   );
                 };
