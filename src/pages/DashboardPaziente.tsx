@@ -1003,19 +1003,21 @@ const DashboardPaziente = () => {
                 </p>
                 <div className="space-y-1.5">
                   {professionistaSelezionato.servizi.map((s) => (
-                    <button
-                      key={s.name}
-                      type="button"
-                      onClick={() =>
-                        navigate(
-                          `/profilo-infermiere/${professionistaSelezionato.profileId}?servizio=${encodeURIComponent(s.name)}`,
-                        )
-                      }
-                      className="flex w-full justify-between items-start gap-2 p-2 rounded-md bg-secondary/50 text-xs md:text-sm text-left transition-colors hover:bg-secondary"
-                    >
-                      <span className="break-words whitespace-normal leading-snug flex-1 min-w-0">{s.name}</span>
-                      <span className="font-bold text-primary flex-shrink-0">€{s.price}</span>
-                    </button>
+                    <div key={s.name} className="flex items-start gap-1 rounded-md bg-secondary/50 transition-colors hover:bg-secondary">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(
+                            `/profilo-infermiere/${professionistaSelezionato.profileId}?servizio=${encodeURIComponent(s.name)}`,
+                          )
+                        }
+                        className="flex flex-1 min-w-0 justify-between items-start gap-2 p-2 text-xs md:text-sm text-left"
+                      >
+                        <span className="break-words whitespace-normal leading-snug flex-1 min-w-0">{s.name}</span>
+                        <span className="font-bold text-primary flex-shrink-0">€{s.price}</span>
+                      </button>
+                      <ServiceInfoButton name={s.name} className="mt-0.5 mr-1" />
+                    </div>
                   ))}
                   {professionistaSelezionato.servizi.length === 0 && (
                     <p className="text-sm text-muted-foreground">Nessuna prestazione configurata.</p>
