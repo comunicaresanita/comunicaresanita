@@ -109,13 +109,14 @@ const synonymMap: Record<string, string[]> = {
   "pulizie": ["gestione della casa"],
   "visita medica": ["accompagnamento a visite"],
   "passeggiata": ["passeggiate"],
-  "operazione": ["post-operatoria"],
-  "dimissione": ["post-dimissione"],
-  "ospedale": ["post-dimissione", "ospedaliera"],
-  "educazione": ["educazione sanitaria"],
+  "operazione": ["post-operatoria", "ferita chirurgica"],
+  "intervento": ["ferita chirurgica"],
+  "educazione": ["educazione e addestramento"],
+  "caregiver": ["addestramento del caregiver"],
   "sutura": ["punti di sutura"],
   "punti": ["punti di sutura"],
-  "graffette": ["graffette chirurgiche"],
+  "graffette": ["graffette metalliche"],
+  "agrafes": ["graffette metalliche"],
 };
 
 function normalize(s: string): string {
