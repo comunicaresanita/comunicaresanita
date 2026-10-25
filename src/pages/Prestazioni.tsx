@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ChatbotWidget from "@/components/ChatbotWidget";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AuthHeader from "@/components/AuthHeader";
@@ -16,6 +19,20 @@ const iconForType = (type: string) => {
 
 const Prestazioni = () => {
   const navigate = useNavigate();
+  const [professionals, setProfessionals] = useState<{ profileId: string; nome: string }[]>([]);
+
+  // Names let the Assistente digitale open a recommended professional's page
+  useEffect(() => {
+    let alive = true;
+    supabase
+      .from("public_professionals" as any)
+      .select("id, first_name, last_name")
+      .then(({ data }) => {
+        if (!alive || !data) return;
+        setProfessionals((data as any[]).map((p) => ({ profileId: p.id, nome: `${p.first_name} ${p.last_name}` })));
+      });
+    return () => { alive = false; };
+  }, []);
 
   const handleSelect = (servizio: string) => {
     navigate(`/dashboard-paziente?servizio=${encodeURIComponent(servizio)}`);
@@ -90,6 +107,7 @@ const Prestazioni = () => {
           </div>
         </div>
       </main>
+      <ChatbotWidget onSelectService={handleSelect} professionals={professionals} />
       <Footer />
     </div>
   );
