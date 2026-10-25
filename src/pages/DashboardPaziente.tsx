@@ -18,7 +18,7 @@ import { SlidersHorizontal, RotateCcw, MoveHorizontal, ArrowUpNarrowWide, ArrowD
 import { cn } from "@/lib/utils";
 import { prestazioniDisponibili } from "@/data/prestazioni";
 import ServiceInfoButton from "@/components/ServiceInfoButton";
-import { compareServiceNames } from "@/lib/serviceInfo";
+import { compareServiceNames, priceUnit } from "@/lib/serviceInfo";
 import { articles } from "@/data/blogArticles";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -920,7 +920,7 @@ const DashboardPaziente = () => {
                         </div>
                         {servizio && (
                           <div className="text-right flex-shrink-0 max-w-[45%]">
-                            <p className="text-base md:text-senior-lg font-bold text-primary">€{priceWithDistance(servizio.price, distKm)}</p>
+                            <p className="text-base md:text-senior-lg font-bold text-primary">€{priceWithDistance(servizio.price, distKm)}{priceUnit(prestazioneSelezionata)}</p>
                             {isLongDistance(distKm) ? (
                               <p className="text-xs md:text-sm text-muted-foreground">
                                 +10% prestazione a lunga distanza (oltre 10 km)
@@ -1017,7 +1017,7 @@ const DashboardPaziente = () => {
                         className="flex flex-1 min-w-0 justify-between items-start gap-2 p-2 text-xs md:text-sm text-left"
                       >
                         <span className="break-words whitespace-normal leading-snug flex-1 min-w-0">{s.name}</span>
-                        <span className="font-bold text-primary flex-shrink-0">€{s.price}</span>
+                        <span className="font-bold text-primary flex-shrink-0">€{s.price}{priceUnit(s.name)}</span>
                       </button>
                       <ServiceInfoButton name={s.name} className="mt-0.5 mr-1" />
                     </div>
