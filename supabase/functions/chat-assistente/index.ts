@@ -97,15 +97,22 @@ const SERVIZI_FISIOTERAPIA = [
 ];
 
 const SERVIZI_OSS = [
-  "Igiene personale completa a letto", "Bagno assistito in vasca/doccia",
-  "Vestizione e svestizione assistita", "Cambio pannolone e igiene intima",
-  "Mobilizzazione e cambio postura a letto", "Trasferimento letto-carrozzina/poltrona",
-  "Assistenza alla deambulazione", "Assistenza ai pasti e imboccamento",
-  "Preparazione pasti a domicilio", "Compagnia e sorveglianza diurna (per ora)",
-  "Sorveglianza notturna (per ora)", "Accompagnamento a visite mediche",
-  "Accompagnamento a passeggiate", "Piccola spesa e commissioni",
-  "Stimolazione cognitiva e attività ricreative", "Supporto nella gestione della casa leggera",
-  "Assistenza continuativa diurna (per ora)", "Assistenza continuativa notturna (per ora)",
+  "Accompagnamento per visite commissioni e uscite",
+  "Aiuto nell’alzata e trasferimento letto poltrona carrozzina",
+  "Assistenza al pasto e idratazione",
+  "Assistenza alla deambulazione",
+  "Assistenza diurna alla persona e sollievo al caregiver",
+  "Assistenza notturna alla persona",
+  "Compagnia socializzazione e attività ricreative",
+  "Igiene intima e cambio pannolone con vestizione e sistemazione",
+  "Igiene personale completa in doccia vasca o a letto",
+  "Mobilizzazione e cambio postura a letto",
+  "Piccola spesa e commissioni per conto della persona",
+  "Preparazione pasti a domicilio",
+  "Presenza e sorveglianza notturna",
+  "Routine del mattino con igiene alzata e colazione",
+  "Routine della sera con cena igiene e preparazione al riposo",
+  "Supporto nella gestione leggera della casa",
 ];
 
 serve(async (req) => {
