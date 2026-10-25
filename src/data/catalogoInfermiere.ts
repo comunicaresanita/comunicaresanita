@@ -1,6 +1,7 @@
 // Catalogo prestazioni infermieristiche con fascia di prezzo per accesso (min–max €).
 // Fonte: schede ComuniCARE, revisione 22 ottobre 2026. Le schede informative sono in schedePrestazioni.json.
-export interface PrestazioneCatalogo { nome: string; min: number; max: number }
+/** perOra: the price band is per hour (otherwise per visit). */
+export interface PrestazioneCatalogo { nome: string; min: number; max: number; perOra?: boolean }
 
 export const catalogoInfermiere: PrestazioneCatalogo[] = [
   { nome: "Bendaggio compressivo", min: 35, max: 50 },

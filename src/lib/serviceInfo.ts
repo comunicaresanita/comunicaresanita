@@ -1,8 +1,11 @@
 import { catalogoInfermiere } from "@/data/catalogoInfermiere";
 import { catalogoFisioterapista } from "@/data/catalogoFisioterapista";
+import { catalogoOss } from "@/data/catalogoOss";
 
 export interface SezioneScheda { titolo: string; testo: string }
 export interface SchedaPrestazione {
+  /** Short note on how the price/time is agreed (OSS services). */
+  nota?: string;
   durata?: string;
   utente: SezioneScheda[];
   professionista: SezioneScheda[];
@@ -10,9 +13,16 @@ export interface SchedaPrestazione {
 export type SchedeMap = Record<string, SchedaPrestazione>;
 export type ServiceInfoAudience = "utente" | "professionista";
 
-const namesWithInfo = new Set([...catalogoInfermiere, ...catalogoFisioterapista].map((c) => c.nome));
+const catalogoCompleto = [...catalogoInfermiere, ...catalogoFisioterapista, ...catalogoOss];
+const namesWithInfo = new Set(catalogoCompleto.map((c) => c.nome));
+const hourlyNames = new Set(catalogoCompleto.filter((c) => c.perOra).map((c) => c.nome));
 
-/** True when the service has an info sheet (nurse and physiotherapy services). */
+/** "/ora" for services priced per hour, "" for services priced per visit. */
+export function priceUnit(name: string | null | undefined): string {
+  return name && hourlyNames.has(name) ? "/ora" : "";
+}
+
+/** True when the service has an info sheet (nurse, physiotherapy and OSS services). */
 export function hasServiceInfo(name: string | null | undefined): boolean {
   return !!name && namesWithInfo.has(name);
 }

@@ -93,6 +93,9 @@ const ServiceInfoButton = ({ name, audience, className }: Props) => {
           <p className="text-sm text-muted-foreground mt-3">Informazioni non disponibili al momento.</p>
         ) : (
           <div className="mt-3 space-y-3">
+            {scheda.nota && (
+              <p className="text-sm text-muted-foreground italic">{scheda.nota}</p>
+            )}
             {scheda.durata && (
               <p className="text-sm"><span className="font-semibold text-primary">Durata indicativa: </span>{scheda.durata}</p>
             )}
