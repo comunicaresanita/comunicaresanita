@@ -34,8 +34,8 @@ describe("Catalogo infermieri", () => {
     const all = schede as Record<string, { utente: { titolo: string }[]; professionista: { titolo: string }[] }>;
     for (const nome of prestazioniInfermiere) {
       expect(hasServiceInfo(nome)).toBe(true);
-      expect(all[nome].utente.map(s => s.titolo)).toContain("Materiali da preparare");
-      expect(all[nome].professionista.map(s => s.titolo)).toContain("Dotazione specifica");
+      expect(all[nome].utente.map(s => s.titolo)).toContain("Materiale da avere a casa");
+      expect(all[nome].professionista.map(s => s.titolo)).toContain("Attenzioni specifiche");
     }
     expect(JSON.stringify(schede)).not.toMatch(/Figura competente/);
   });
@@ -74,5 +74,28 @@ describe("Catalogo fisioterapisti", () => {
     }
     expect(JSON.stringify(schede)).not.toMatch(/Professionista competente/);
     expect(JSON.stringify(schede)).not.toMatch(/Fasce commerciali proposte/);
+  });
+});
+
+describe("Nomi e schede delle prestazioni", () => {
+  const tutte = prestazioniPerProfessione.flatMap(p => p.items);
+
+  it("indica la prescrizione con «(prescrizione medica)» invece di «prescritto»", () => {
+    expect(tutte.filter(n => /prescritt/i.test(n))).toEqual([]);
+    expect(prestazioniInfermiere).toContain("Lavaggio vaginale (prescrizione medica)");
+    expect(prestazioniInfermiere).toContain("Somministrazione di microclisma medicato (prescrizione medica)");
+  });
+
+  it("non usa la parola «terapeutico» nei nomi", () => {
+    expect(tutte.filter(n => /terapeutico/i.test(n))).toEqual([]);
+    expect(prestazioniFisioterapista).toContain("Esercizio personalizzato");
+  });
+
+  it("nessuna scheda mostra la voce «Modalità»", () => {
+    expect(Object.values(schede as Record<string, object>).filter(s => "modalita" in s)).toEqual([]);
+  });
+
+  it("ogni prestazione con scheda ha un nome presente nel catalogo", () => {
+    expect(Object.keys(schede).sort()).toEqual([...prestazioniInfermiere, ...prestazioniFisioterapista].sort());
   });
 });
