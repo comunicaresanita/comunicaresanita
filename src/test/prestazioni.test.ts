@@ -19,7 +19,7 @@ describe("Catalogo infermieri", () => {
     expect(prestazioniInfermiere).not.toContain("Medicazione semplice");
     expect(prestazioniInfermiere).not.toContain("Iniezione intramuscolare");
     expect(prestazioniInfermiere).not.toContain("ECG a domicilio");
-    expect(prestazioniInfermiere).toContain("Lavaggio vaginale terapeutico prescritto");
+    expect(prestazioniInfermiere).toContain("Lavaggio vaginale (prescrizione medica)");
   });
 
   it("usa le fasce di prezzo indicate", () => {
@@ -27,7 +27,7 @@ describe("Catalogo infermieri", () => {
     expect(band("Bendaggio compressivo")).toMatchObject({ min: 35, max: 50 });
     expect(band("Medicazione della lesione da pressione, stadio 4")).toMatchObject({ min: 60, max: 85 });
     expect(band("Rimozione di punti di sutura cutanea con filo")).toMatchObject({ min: 20, max: 35 });
-    expect(band("Lavaggio vaginale terapeutico prescritto")).toMatchObject({ min: 40, max: 50 });
+    expect(band("Lavaggio vaginale (prescrizione medica)")).toMatchObject({ min: 40, max: 50 });
   });
 
   it("ogni prestazione infermieristica ha la scheda utente e quella del professionista, senza la frase esclusa", () => {
