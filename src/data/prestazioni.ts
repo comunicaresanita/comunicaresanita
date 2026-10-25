@@ -2,6 +2,7 @@
 // grouped by professional type. Update here to add/remove services.
 import { catalogoInfermiere } from "./catalogoInfermiere";
 import { catalogoFisioterapista } from "./catalogoFisioterapista";
+import { catalogoOss } from "./catalogoOss";
 
 // Nurse services come from the official catalog (names + price bands + info sheets).
 export const prestazioniInfermiere: string[] = catalogoInfermiere
@@ -13,26 +14,10 @@ export const prestazioniFisioterapista: string[] = catalogoFisioterapista
   .map((c) => c.nome)
   .sort((a, b) => a.localeCompare(b, "it"));
 
-export const prestazioniOss: string[] = [
-  "Accompagnamento a passeggiate",
-  "Accompagnamento a visite mediche",
-  "Assistenza ai pasti e imboccamento",
-  "Assistenza alla deambulazione",
-  "Assistenza continuativa diurna (per ora)",
-  "Assistenza continuativa notturna (per ora)",
-  "Bagno assistito in vasca/doccia",
-  "Cambio pannolone e igiene intima",
-  "Compagnia e sorveglianza diurna (per ora)",
-  "Igiene personale completa a letto",
-  "Mobilizzazione e cambio postura a letto",
-  "Piccola spesa e commissioni",
-  "Preparazione pasti a domicilio",
-  "Sorveglianza notturna (per ora)",
-  "Stimolazione cognitiva e attività ricreative",
-  "Supporto nella gestione della casa leggera",
-  "Trasferimento letto-carrozzina/poltrona",
-  "Vestizione e svestizione assistita",
-].sort((a, b) => a.localeCompare(b, "it"));
+// OSS services come from the official catalog (names + price bands + info sheets).
+export const prestazioniOss: string[] = catalogoOss
+  .map((c) => c.nome)
+  .sort((a, b) => a.localeCompare(b, "it"));
 
 // Flat alphabetical list used by the search bar
 export const prestazioniDisponibili: string[] = Array.from(

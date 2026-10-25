@@ -1,6 +1,7 @@
 // Catalogo prestazioni infermieristiche con fascia di prezzo per accesso (min–max €).
 // Fonte: schede ComuniCARE, revisione 22 ottobre 2026. Le schede informative sono in schedePrestazioni.json.
-export interface PrestazioneCatalogo { nome: string; min: number; max: number }
+/** perOra: the price band is per hour (otherwise per visit). */
+export interface PrestazioneCatalogo { nome: string; min: number; max: number; perOra?: boolean }
 
 export const catalogoInfermiere: PrestazioneCatalogo[] = [
   { nome: "Bendaggio compressivo", min: 35, max: 50 },
@@ -12,7 +13,7 @@ export const catalogoInfermiere: PrestazioneCatalogo[] = [
   { nome: "Clisma evacuativo mediante dispositivo tipo clisma-sac/enteroclisma", min: 40, max: 60 },
   { nome: "Clistere evacuativo con sonda rettale", min: 35, max: 55 },
   { nome: "Clistere evacuativo senza sonda rettale", min: 25, max: 40 },
-  { nome: "Somministrazione di microclisma medicato prescritto", min: 25, max: 35 },
+  { nome: "Somministrazione di microclisma medicato (prescrizione medica)", min: 25, max: 35 },
   { nome: "Gestione della colostomia", min: 35, max: 55 },
   { nome: "Gestione dell’ileostomia", min: 35, max: 55 },
   { nome: "Gestione della nefrostomia", min: 35, max: 55 },
@@ -37,15 +38,15 @@ export const catalogoInfermiere: PrestazioneCatalogo[] = [
   { nome: "Rilevazione completa dei parametri vitali", min: 30, max: 40 },
   { nome: "Educazione e addestramento del caregiver alla gestione della PEG", min: 40, max: 50 },
   { nome: "Educazione e addestramento del caregiver alla gestione del sondino nasogastrico", min: 40, max: 50 },
-  { nome: "Gestione della nutrizione parenterale prescritta", min: 50, max: 75 },
-  { nome: "Gestione della PEG con somministrazione della nutrizione enterale prescritta", min: 45, max: 60 },
-  { nome: "Gestione del sondino nasogastrico con somministrazione della nutrizione enterale prescritta", min: 45, max: 60 },
+  { nome: "Gestione della nutrizione parenterale (prescrizione medica)", min: 50, max: 75 },
+  { nome: "Gestione della PEG con somministrazione della nutrizione enterale (prescrizione medica)", min: 45, max: 60 },
+  { nome: "Gestione del sondino nasogastrico con somministrazione della nutrizione enterale (prescrizione medica)", min: 45, max: 60 },
   { nome: "Rimozione di graffette metalliche", min: 25, max: 40 },
   { nome: "Rimozione di punti di sutura cutanea con filo", min: 20, max: 35 },
   { nome: "Somministrazione di gocce auricolari", min: 25, max: 30 },
   { nome: "Somministrazione di gocce nasali", min: 25, max: 30 },
   { nome: "Aerosolterapia", min: 25, max: 35 },
-  { nome: "Somministrazione di terapia inalatoria mediante inalatore prescritto", min: 25, max: 30 },
+  { nome: "Somministrazione di terapia inalatoria mediante inalatore (prescrizione medica)", min: 25, max: 30 },
   { nome: "Somministrazione di eparina a basso peso molecolare", min: 25, max: 35 },
   { nome: "Somministrazione di insulina per via sottocutanea", min: 25, max: 35 },
   { nome: "Somministrazione di terapia intramuscolare", min: 25, max: 35 },
@@ -59,11 +60,11 @@ export const catalogoInfermiere: PrestazioneCatalogo[] = [
   { nome: "Preparazione settimanale della terapia orale", min: 25, max: 40 },
   { nome: "Somministrazione di farmaci tramite PEG", min: 30, max: 45 },
   { nome: "Somministrazione di farmaci tramite sondino nasogastrico", min: 30, max: 45 },
-  { nome: "Somministrazione di terapia sublinguale/orale prescritta", min: 25, max: 30 },
-  { nome: "Somministrazione di farmaci per via rettale (supposte o preparati prescritti)", min: 25, max: 30 },
-  { nome: "Applicazione di terapia topica prescritta (creme, pomate o gel medicati)", min: 25, max: 30 },
+  { nome: "Somministrazione di terapia sublinguale/orale (prescrizione medica)", min: 25, max: 30 },
+  { nome: "Somministrazione di farmaci per via rettale: supposte o preparati (prescrizione medica)", min: 25, max: 30 },
+  { nome: "Applicazione di terapia topica: creme, pomate o gel medicati (prescrizione medica)", min: 25, max: 30 },
   { nome: "Applicazione o sostituzione di cerotto medicato transdermico", min: 25, max: 30 },
-  { nome: "Instillazione di colliri o altri preparati oftalmici prescritti", min: 25, max: 30 },
-  { nome: "Somministrazione di terapia vaginale prescritta (ovuli, compresse o creme vaginali)", min: 25, max: 35 },
-  { nome: "Lavaggio vaginale terapeutico prescritto", min: 40, max: 50 },
+  { nome: "Instillazione di colliri o altri preparati oftalmici (prescrizione medica)", min: 25, max: 30 },
+  { nome: "Somministrazione di terapia vaginale: ovuli, compresse o creme vaginali (prescrizione medica)", min: 25, max: 35 },
+  { nome: "Lavaggio vaginale (prescrizione medica)", min: 40, max: 50 },
 ].sort((a, b) => a.nome.localeCompare(b.nome, "it"));

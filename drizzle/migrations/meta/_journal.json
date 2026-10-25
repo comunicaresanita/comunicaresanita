@@ -64,6 +64,20 @@
       "when": 1792781100381,
       "tag": "0008_physio_service_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792944881370,
+      "tag": "0009_rename_prescribed_services",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792945132086,
+      "tag": "0010_oss_service_catalog",
+      "breakpoints": true
     }
   ]
 }

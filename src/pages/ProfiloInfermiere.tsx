@@ -7,7 +7,7 @@ import AuthHeader from "@/components/AuthHeader";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import ServiceInfoButton from "@/components/ServiceInfoButton";
-import { compareServiceNames } from "@/lib/serviceInfo";
+import { compareServiceNames, priceUnit } from "@/lib/serviceInfo";
 import { MapPin, Star, Clock, ArrowLeft, BadgeCheck, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -702,7 +702,7 @@ const ProfiloInfermiere = () => {
               <CardContent>
                 <div className="flex items-center justify-between gap-2 p-3 md:p-4 rounded-lg border border-primary bg-secondary">
                   <span className="text-sm md:text-senior-sm font-medium flex-1 min-w-0 break-words">{selectedService.name}</span>
-                  <span className="text-base md:text-senior-base font-bold text-primary flex-shrink-0">€{selectedService.price}</span>
+                  <span className="text-base md:text-senior-base font-bold text-primary flex-shrink-0">€{selectedService.price}{priceUnit(selectedService.name)}</span>
                   <ServiceInfoButton name={selectedService.name} />
                 </div>
               </CardContent>
@@ -728,7 +728,7 @@ const ProfiloInfermiere = () => {
                         className="flex flex-1 min-w-0 justify-between items-start gap-2 p-3 text-xs md:text-sm text-left"
                       >
                         <span className="break-words whitespace-normal leading-snug flex-1 min-w-0">{s.name}</span>
-                        <span className="font-bold text-primary flex-shrink-0">€{s.price}</span>
+                        <span className="font-bold text-primary flex-shrink-0">€{s.price}{priceUnit(s.name)}</span>
                       </button>
                       <ServiceInfoButton name={s.name} className="mt-2 mr-1.5" />
                     </div>
@@ -1006,8 +1006,8 @@ const ProfiloInfermiere = () => {
                   <p className="flex items-center gap-1 flex-wrap"><strong>Servizio:</strong> {servizioSelezionato} <ServiceInfoButton name={servizioSelezionato} /></p>
                   <p><strong>Giorno:</strong> {formatSelectedDate(selectedDate)}</p>
                   <p><strong>Orario:</strong> {slotSelezionato}</p>
-                  <p><strong>Tariffa base:</strong> €{bookingPricing.basePrice}</p>
-                  <p><strong>Prezzo finale:</strong> €{finalPrice}</p>
+                  <p><strong>Tariffa base:</strong> €{bookingPricing.basePrice}{priceUnit(servizioSelezionato)}</p>
+                  <p><strong>Prezzo finale:</strong> €{finalPrice}{priceUnit(servizioSelezionato)}</p>
                   {bookingPricing.surchargeReason && (
                     <p className="text-xs text-muted-foreground">
                       {bookingPricing.surchargeReason}

@@ -14,7 +14,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { catalogoInfermiere } from "@/data/catalogoInfermiere";
 import { catalogoFisioterapista } from "@/data/catalogoFisioterapista";
-import { compareServiceNames } from "@/lib/serviceInfo";
+import { catalogoOss } from "@/data/catalogoOss";
+import { regoleComuniOss } from "@/data/regoleComuniOss";
+import { compareServiceNames, priceUnit } from "@/lib/serviceInfo";
 
 interface ServizioBase {
   nome: string;
@@ -54,26 +56,11 @@ const serviziFisioterapista: ServizioBase[] = catalogoFisioterapista.map((c) => 
   return { nome: c.nome, prezzo: consigliato, prezzoConsigliato: consigliato, minPrezzo: c.min, maxPrezzo: c.max };
 });
 
-const serviziOSS: ServizioBase[] = [
-  { nome: "Igiene personale completa a letto", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Bagno assistito in vasca/doccia", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Vestizione e svestizione assistita", prezzo: 18, prezzoConsigliato: 18 },
-  { nome: "Cambio pannolone e igiene intima", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Mobilizzazione e cambio postura a letto", prezzo: 20, prezzoConsigliato: 20 },
-  { nome: "Trasferimento letto-carrozzina/poltrona", prezzo: 20, prezzoConsigliato: 20 },
-  { nome: "Assistenza alla deambulazione", prezzo: 20, prezzoConsigliato: 20 },
-  { nome: "Assistenza ai pasti e imboccamento", prezzo: 20, prezzoConsigliato: 20 },
-  { nome: "Preparazione pasti a domicilio", prezzo: 18, prezzoConsigliato: 18 },
-  { nome: "Compagnia e sorveglianza diurna (per ora)", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Sorveglianza notturna (per ora)", prezzo: 20, prezzoConsigliato: 20 },
-  { nome: "Accompagnamento a visite mediche", prezzo: 25, prezzoConsigliato: 25 },
-  { nome: "Accompagnamento a passeggiate", prezzo: 18, prezzoConsigliato: 18 },
-  { nome: "Piccola spesa e commissioni", prezzo: 15, prezzoConsigliato: 15 },
-  { nome: "Stimolazione cognitiva e attività ricreative", prezzo: 20, prezzoConsigliato: 20 },
-  { nome: "Supporto nella gestione della casa leggera", prezzo: 18, prezzoConsigliato: 18 },
-  { nome: "Assistenza continuativa diurna (per ora)", prezzo: 18, prezzoConsigliato: 18 },
-  { nome: "Assistenza continuativa notturna (per ora)", prezzo: 22, prezzoConsigliato: 22 },
-];
+// OSS services and price bands come from the official catalog.
+const serviziOSS: ServizioBase[] = catalogoOss.map((c) => {
+  const consigliato = Math.round((c.min + c.max) / 2);
+  return { nome: c.nome, prezzo: consigliato, prezzoConsigliato: consigliato, minPrezzo: c.min, maxPrezzo: c.max };
+});
 
 function getServiziPerTipo(tipo?: string): ServizioBase[] {
   switch (tipo) {
@@ -244,6 +231,22 @@ const SetupProfessionista = () => {
             </p>
           </div>
 
+          {tipo === "oss" && (
+            <details className="mb-6 rounded-lg border bg-secondary/30 p-4 md:p-5">
+              <summary className="cursor-pointer font-semibold text-sm md:text-senior-sm text-primary">
+                Regole comuni per tutte le prestazioni OSS
+              </summary>
+              <div className="mt-3 space-y-3">
+                {regoleComuniOss.map((r) => (
+                  <div key={r.titolo}>
+                    <p className="text-sm font-semibold">{r.titolo}</p>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{r.testo}</p>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+
           <Card className="mb-6 md:mb-8">
             <CardHeader className="p-4 md:p-6">
               <CardTitle className="text-base md:text-senior-lg">Servizi disponibili</CardTitle>
@@ -277,7 +280,7 @@ const SetupProfessionista = () => {
                         {servizio.attivo && (
                           <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                             <Info className="w-3 h-3" />
-                            Consigliato: €{servizio.prezzoConsigliato} (min €{servizio._min} — max €{servizio._max})
+                            Consigliato: €{servizio.prezzoConsigliato}{priceUnit(servizio.nome)} (min €{servizio._min} — max €{servizio._max})
                           </p>
                         )}
                       </div>
