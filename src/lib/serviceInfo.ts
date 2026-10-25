@@ -3,7 +3,6 @@ import { catalogoFisioterapista } from "@/data/catalogoFisioterapista";
 
 export interface SezioneScheda { titolo: string; testo: string }
 export interface SchedaPrestazione {
-  modalita: string;
   durata?: string;
   utente: SezioneScheda[];
   professionista: SezioneScheda[];

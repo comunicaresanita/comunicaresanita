@@ -528,8 +528,11 @@ const DashboardPaziente = () => {
                   type="text"
                   value={ricerca}
                   onChange={(e) => {
-                    setRicerca(e.target.value);
+                    const value = e.target.value;
+                    setRicerca(value);
                     if (searchMode === "professionista") setProfessionistaSelezionato(null);
+                    // Typing again after choosing a service starts a new search, so suggestions show up while typing
+                    else if (prestazioneSelezionata && value !== prestazioneSelezionata) setPrestazioneSelezionata("");
                   }}
                   placeholder={
                     searchMode === "prestazione" ? "Cerca una prestazione..." : "Cerca per nome e cognome..."
