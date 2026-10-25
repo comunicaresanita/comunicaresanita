@@ -17,3 +17,4 @@
 - [x] Nurse catalog replaced with the 63 official services and price bands; info icon (user/professional sheet) on every service list; alphabetical order everywhere. Verified with tests and browser checks (desktop hover, mobile tap, professional setup).
 - [x] Catalogo fisioterapisti: 21 prestazioni, fasce di prezzo e schede utente/professionista; vecchie prestazioni rimosse
 - [x] Nurse info sheets replaced with the new user/professional sheets; "prescritto" names → "(prescrizione medica)", "terapeutico" dropped (catalogs, services trigger, existing offers); "Modalità" removed from every sheet; search suggestions return when retyping after a selection; Assistente digitale on the "Tutti i servizi" page. Verified with 42 tests and browser checks.
+- [ ] OSS catalog replaced with the 16 new services, price bands and user/professional info sheets; old OSS services removed.
