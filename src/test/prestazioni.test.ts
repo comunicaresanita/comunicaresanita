@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { prestazioniDisponibili, prestazioniFisioterapista, prestazioniInfermiere, prestazioniPerProfessione } from "@/data/prestazioni";
+import { prestazioniDisponibili, prestazioniFisioterapista, prestazioniInfermiere, prestazioniOss, prestazioniPerProfessione } from "@/data/prestazioni";
+import { catalogoOss } from "@/data/catalogoOss";
+import { priceUnit } from "@/lib/serviceInfo";
 import { catalogoFisioterapista } from "@/data/catalogoFisioterapista";
 import { catalogoInfermiere } from "@/data/catalogoInfermiere";
 import schede from "@/data/schedePrestazioni.json";
@@ -96,6 +98,36 @@ describe("Nomi e schede delle prestazioni", () => {
   });
 
   it("ogni prestazione con scheda ha un nome presente nel catalogo", () => {
-    expect(Object.keys(schede).sort()).toEqual([...prestazioniInfermiere, ...prestazioniFisioterapista].sort());
+    expect(Object.keys(schede).sort()).toEqual([...prestazioniInfermiere, ...prestazioniFisioterapista, ...prestazioniOss].sort());
+  });
+});
+
+describe("Catalogo OSS", () => {
+  it("contiene esattamente le 16 nuove prestazioni e nessuna di quelle vecchie", () => {
+    expect(prestazioniOss).toHaveLength(16);
+    expect(prestazioniOss).not.toContain("Bagno assistito in vasca/doccia");
+    expect(prestazioniOss).not.toContain("Sorveglianza notturna (per ora)");
+    expect(prestazioniOss).toContain("Routine del mattino con igiene alzata e colazione");
+    expect(prestazioniOss).toEqual(sorted(prestazioniOss));
+  });
+
+  it("usa le fasce di prezzo indicate, a ora o per intervento", () => {
+    const band = (n: string) => catalogoOss.find(c => c.nome === n);
+    expect(band("Accompagnamento per visite commissioni e uscite")).toMatchObject({ min: 30, max: 35, perOra: true });
+    expect(band("Compagnia socializzazione e attività ricreative")).toMatchObject({ min: 20, max: 25, perOra: true });
+    expect(band("Routine della sera con cena igiene e preparazione al riposo")).toMatchObject({ min: 40, max: 50 });
+    expect(priceUnit("Assistenza notturna alla persona")).toBe("/ora");
+    expect(priceUnit("Mobilizzazione e cambio postura a letto")).toBe("");
+  });
+
+  it("ogni prestazione OSS ha la scheda utente e quella del professionista, senza la frase esclusa né numeri di rimando", () => {
+    const all = schede as Record<string, { utente: { titolo: string; testo: string }[]; professionista: { titolo: string; testo: string }[] }>;
+    for (const nome of prestazioniOss) {
+      expect(hasServiceInfo(nome)).toBe(true);
+      expect(all[nome].utente.map(s => s.titolo)).toContain("A che cosa serve");
+      expect(all[nome].professionista.map(s => s.titolo)).toContain("Attenzioni e limiti");
+      for (const s of [...all[nome].utente, ...all[nome].professionista]) expect(s.testo).not.toMatch(/codic[ei] \d|scegli \d/);
+    }
+    expect(JSON.stringify(schede)).not.toMatch(/Figura competente/);
   });
 });
