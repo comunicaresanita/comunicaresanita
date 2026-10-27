@@ -35,6 +35,7 @@ const SERVIZI_INFERMIERISTICI = [
   "Infusione sottocutanea (ipodermoclisi)",
   "Instillazione di colliri o altri preparati oftalmici (prescrizione medica)",
   "Lavaggio vaginale (prescrizione medica)",
+  "Prima valutazione infermieristica domiciliare",
   "Medicazione del Midline",
   "Medicazione del PICC",
   "Medicazione del Port-a-Cath",
@@ -62,7 +63,7 @@ const SERVIZI_INFERMIERISTICI = [
   "Somministrazione di gocce nasali",
   "Somministrazione di insulina per via sottocutanea",
   "Somministrazione di microclisma medicato (prescrizione medica)",
-  "Somministrazione di terapia inalatoria mediante inalatore (prescrizione medica)",
+  "Somministrazione di terapia mediante inalatore (prescrizione medica)",
   "Somministrazione di terapia intramuscolare",
   "Somministrazione di terapia sottocutanea",
   "Somministrazione di terapia sublinguale/orale (prescrizione medica)",
@@ -74,7 +75,7 @@ const SERVIZI_INFERMIERISTICI = [
 
 const SERVIZI_FISIOTERAPIA = [
   "Elettrostimolazione neuromuscolare",
-  "Esercizio personalizzato",
+  "Esercizio terapeutico personalizzato",
   "Ginnastica dolce per anziani",
   "Ginnastica posturale a domicilio",
   "Kinesio taping",
@@ -97,22 +98,19 @@ const SERVIZI_FISIOTERAPIA = [
 ];
 
 const SERVIZI_OSS = [
-  "Accompagnamento per visite commissioni e uscite",
-  "Aiuto nell’alzata e trasferimento letto poltrona carrozzina",
+  "Aiuto nell’alzata e trasferimento da letto a poltrona o carrozzina",
   "Assistenza al pasto e idratazione",
   "Assistenza alla deambulazione",
   "Assistenza diurna alla persona e sollievo al caregiver",
   "Assistenza notturna alla persona",
-  "Compagnia socializzazione e attività ricreative",
+  "Compagnia, socializzazione e attività ricreative",
   "Igiene intima e cambio pannolone con vestizione e sistemazione",
-  "Igiene personale completa in doccia vasca o a letto",
+  "Bagno completo in doccia, vasca o a letto",
   "Mobilizzazione e cambio postura a letto",
-  "Piccola spesa e commissioni per conto della persona",
   "Preparazione pasti a domicilio",
   "Presenza e sorveglianza notturna",
   "Routine del mattino con igiene alzata e colazione",
   "Routine della sera con cena igiene e preparazione al riposo",
-  "Supporto nella gestione leggera della casa",
 ];
 
 serve(async (req) => {

@@ -16,8 +16,8 @@ describe("Prestazioni consentite", () => {
 });
 
 describe("Catalogo infermieri", () => {
-  it("contiene esattamente le 63 nuove prestazioni e nessuna di quelle vecchie", () => {
-    expect(prestazioniInfermiere).toHaveLength(63);
+  it("contiene esattamente le 64 prestazioni e nessuna di quelle vecchie", () => {
+    expect(prestazioniInfermiere).toHaveLength(64);
     expect(prestazioniInfermiere).not.toContain("Medicazione semplice");
     expect(prestazioniInfermiere).not.toContain("Iniezione intramuscolare");
     expect(prestazioniInfermiere).not.toContain("ECG a domicilio");
@@ -30,6 +30,7 @@ describe("Catalogo infermieri", () => {
     expect(band("Medicazione della lesione da pressione, stadio 4")).toMatchObject({ min: 60, max: 85 });
     expect(band("Rimozione di punti di sutura cutanea con filo")).toMatchObject({ min: 20, max: 35 });
     expect(band("Lavaggio vaginale (prescrizione medica)")).toMatchObject({ min: 40, max: 50 });
+    expect(band("Prima valutazione infermieristica domiciliare")).toMatchObject({ min: 40, max: 70 });
   });
 
   it("ogni prestazione infermieristica ha la scheda utente e quella del professionista, senza la frase esclusa", () => {
@@ -88,10 +89,6 @@ describe("Nomi e schede delle prestazioni", () => {
     expect(prestazioniInfermiere).toContain("Somministrazione di microclisma medicato (prescrizione medica)");
   });
 
-  it("non usa la parola «terapeutico» nei nomi", () => {
-    expect(tutte.filter(n => /terapeutico/i.test(n))).toEqual([]);
-    expect(prestazioniFisioterapista).toContain("Esercizio personalizzato");
-  });
 
   it("nessuna scheda mostra la voce «Modalità»", () => {
     expect(Object.values(schede as Record<string, object>).filter(s => "modalita" in s)).toEqual([]);
@@ -103,8 +100,11 @@ describe("Nomi e schede delle prestazioni", () => {
 });
 
 describe("Catalogo OSS", () => {
-  it("contiene esattamente le 16 nuove prestazioni e nessuna di quelle vecchie", () => {
-    expect(prestazioniOss).toHaveLength(16);
+  it("contiene esattamente le 13 prestazioni e nessuna di quelle vecchie", () => {
+    expect(prestazioniOss).toHaveLength(13);
+    expect(prestazioniOss).not.toContain("Piccola spesa e commissioni per conto della persona");
+    expect(prestazioniOss).not.toContain("Supporto nella gestione leggera della casa");
+    expect(prestazioniOss).not.toContain("Accompagnamento per visite commissioni e uscite");
     expect(prestazioniOss).not.toContain("Bagno assistito in vasca/doccia");
     expect(prestazioniOss).not.toContain("Sorveglianza notturna (per ora)");
     expect(prestazioniOss).toContain("Routine del mattino con igiene alzata e colazione");
@@ -113,8 +113,8 @@ describe("Catalogo OSS", () => {
 
   it("usa le fasce di prezzo indicate, a ora o per intervento", () => {
     const band = (n: string) => catalogoOss.find(c => c.nome === n);
-    expect(band("Accompagnamento per visite commissioni e uscite")).toMatchObject({ min: 30, max: 35, perOra: true });
-    expect(band("Compagnia socializzazione e attività ricreative")).toMatchObject({ min: 20, max: 25, perOra: true });
+    expect(band("Presenza e sorveglianza notturna")).toMatchObject({ min: 25, max: 30, perOra: true });
+    expect(band("Compagnia, socializzazione e attività ricreative")).toMatchObject({ min: 20, max: 25, perOra: true });
     expect(band("Routine della sera con cena igiene e preparazione al riposo")).toMatchObject({ min: 40, max: 50 });
     expect(priceUnit("Assistenza notturna alla persona")).toBe("/ora");
     expect(priceUnit("Mobilizzazione e cambio postura a letto")).toBe("");

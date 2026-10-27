@@ -78,6 +78,13 @@
       "when": 1792945132086,
       "tag": "0010_oss_service_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793124645773,
+      "tag": "0011_sync_service_catalogs_oct27",
+      "breakpoints": true
     }
   ]
 }
