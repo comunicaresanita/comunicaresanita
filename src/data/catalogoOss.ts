@@ -17,6 +17,6 @@ export const catalogoOss: PrestazioneCatalogo[] = [
   { nome: "Routine del mattino con igiene alzata e colazione", min: 40, max: 50 },
   { nome: "Routine della sera con cena igiene e preparazione al riposo", min: 40, max: 50 },
   { nome: "Assistenza alla deambulazione", min: 25, max: 35 },
-  { nome: "Aiuto nell’alzata e trasferimento letto poltrona carrozzina", min: 25, max: 35 },
+  { nome: "Aiuto nell’alzata e trasferimento da letto a poltrona o carrozzina", min: 25, max: 35 },
   { nome: "Mobilizzazione e cambio postura a letto", min: 25, max: 35 },
 ].sort((a, b) => a.nome.localeCompare(b.nome, "it"));
