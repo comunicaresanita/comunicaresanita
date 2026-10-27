@@ -67,4 +67,5 @@ export const catalogoInfermiere: PrestazioneCatalogo[] = [
   { nome: "Instillazione di colliri o altri preparati oftalmici (prescrizione medica)", min: 25, max: 30 },
   { nome: "Somministrazione di terapia vaginale: ovuli, compresse o creme vaginali (prescrizione medica)", min: 25, max: 35 },
   { nome: "Lavaggio vaginale (prescrizione medica)", min: 40, max: 50 },
+  { nome: "Prima valutazione infermieristica domiciliare", min: 40, max: 70 },
 ].sort((a, b) => a.nome.localeCompare(b.nome, "it"));

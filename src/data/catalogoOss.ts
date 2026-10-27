@@ -3,10 +3,7 @@
 import type { PrestazioneCatalogo } from "./catalogoInfermiere";
 
 export const catalogoOss: PrestazioneCatalogo[] = [
-  { nome: "Accompagnamento per visite commissioni e uscite", min: 30, max: 35, perOra: true },
-  { nome: "Piccola spesa e commissioni per conto della persona", min: 25, max: 30, perOra: true },
   { nome: "Preparazione pasti a domicilio", min: 25, max: 35 },
-  { nome: "Supporto nella gestione leggera della casa", min: 25, max: 35 },
   { nome: "Assistenza al pasto e idratazione", min: 25, max: 35, perOra: true },
   { nome: "Assistenza diurna alla persona e sollievo al caregiver", min: 25, max: 30, perOra: true },
   { nome: "Assistenza notturna alla persona", min: 30, max: 40, perOra: true },
