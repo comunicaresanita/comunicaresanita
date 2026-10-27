@@ -11,7 +11,7 @@ export const catalogoOss: PrestazioneCatalogo[] = [
   { nome: "Assistenza diurna alla persona e sollievo al caregiver", min: 25, max: 30, perOra: true },
   { nome: "Assistenza notturna alla persona", min: 30, max: 40, perOra: true },
   { nome: "Presenza e sorveglianza notturna", min: 25, max: 30, perOra: true },
-  { nome: "Compagnia socializzazione e attività ricreative", min: 20, max: 25, perOra: true },
+  { nome: "Compagnia, socializzazione e attività ricreative", min: 20, max: 25, perOra: true },
   { nome: "Igiene personale completa in doccia vasca o a letto", min: 35, max: 40, perOra: true },
   { nome: "Igiene intima e cambio pannolone con vestizione e sistemazione", min: 25, max: 35 },
   { nome: "Routine del mattino con igiene alzata e colazione", min: 40, max: 50 },
