@@ -36,6 +36,8 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, onLocationChange, radiusKm, v
   const [drawing, setDrawing] = useState(false);
   const drawingRef = useRef(false);
   drawingRef.current = drawing;
+  // The click fired right after finishing a trace must not move the pin.
+  const ignoreClickUntilRef = useRef(0);
 
   const color = () => {
     const primary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
@@ -74,7 +76,7 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, onLocationChange, radiusKm, v
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
     map.on("click", (e: L.LeafletMouseEvent) => {
-      if (drawingRef.current) return;
+      if (drawingRef.current || Date.now() < ignoreClickUntilRef.current) return;
       placeMarker(map, e.latlng.lat, e.latlng.lng);
       internalPosRef.current = `${e.latlng.lat},${e.latlng.lng}`;
       locationRef.current(e.latlng.lat, e.latlng.lng);
@@ -149,6 +151,7 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, onLocationChange, radiusKm, v
       e.preventDefault();
       e.stopPropagation();
       active = false;
+      ignoreClickUntilRef.current = Date.now() + 500;
       strokeRef.current?.remove();
       strokeRef.current = null;
       if (pts.length >= 3) {
