@@ -10,10 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
-import OpenStreetMapPicker from "@/components/OpenStreetMapPicker";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import ServiceAreaDrawer from "@/components/ServiceAreaDrawer";
-import type { ServiceArea } from "@/lib/distancePricing";
+import ServiceRadiusInput from "@/components/ServiceRadiusInput";
+import { parseRadius, type ServiceArea } from "@/lib/distancePricing";
 import StructuredAddressInput, { composeAddress } from "@/components/StructuredAddressInput";
 import HousingInfoFields, { HousingInfoErrors } from "@/components/HousingInfoFields";
 import { User, Stethoscope, Upload, Eye, EyeOff } from "lucide-react";
@@ -64,7 +64,8 @@ const Registrazione = () => {
   const [floorNumber, setFloorNumber] = useState("");
   const [accessNotes, setAccessNotes] = useState("");
   const [housingErrors, setHousingErrors] = useState<HousingInfoErrors>({});
-  const [longDistanceOk, setLongDistanceOk] = useState(false);
+  const [radius, setRadius] = useState("");
+  const [radiusError, setRadiusError] = useState(false);
   const [mapLat, setMapLat] = useState<number | null>(null);
   const [mapLng, setMapLng] = useState<number | null>(null);
   const [serviceArea, setServiceArea] = useState<ServiceArea | null>(null);
@@ -135,6 +136,14 @@ const Registrazione = () => {
       }
     }
 
+    if (ruolo === "professionista" && !parseRadius(radius)) {
+      setRadiusError(true);
+      toast({ title: "Distanza obbligatoria", description: "Indica quanti km vuoi coprire dal tuo segnalino.", variant: "destructive" });
+      document.getElementById("service-radius")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("service-radius")?.focus();
+      return;
+    }
+
     if (ruolo === "professionista" && !mapLat) {
       toast({ title: "Posizione obbligatoria", description: "Indica sulla mappa il punto in cui vuoi essere visibile.", variant: "destructive" });
       return;
@@ -196,7 +205,7 @@ const Registrazione = () => {
         .eq("user_id", signedUser.id);
     }
     if (signedUser && ruolo === "professionista") {
-      await supabase.from("profiles").update({ long_distance_ok: longDistanceOk, service_area: serviceArea && serviceArea.length >= 3 ? serviceArea : null } as any).eq("user_id", signedUser.id);
+      await supabase.from("profiles").update({ service_radius_km: parseRadius(radius), service_area: serviceArea && serviceArea.length >= 3 ? serviceArea : null } as any).eq("user_id", signedUser.id);
     }
 
     toast({ title: "Registrazione completata!", description: "Il tuo account è stato creato con successo." });
@@ -488,35 +497,20 @@ const Registrazione = () => {
                       </div>
                     </div>
                     <div className="border-t pt-6">
-                      <h3 className="text-senior-lg font-semibold mb-4">Posizione sulla mappa *</h3>
-                      <OpenStreetMapPicker
-                        onLocationSelect={(lat, lng) => {
-                          setMapLat(lat);
-                          setMapLng(lng);
-                        }}
-                        initialLat={mapLat ?? undefined}
-                        initialLng={mapLng ?? undefined}
-                      />
+                      <h3 className="text-senior-lg font-semibold mb-4">Area da coprire *</h3>
+                      <ServiceRadiusInput value={radius} onChange={(v) => { setRadius(v); setRadiusError(false); }} error={radiusError} />
                     </div>
                     <div className="border-t pt-6">
-                      <h3 className="text-senior-lg font-semibold mb-2">Prestazioni a lunga distanza</h3>
-                      <div className="flex items-start space-x-3">
-                        <Checkbox id="long_distance" checked={longDistanceOk} onCheckedChange={(c) => setLongDistanceOk(c === true)} className="mt-1" />
-                        <Label htmlFor="long_distance" className="text-senior-sm leading-relaxed cursor-pointer">
-                          Sono disponibile a effettuare prestazioni a più di 10 km dalla mia zona. Su queste prestazioni il prezzo avrà una maggiorazione del 10%. Se non accetti, ti vedranno solo gli utenti entro 10 km. Potrai cambiare questa scelta dal tuo profilo.
-                        </Label>
-                      </div>
-                    </div>
-                    <div className="border-t pt-6">
-                      <h3 className="text-senior-lg font-semibold mb-2">Zona in cui vuoi operare (facoltativo)</h3>
+                      <h3 className="text-senior-lg font-semibold mb-2">Posizione e zona sulla mappa *</h3>
                       <ServiceAreaDrawer
                         centerLat={mapLat ?? undefined}
                         centerLng={mapLng ?? undefined}
-                        longDistanceOk={longDistanceOk}
+                        onLocationChange={(lat, lng) => { setMapLat(lat); setMapLng(lng); }}
+                        radiusKm={parseRadius(radius)}
                         value={serviceArea}
                         onChange={setServiceArea}
                       />
-                      <p className="text-sm text-muted-foreground mt-2">Potrai disegnarla o modificarla anche dopo, dalla pagina «La tua posizione».</p>
+                      <p className="text-sm text-muted-foreground mt-2">Potrai modificare segnalino, distanza e zona anche dopo, dalla pagina «La tua posizione».</p>
                     </div>
                     <div className="border-t pt-6">
                       <h3 className="text-senior-lg font-semibold mb-4">Documenti di verifica</h3>

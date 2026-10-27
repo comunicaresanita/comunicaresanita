@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import AuthHeader from "@/components/AuthHeader";
 import Footer from "@/components/Footer";
-import OpenStreetMapPicker from "@/components/OpenStreetMapPicker";
 import ServiceAreaDrawer from "@/components/ServiceAreaDrawer";
-import type { ServiceArea } from "@/lib/distancePricing";
+import ServiceRadiusInput from "@/components/ServiceRadiusInput";
+import { parseRadius, type ServiceArea } from "@/lib/distancePricing";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,8 @@ const SetupPosizione = () => {
   const [mapLat, setMapLat] = useState<number | undefined>(profile?.lat ?? undefined);
   const [mapLng, setMapLng] = useState<number | undefined>(profile?.lng ?? undefined);
   const [serviceArea, setServiceArea] = useState<ServiceArea | null>(((profile as any)?.service_area as ServiceArea) ?? null);
+  const [radius, setRadius] = useState<string>((profile as any)?.service_radius_km ? String((profile as any).service_radius_km) : "");
+  const [radiusError, setRadiusError] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -27,10 +29,18 @@ const SetupPosizione = () => {
       toast({ title: "Posiziona il segnalino sulla mappa", variant: "destructive" });
       return;
     }
+    const radiusKm = parseRadius(radius);
+    if (!radiusKm) {
+      setRadiusError(true);
+      toast({ title: "Distanza obbligatoria", description: "Indica quanti km vuoi coprire dal tuo segnalino.", variant: "destructive" });
+      document.getElementById("service-radius")?.focus();
+      return;
+    }
+    setRadiusError(false);
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ lat: mapLat, lng: mapLng, service_area: serviceArea && serviceArea.length >= 3 ? serviceArea : null } as any)
+      .update({ lat: mapLat, lng: mapLng, service_radius_km: radiusKm, service_area: serviceArea && serviceArea.length >= 3 ? serviceArea : null } as any)
       .eq("user_id", profile.user_id);
     setSaving(false);
     if (error) {
@@ -60,39 +70,31 @@ const SetupPosizione = () => {
               <h1 className="text-senior-2xl font-bold">La tua posizione</h1>
             </div>
             <p className="text-senior-base text-muted-foreground ml-[44px]">
-              Aggiorna il punto in cui gli utenti vedranno la tua posizione sulla mappa.
+              Aggiorna il punto in cui gli utenti vedranno la tua posizione e l'area che vuoi coprire.
             </p>
           </div>
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-senior-lg">Mappa</CardTitle>
-              <CardDescription className="text-senior-sm">
-                Clicca sulla mappa o trascina il segnalino per aggiornare la tua posizione.
-              </CardDescription>
+              <CardTitle className="text-senior-lg">Area da coprire</CardTitle>
+              <CardDescription className="text-senior-sm">Scegli fino a quanti km dal tuo segnalino vuoi lavorare.</CardDescription>
             </CardHeader>
             <CardContent>
-              <OpenStreetMapPicker
-                onLocationSelect={(lat, lng) => {
-                  setMapLat(lat);
-                  setMapLng(lng);
-                }}
-                initialLat={mapLat}
-                initialLng={mapLng}
-              />
+              <ServiceRadiusInput value={radius} onChange={(v) => { setRadius(v); setRadiusError(false); }} error={radiusError} />
             </CardContent>
           </Card>
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-senior-lg">Zona in cui vuoi operare</CardTitle>
-              <CardDescription className="text-senior-sm">Disegna, modifica o cancella la zona in cui vuoi lavorare.</CardDescription>
+              <CardTitle className="text-senior-lg">Mappa</CardTitle>
+              <CardDescription className="text-senior-sm">Posiziona il segnalino e, se vuoi, disegna la zona in cui lavorare.</CardDescription>
             </CardHeader>
             <CardContent>
               <ServiceAreaDrawer
                 centerLat={mapLat}
                 centerLng={mapLng}
-                longDistanceOk={!!(profile as any)?.long_distance_ok}
+                onLocationChange={(lat, lng) => { setMapLat(lat); setMapLng(lng); }}
+                radiusKm={parseRadius(radius)}
                 value={serviceArea}
                 onChange={setServiceArea}
               />

@@ -10,7 +10,7 @@
 - [x] "Ripeti ultima prestazione" on Home with login / empty-state handling and prefilled booking.
 - [x] Login required to see professionals; "per me / familiare" choice; save missing family address.
 - [x] Sort by distance (km shown) or price; >10 km = +10% "prestazione a lunga distanza".
-- [x] Professionals choose long-distance availability at signup and in profile.
+- [x] Professionals choose the km they cover (required, placeholder 10, arrows ±5) at signup, in profile and on the position page; a drawn zone replaces the km range; the patient map always shows everyone; pin and zone on a single map. Verified with 8 rule tests and a browser check of the signup map.
 - [x] Family member data prefilled when booking "per un familiare" (also saved at signup).
 - [x] Street suggestions while typing, house number kept in its own field.
 - [x] Drawn service zone now stays visible while and after tracing (map container classes no longer reset by React, which wiped Leaflet's CSS and turned the map grey); the zone map also frames a ~10 km area around the pin when placed. Verified on the signup flow with a real trace and unit tests (23 passed).

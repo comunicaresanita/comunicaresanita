@@ -11,7 +11,7 @@ import ChatbotWidget from "@/components/ChatbotWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { fuzzySearchServices, haversineKm } from "@/lib/searchUtils";
-import { priceWithDistance, isLongDistance, isReachable, isInServiceArea } from "@/lib/distancePricing";
+import { priceWithDistance, isLongDistance, isReachable } from "@/lib/distancePricing";
 import StructuredAddressInput, { composeAddress } from "@/components/StructuredAddressInput";
 import { useToast } from "@/hooks/use-toast";
 import { SlidersHorizontal, RotateCcw, MoveHorizontal, ArrowUpNarrowWide, ArrowDownWideNarrow } from "lucide-react";
@@ -68,7 +68,7 @@ interface ProfessionistaData {
   professionalType: string;
   photoUrl: string | null;
   verified: boolean;
-  longDistanceOk: boolean;
+  radiusKm: number | null;
   serviceArea?: [number, number][] | null;
 }
 
@@ -269,7 +269,7 @@ const DashboardPaziente = () => {
   const refCoords = searchFor === "other" ? caregiverCoords : userCoords;
   const showList = Boolean(user && searchFor);
 
-  // Filter professionals by selected service, reachability (10 km rule) and sort
+  // Filter professionals by selected service, coverage (drawn zone, else chosen radius) and sort
   const professionistiFiltrati = useMemo(() => {
     if (!prestazioneSelezionata) return [];
     let filtered = professionisti.filter((p) => p.servizi.some((s) => s.name === prestazioneSelezionata));
@@ -277,7 +277,7 @@ const DashboardPaziente = () => {
       filtered.forEach((p: any) => {
         p._distKm = haversineKm(refCoords.lat, refCoords.lng, p.lat, p.lng);
       });
-      filtered = filtered.filter((p: any) => isReachable(p._distKm, p.longDistanceOk) && isInServiceArea(refCoords.lat, refCoords.lng, p.serviceArea));
+      filtered = filtered.filter((p: any) => isReachable({ lat: refCoords.lat, lng: refCoords.lng, km: p._distKm, radiusKm: p.radiusKm, area: p.serviceArea }));
     } else {
       filtered.forEach((p: any) => { delete p._distKm; });
     }
@@ -377,7 +377,7 @@ const DashboardPaziente = () => {
     const fetchProfessionisti = async () => {
       const { data: professionalsRaw } = await supabase
         .from("public_professionals" as any)
-        .select("id, first_name, last_name, bio, lat, lng, zona, professional_type, photo_url, verified, long_distance_ok, service_area");
+        .select("id, first_name, last_name, bio, lat, lng, zona, professional_type, photo_url, verified, service_radius_km, service_area");
       const professionals = (professionalsRaw as any[] | null);
 
       if (!professionals || professionals.length === 0) return;
@@ -411,7 +411,7 @@ const DashboardPaziente = () => {
             professionalType: (p as any).professional_type || "infermiere",
             photoUrl: (p as any).photo_url || null,
             verified: (p as any).verified || false,
-            longDistanceOk: !!(p as any).long_distance_ok,
+            radiusKm: (p as any).service_radius_km ?? null,
             serviceArea: (p as any).service_area ?? null,
           };
         });
@@ -421,10 +421,8 @@ const DashboardPaziente = () => {
   }, []);
 
   // Professionals to show on map
-  const mapProfessionals = useMemo(() => {
-    if (prestazioneSelezionata) return professionistiFiltrati;
-    return professionisti;
-  }, [professionistaSelezionato, prestazioneSelezionata, professionistiFiltrati, professionisti]);
+  // The map is only illustrative: it always shows every professional on the platform.
+  const mapProfessionals = professionisti;
 
   // Map rendering (Leaflet + OpenStreetMap tiles)
   useEffect(() => {

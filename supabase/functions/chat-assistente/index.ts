@@ -132,7 +132,7 @@ serve(async (req) => {
 
     const { data: professionals } = await sb
       .from("profiles")
-      .select("id, first_name, last_name, professional_type, zona, bio, lat, lng, long_distance_ok, service_area")
+      .select("id, first_name, last_name, professional_type, zona, bio, lat, lng, service_radius_km, service_area")
       .eq("role", "professionista");
 
     const { data: allServices } = await sb
@@ -161,9 +161,12 @@ serve(async (req) => {
       .map(p => ({ ...p, dist: km(p.lat, p.lng) }))
       .filter((p: any) => {
         if (refLat === null || refLng === null) return true;
-        if (p.dist !== null && p.dist > 10 && !p.long_distance_ok) return false;
+        // A drawn zone replaces the range; otherwise only the chosen radius (default 10 km) counts.
         const area = p.service_area;
-        if (!Array.isArray(area) || area.length < 3) return true;
+        if (!Array.isArray(area) || area.length < 3) {
+          const radius = typeof p.service_radius_km === "number" && p.service_radius_km > 0 ? p.service_radius_km : 10;
+          return p.dist === null || p.dist <= radius;
+        }
         let inside = false;
         for (let i = 0, j = area.length - 1; i < area.length; j = i++) {
           const [yi, xi] = area[i], [yj, xj] = area[j];
