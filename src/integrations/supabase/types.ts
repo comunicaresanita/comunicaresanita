@@ -275,6 +275,7 @@ export type Database = {
           recent_service_searches: string[]
           role: string
           service_area: Json | null
+          service_radius_km: number
           user_id: string
           verified: boolean
           zona: string | null
@@ -318,6 +319,7 @@ export type Database = {
           recent_service_searches?: string[]
           role: string
           service_area?: Json | null
+          service_radius_km?: number
           user_id: string
           verified?: boolean
           zona?: string | null
@@ -361,6 +363,7 @@ export type Database = {
           recent_service_searches?: string[]
           role?: string
           service_area?: Json | null
+          service_radius_km?: number
           user_id?: string
           verified?: boolean
           zona?: string | null
@@ -488,6 +491,7 @@ export type Database = {
           professional_type: string | null
           role: string | null
           service_area: Json | null
+          service_radius_km: number | null
           verified: boolean | null
           zona: string | null
         }
@@ -504,6 +508,7 @@ export type Database = {
           professional_type?: string | null
           role?: string | null
           service_area?: Json | null
+          service_radius_km?: number | null
           verified?: boolean | null
           zona?: string | null
         }
@@ -520,6 +525,7 @@ export type Database = {
           professional_type?: string | null
           role?: string | null
           service_area?: Json | null
+          service_radius_km?: number | null
           verified?: boolean | null
           zona?: string | null
         }
