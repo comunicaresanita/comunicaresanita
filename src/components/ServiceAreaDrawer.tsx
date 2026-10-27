@@ -4,12 +4,14 @@ import "leaflet/dist/leaflet.css";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Lock, Move } from "lucide-react";
 import { bluePinIcon } from "@/lib/leafletPin";
-import { LONG_DISTANCE_KM, type ServiceArea } from "@/lib/distancePricing";
+import { DEFAULT_RADIUS_KM, hasServiceArea, type ServiceArea } from "@/lib/distancePricing";
 
 interface Props {
   centerLat?: number;
   centerLng?: number;
-  longDistanceOk: boolean;
+  /** Called when the professional places or drags the pin (mandatory position). */
+  onLocationChange: (lat: number, lng: number) => void;
+  radiusKm: number | null;
   value: ServiceArea | null;
   onChange: (area: ServiceArea | null) => void;
 }
@@ -17,13 +19,20 @@ interface Props {
 const MIN_PX = 6;
 const MAX_POINTS = 300;
 
-const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChange }: Props) => {
+/** Single map: place the public pin (mandatory) and optionally draw the service zone freehand. */
+const ServiceAreaDrawer = ({ centerLat, centerLng, onLocationChange, radiusKm, value, onChange }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
   const strokeRef = useRef<L.Polyline | null>(null);
   const changeRef = useRef(onChange);
   changeRef.current = onChange;
+  const locationRef = useRef(onLocationChange);
+  locationRef.current = onLocationChange;
+  const internalPosRef = useRef<string | null>(null);
+  const radiusRef = useRef(radiusKm);
+  radiusRef.current = radiusKm;
   const [drawing, setDrawing] = useState(false);
   const drawingRef = useRef(false);
   drawingRef.current = drawing;
@@ -33,9 +42,26 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     return primary ? `hsl(${primary})` : "currentColor";
   };
 
-  const fitTenKm = (map: L.Map, lat: number, lng: number) => {
-    // Frame an area of ~10 km around the pin so the working radius is visible right away.
-    map.fitBounds(L.latLng(lat, lng).toBounds(LONG_DISTANCE_KM * 2 * 1000), { animate: false });
+  const frame = (map: L.Map, lat: number, lng: number) => {
+    // Frame the chosen coverage (10 km by default) around the pin; zoom stays free.
+    const km = radiusRef.current && radiusRef.current > 0 ? radiusRef.current : DEFAULT_RADIUS_KM;
+    map.fitBounds(L.latLng(lat, lng).toBounds(km * 2 * 1000), { animate: false });
+  };
+
+  const placeMarker = (map: L.Map, lat: number, lng: number) => {
+    if (markerRef.current) {
+      markerRef.current.setLatLng([lat, lng]);
+      return;
+    }
+    const marker = L.marker([lat, lng], { draggable: true, icon: bluePinIcon() })
+      .addTo(map)
+      .bindTooltip("Trascina per spostare");
+    marker.on("dragend", () => {
+      const p = marker.getLatLng();
+      internalPosRef.current = `${p.lat},${p.lng}`;
+      locationRef.current(p.lat, p.lng);
+    });
+    markerRef.current = marker;
   };
 
   useEffect(() => {
@@ -47,15 +73,29 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
-    if (centerLat && centerLng) fitTenKm(map, centerLat, centerLng);
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      if (drawingRef.current) return;
+      placeMarker(map, e.latlng.lat, e.latlng.lng);
+      internalPosRef.current = `${e.latlng.lat},${e.latlng.lng}`;
+      locationRef.current(e.latlng.lat, e.latlng.lng);
+    });
+    if (centerLat && centerLng) {
+      placeMarker(map, centerLat, centerLng);
+      frame(map, centerLat, centerLng);
+    }
     setTimeout(() => map.invalidateSize(), 200);
-    return () => { map.remove(); mapRef.current = null; };
+    return () => { map.remove(); mapRef.current = null; markerRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Position chosen from outside (e.g. address suggestion): move the pin and frame the area.
   useEffect(() => {
     const map = mapRef.current;
-    if (map && centerLat && centerLng) fitTenKm(map, centerLat, centerLng);
+    if (!map || !centerLat || !centerLng) return;
+    placeMarker(map, centerLat, centerLng);
+    if (internalPosRef.current === `${centerLat},${centerLng}`) return;
+    frame(map, centerLat, centerLng);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [centerLat, centerLng]);
 
   // Lock the map while drawing so finger/mouse movements trace the zone instead of panning.
@@ -64,6 +104,7 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     const el = containerRef.current;
     if (!map || !el) return;
     const handlers = [map.dragging, map.touchZoom, map.doubleClickZoom, map.scrollWheelZoom, map.boxZoom, map.keyboard];
+    markerRef.current?.dragging?.[drawing ? "disable" : "enable"]();
     if (!drawing) {
       handlers.forEach((h) => h?.enable());
       el.style.touchAction = "";
@@ -106,6 +147,7 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     const up = (e: PointerEvent) => {
       if (!active) return;
       e.preventDefault();
+      e.stopPropagation();
       active = false;
       strokeRef.current?.remove();
       strokeRef.current = null;
@@ -130,30 +172,30 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
     };
   }, [drawing]);
 
+  const hasArea = hasServiceArea(value);
   useEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
     layer.clearLayers();
     const c = color();
-    if (centerLat && centerLng) {
-      L.marker([centerLat, centerLng], { icon: bluePinIcon(), interactive: false }).addTo(layer);
-      if (!longDistanceOk) {
-        L.circle([centerLat, centerLng], { radius: LONG_DISTANCE_KM * 1000, color: c, weight: 1, dashArray: "6 6", fillOpacity: 0.04, interactive: false }).addTo(layer);
-      }
+    if (centerLat && centerLng && !hasArea && radiusKm && radiusKm > 0) {
+      L.circle([centerLat, centerLng], { radius: radiusKm * 1000, color: c, weight: 1, dashArray: "6 6", fillOpacity: 0.04, interactive: false }).addTo(layer);
     }
-    if (value && value.length >= 3) L.polygon(value, { color: c, weight: 2, fillOpacity: 0.2, interactive: false }).addTo(layer);
-  }, [value, centerLat, centerLng, longDistanceOk]);
+    if (hasArea) L.polygon(value!, { color: c, weight: 2, fillOpacity: 0.2, interactive: false }).addTo(layer);
+  }, [value, centerLat, centerLng, radiusKm, hasArea]);
 
-  const hasArea = !!value && value.length >= 3;
   return (
     <div className="space-y-3">
       <p className="text-senior-sm text-muted-foreground">
-        Facoltativo. Prima sposta e ingrandisci la mappa sulla zona che ti interessa, poi tocca «Disegna la zona»: la mappa si blocca e puoi tracciare il contorno a mano libera con il dito o il mouse. Gli utenti fuori dalla zona disegnata non ti vedranno. Se non disegni nulla, conta solo il raggio impostato{longDistanceOk ? "" : " (cerchio tratteggiato di 10 km)"}.
+        <strong className="text-foreground">1. Segnalino (obbligatorio).</strong> Tocca la mappa o trascina il segnalino nel punto in cui gli utenti vedranno la tua posizione. Non deve per forza essere il tuo indirizzo di casa.
+      </p>
+      <p className="text-senior-sm text-muted-foreground">
+        <strong className="text-foreground">2. Zona (facoltativa).</strong> Sposta e ingrandisci la mappa, poi tocca «Disegna la zona»: la mappa si blocca e puoi tracciare il contorno a mano libera. Se disegni una zona, ti vedranno solo gli utenti al suo interno; altrimenti conta la distanza scelta (cerchio tratteggiato).
       </p>
       <div className={`relative rounded-lg transition-shadow ${drawing ? "ring-2 ring-primary cursor-crosshair" : ""}`}>
         {/* NB: the map container classes must never change after L.map() init — React would
             reset className and wipe Leaflet's own classes, breaking tiles and controls. */}
-        <div ref={containerRef} className="w-full h-80 rounded-lg border z-0" />
+        <div ref={containerRef} className="w-full h-80 md:h-96 rounded-lg border z-0" />
         {drawing && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[500] flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-sm shadow pointer-events-none">
             <Lock className="w-4 h-4" /> Mappa bloccata: traccia la zona
@@ -173,7 +215,9 @@ const ServiceAreaDrawer = ({ centerLat, centerLng, longDistanceOk, value, onChan
         <Button type="button" variant="outline" disabled={!hasArea} onClick={() => onChange(null)} className="gap-2">
           <Trash2 className="w-4 h-4" /> Cancella zona
         </Button>
-        <span className="text-sm text-muted-foreground">{hasArea ? "Zona disegnata" : "Nessuna zona disegnata"}</span>
+        <span className="text-sm text-muted-foreground">
+          {centerLat && centerLng ? "Segnalino posizionato" : "Segnalino da posizionare"} · {hasArea ? "zona disegnata" : "nessuna zona disegnata"}
+        </span>
       </div>
     </div>
   );
