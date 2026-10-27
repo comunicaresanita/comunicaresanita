@@ -11,7 +11,7 @@ import ChatbotWidget from "@/components/ChatbotWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { fuzzySearchServices, haversineKm } from "@/lib/searchUtils";
-import { priceWithDistance, isLongDistance, isReachable, isInServiceArea } from "@/lib/distancePricing";
+import { priceWithDistance, isLongDistance, isReachable } from "@/lib/distancePricing";
 import StructuredAddressInput, { composeAddress } from "@/components/StructuredAddressInput";
 import { useToast } from "@/hooks/use-toast";
 import { SlidersHorizontal, RotateCcw, MoveHorizontal, ArrowUpNarrowWide, ArrowDownWideNarrow } from "lucide-react";
