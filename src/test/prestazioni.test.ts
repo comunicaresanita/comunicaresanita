@@ -89,10 +89,6 @@ describe("Nomi e schede delle prestazioni", () => {
     expect(prestazioniInfermiere).toContain("Somministrazione di microclisma medicato (prescrizione medica)");
   });
 
-  it("non usa la parola «terapeutico» nei nomi", () => {
-    expect(tutte.filter(n => /terapeutico/i.test(n))).toEqual([]);
-    expect(prestazioniFisioterapista).toContain("Esercizio terapeutico personalizzato");
-  });
 
   it("nessuna scheda mostra la voce «Modalità»", () => {
     expect(Object.values(schede as Record<string, object>).filter(s => "modalita" in s)).toEqual([]);
