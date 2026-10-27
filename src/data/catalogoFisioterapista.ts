@@ -4,7 +4,7 @@ import type { PrestazioneCatalogo } from "./catalogoInfermiere";
 
 export const catalogoFisioterapista: PrestazioneCatalogo[] = [
   { nome: "Kinesio taping", min: 30, max: 40 },
-  { nome: "Esercizio personalizzato", min: 45, max: 65 },
+  { nome: "Esercizio terapeutico personalizzato", min: 45, max: 65 },
   { nome: "Ginnastica dolce per anziani", min: 40, max: 55 },
   { nome: "Ginnastica posturale a domicilio", min: 45, max: 60 },
   { nome: "Riabilitazione neurologica", min: 55, max: 75 },
