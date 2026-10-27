@@ -46,7 +46,7 @@ export const catalogoInfermiere: PrestazioneCatalogo[] = [
   { nome: "Somministrazione di gocce auricolari", min: 25, max: 30 },
   { nome: "Somministrazione di gocce nasali", min: 25, max: 30 },
   { nome: "Aerosolterapia", min: 25, max: 35 },
-  { nome: "Somministrazione di terapia inalatoria mediante inalatore (prescrizione medica)", min: 25, max: 30 },
+  { nome: "Somministrazione di terapia mediante inalatore (prescrizione medica)", min: 25, max: 30 },
   { nome: "Somministrazione di eparina a basso peso molecolare", min: 25, max: 35 },
   { nome: "Somministrazione di insulina per via sottocutanea", min: 25, max: 35 },
   { nome: "Somministrazione di terapia intramuscolare", min: 25, max: 35 },
