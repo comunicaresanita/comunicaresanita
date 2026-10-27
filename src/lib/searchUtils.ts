@@ -52,7 +52,7 @@ const synonymMap: Record<string, string[]> = {
   "insulina": ["insulina"],
   "aerosol": ["aerosolterapia"],
   "inalatore": ["inalatoria"],
-  "spray": ["inalatoria", "gocce nasali"],
+  "spray": ["inalatore", "gocce nasali"],
   "orecchio": ["gocce auricolari"],
   "orecchie": ["gocce auricolari"],
   "naso": ["gocce nasali"],
