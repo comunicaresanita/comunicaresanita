@@ -228,6 +228,14 @@ const Profilo = () => {
       }
     }
 
+    if (profile.role === "professionista" && !parseRadius(radius)) {
+      setRadiusError(true);
+      toast({ title: "Distanza obbligatoria", description: "Indica quanti km vuoi coprire dal tuo segnalino.", variant: "destructive" });
+      document.getElementById("service-radius")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("service-radius")?.focus();
+      return false;
+    }
+
     setSaving(true);
     const updates: any = {
       first_name: firstName,
