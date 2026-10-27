@@ -1,0 +1,128 @@
+CREATE OR REPLACE FUNCTION public.nurse_service_catalog()
+ RETURNS TABLE(name text, min_price integer, max_price integer)
+ LANGUAGE sql IMMUTABLE SET search_path TO 'public'
+AS $function$
+  SELECT v.name, v.min_price, v.max_price FROM (VALUES
+    ('Bendaggio compressivo', 35, 50),
+    ('Bendaggio compressivo multistrato', 55, 80),
+    ('Bendaggio elastocompressivo degli arti inferiori', 45, 70),
+    ('Bendaggio semplice', 25, 40),
+    ('Cateterismo vescicale intermittente per svuotamento della vescica', 30, 45),
+    ('Posizionamento o sostituzione di catetere vescicale maschile o femminile', 50, 65),
+    ('Clisma evacuativo mediante dispositivo tipo clisma-sac/enteroclisma', 40, 60),
+    ('Clistere evacuativo con sonda rettale', 35, 55),
+    ('Clistere evacuativo senza sonda rettale', 25, 40),
+    ('Somministrazione di microclisma medicato (prescrizione medica)', 25, 35),
+    ('Gestione della colostomia', 35, 55),
+    ('Gestione dell’ileostomia', 35, 55),
+    ('Gestione della nefrostomia', 35, 55),
+    ('Gestione della tracheostomia', 50, 70),
+    ('Gestione dell’urostomia', 35, 55),
+    ('Medicazione del catetere venoso centrale (CVC)', 40, 55),
+    ('Medicazione del Midline', 35, 45),
+    ('Medicazione del PICC', 40, 50),
+    ('Medicazione del Port-a-Cath', 40, 55),
+    ('Medicazione di ferita chirurgica complessa', 50, 75),
+    ('Medicazione di ferita chirurgica semplice', 30, 45),
+    ('Medicazione di ferita traumatica complessa', 55, 75),
+    ('Medicazione di ferita traumatica profonda', 45, 65),
+    ('Medicazione di ferita traumatica superficiale', 30, 45),
+    ('Valutazione e protezione cutanea nella lesione da pressione, stadio 1', 25, 35),
+    ('Medicazione della lesione da pressione, stadio 2', 30, 45),
+    ('Medicazione della lesione da pressione, stadio 3', 45, 65),
+    ('Medicazione della lesione da pressione, stadio 4', 60, 85),
+    ('Medicazione del sito PEG e cura della cute peristomale lesionata', 30, 45),
+    ('Controllo infermieristico combinato: glicemia capillare e rilevazione completa dei parametri vitali', 35, 45),
+    ('Misurazione della glicemia capillare', 25, 30),
+    ('Rilevazione completa dei parametri vitali', 30, 40),
+    ('Educazione e addestramento del caregiver alla gestione della PEG', 40, 50),
+    ('Educazione e addestramento del caregiver alla gestione del sondino nasogastrico', 40, 50),
+    ('Gestione della nutrizione parenterale (prescrizione medica)', 50, 75),
+    ('Gestione della PEG con somministrazione della nutrizione enterale (prescrizione medica)', 45, 60),
+    ('Gestione del sondino nasogastrico con somministrazione della nutrizione enterale (prescrizione medica)', 45, 60),
+    ('Rimozione di graffette metalliche', 25, 40),
+    ('Rimozione di punti di sutura cutanea con filo', 20, 35),
+    ('Somministrazione di gocce auricolari', 25, 30),
+    ('Somministrazione di gocce nasali', 25, 30),
+    ('Aerosolterapia', 25, 35),
+    ('Somministrazione di terapia mediante inalatore (prescrizione medica)', 25, 30),
+    ('Somministrazione di eparina a basso peso molecolare', 25, 35),
+    ('Somministrazione di insulina per via sottocutanea', 25, 35),
+    ('Somministrazione di terapia intramuscolare', 25, 35),
+    ('Somministrazione di terapia sottocutanea', 25, 35),
+    ('Gestione della terapia infusionale tramite pompa', 45, 65),
+    ('Infusione endovenosa con accesso venoso già presente', 40, 55),
+    ('Infusione endovenosa con posizionamento dell''accesso incluso', 50, 70),
+    ('Infusione sottocutanea (ipodermoclisi)', 30, 45),
+    ('Somministrazione di terapia tramite catetere venoso centrale (CVC)', 45, 65),
+    ('Somministrazione di terapia tramite PICC o Midline', 40, 60),
+    ('Preparazione settimanale della terapia orale', 25, 40),
+    ('Somministrazione di farmaci tramite PEG', 30, 45),
+    ('Somministrazione di farmaci tramite sondino nasogastrico', 30, 45),
+    ('Somministrazione di terapia sublinguale/orale (prescrizione medica)', 25, 30),
+    ('Somministrazione di farmaci per via rettale: supposte o preparati (prescrizione medica)', 25, 30),
+    ('Applicazione di terapia topica: creme, pomate o gel medicati (prescrizione medica)', 25, 30),
+    ('Applicazione o sostituzione di cerotto medicato transdermico', 25, 30),
+    ('Instillazione di colliri o altri preparati oftalmici (prescrizione medica)', 25, 30),
+    ('Somministrazione di terapia vaginale: ovuli, compresse o creme vaginali (prescrizione medica)', 25, 35),
+    ('Lavaggio vaginale (prescrizione medica)', 40, 50),
+    ('Prima valutazione infermieristica domiciliare', 40, 70)
+  ) AS v(name, min_price, max_price)
+$function$;
+
+CREATE OR REPLACE FUNCTION public.oss_service_catalog()
+ RETURNS TABLE(name text, min_price integer, max_price integer)
+ LANGUAGE sql IMMUTABLE SET search_path TO 'public'
+AS $function$
+  SELECT v.name, v.min_price, v.max_price FROM (VALUES
+    ('Preparazione pasti a domicilio', 25, 35),
+    ('Assistenza al pasto e idratazione', 25, 35),
+    ('Assistenza diurna alla persona e sollievo al caregiver', 25, 30),
+    ('Assistenza notturna alla persona', 30, 40),
+    ('Presenza e sorveglianza notturna', 25, 30),
+    ('Compagnia, socializzazione e attività ricreative', 20, 25),
+    ('Bagno completo in doccia, vasca o a letto', 35, 40),
+    ('Igiene intima e cambio pannolone con vestizione e sistemazione', 25, 35),
+    ('Routine del mattino con igiene alzata e colazione', 40, 50),
+    ('Routine della sera con cena igiene e preparazione al riposo', 40, 50),
+    ('Assistenza alla deambulazione', 25, 35),
+    ('Aiuto nell’alzata e trasferimento da letto a poltrona o carrozzina', 25, 35),
+    ('Mobilizzazione e cambio postura a letto', 25, 35)
+  ) AS v(name, min_price, max_price)
+$function$;
+
+CREATE OR REPLACE FUNCTION public.physio_service_catalog()
+ RETURNS TABLE(name text, min_price integer, max_price integer)
+ LANGUAGE sql IMMUTABLE SET search_path TO 'public'
+AS $function$
+  SELECT v.name, v.min_price, v.max_price FROM (VALUES
+    ('Kinesio taping', 30, 40),
+    ('Esercizio terapeutico personalizzato', 45, 65),
+    ('Ginnastica dolce per anziani', 40, 55),
+    ('Ginnastica posturale a domicilio', 45, 60),
+    ('Riabilitazione neurologica', 55, 75),
+    ('Riabilitazione post frattura', 50, 65),
+    ('Riabilitazione post operatoria', 50, 70),
+    ('Riabilitazione sportiva', 50, 70),
+    ('Trattamento fisioterapico di cervicalgia o lombalgia', 45, 65),
+    ('Riabilitazione del pavimento pelvico', 60, 80),
+    ('Riabilitazione respiratoria', 50, 70),
+    ('Linfodrenaggio manuale', 50, 70),
+    ('Massoterapia decontratturante', 40, 60),
+    ('Elettrostimolazione neuromuscolare', 35, 50),
+    ('Laserterapia', 40, 55),
+    ('Laserterapia Nd YAG', 50, 70),
+    ('Onde d’urto radiali', 55, 80),
+    ('Tecarterapia', 45, 65),
+    ('Ultrasuonoterapia', 35, 50),
+    ('Valutazione ecografica funzionale RUSI', 65, 90),
+    ('Valutazione fisioterapica iniziale', 55, 75)
+  ) AS v(name, min_price, max_price)
+$function$;
+
+UPDATE public.services SET name = 'Esercizio terapeutico personalizzato' WHERE name = 'Esercizio personalizzato';
+UPDATE public.services SET name = 'Somministrazione di terapia mediante inalatore (prescrizione medica)' WHERE name = 'Somministrazione di terapia inalatoria mediante inalatore (prescrizione medica)';
+UPDATE public.services SET name = 'Compagnia, socializzazione e attività ricreative' WHERE name = 'Compagnia socializzazione e attività ricreative';
+UPDATE public.services SET name = 'Bagno completo in doccia, vasca o a letto' WHERE name = 'Igiene personale completa in doccia vasca o a letto';
+UPDATE public.services SET name = 'Aiuto nell’alzata e trasferimento da letto a poltrona o carrozzina' WHERE name = 'Aiuto nell’alzata e trasferimento letto poltrona carrozzina';
+DELETE FROM public.services WHERE name IN ('Piccola spesa e commissioni per conto della persona','Supporto nella gestione leggera della casa','Accompagnamento per visite commissioni e uscite');
