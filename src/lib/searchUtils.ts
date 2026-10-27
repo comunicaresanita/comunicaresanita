@@ -51,7 +51,7 @@ const synonymMap: Record<string, string[]> = {
   "glicemia": ["glicemia capillare"],
   "insulina": ["insulina"],
   "aerosol": ["aerosolterapia"],
-  "inalatore": ["inalatoria"],
+  "inalatore": ["inalatore"],
   "spray": ["inalatore", "gocce nasali"],
   "orecchio": ["gocce auricolari"],
   "orecchie": ["gocce auricolari"],
