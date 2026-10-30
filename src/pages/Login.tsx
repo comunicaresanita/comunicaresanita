@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -20,8 +18,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as { redirect?: string; message?: string } | null;
@@ -30,38 +26,10 @@ const Login = () => {
   const { toast } = useToast();
   const { signIn, resetPassword } = useAuth();
 
-  // Load saved credentials on mount and auto-login if remembered
+  // Sicurezza: in passato la password veniva salvata in chiaro nel browser ("Ricordami").
+  // Ora la sessione resta attiva grazie al token di Supabase; qui cancelliamo ogni residuo.
   useEffect(() => {
-    const saved = localStorage.getItem("comunicare_remember");
-    if (saved) {
-      const { email: savedEmail, password: savedPassword } = JSON.parse(saved);
-      setEmail(savedEmail);
-      setPassword(savedPassword);
-      setRememberMe(true);
-
-      // Auto-login with saved credentials
-      if (!autoLoginAttempted) {
-        setAutoLoginAttempted(true);
-        (async () => {
-          setLoading(true);
-          const { error } = await signIn(savedEmail, savedPassword);
-          setLoading(false);
-          if (!error) {
-            setTimeout(async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) {
-                const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).single();
-                if (profile?.role === "professionista") {
-                  navigate("/dashboard-professionista");
-                } else {
-                  navigate(redirectTo || "/");
-                }
-              }
-            }, 300);
-          }
-        })();
-      }
-    }
+    try { localStorage.removeItem("comunicare_remember"); } catch { /* ignore */ }
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -73,13 +41,6 @@ const Login = () => {
     if (error) {
       toast({ title: "Errore di accesso", description: italianError(error, "login"), variant: "destructive" });
       return;
-    }
-
-    // Save or clear credentials
-    if (rememberMe) {
-      localStorage.setItem("comunicare_remember", JSON.stringify({ email, password }));
-    } else {
-      localStorage.removeItem("comunicare_remember");
     }
 
     setTimeout(async () => {
@@ -159,10 +120,6 @@ const Login = () => {
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" checked={rememberMe} onCheckedChange={(c) => setRememberMe(c === true)} />
-                  <Label htmlFor="remember" className="text-senior-sm cursor-pointer">Ricordami</Label>
                 </div>
                 <Button type="submit" className="w-full py-5" disabled={loading}>
                   {loading ? "Accesso in corso..." : "Accedi"}
