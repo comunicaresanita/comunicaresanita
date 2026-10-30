@@ -100,7 +100,7 @@ const StoricoPrestazioni = () => {
                       </div>
                       {(() => {
                         const st = userBookingStatus(b);
-                        const label = st === "cancelled" ? "Annullata" : st === "done" ? "Effettuata" : st === "confirmed" ? "Confermato" : st === "pending" ? "In attesa" : b.status;
+                        const label = st === "rejected" ? "Non confermata" : st === "cancelled" ? "Annullata" : st === "done" ? "Effettuata" : st === "confirmed" ? "Confermato" : st === "pending" ? "In attesa" : b.status;
                         const cls = st === "done" ? "bg-success/15 text-success" : st === "confirmed" || st === "pending" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground";
                         return <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium flex-shrink-0 ${cls}`}>{label}</span>;
                       })()}
@@ -136,6 +136,22 @@ const StoricoPrestazioni = () => {
                         </AlertDialog>
                       )}
                     </div>
+                    {userBookingStatus(b) === "rejected" && (
+                      <div className="mt-2 rounded-md border border-primary/30 bg-secondary p-3 text-sm space-y-2">
+                        <p>Il professionista non può effettuare questa prestazione nell'orario scelto. Puoi scegliere un altro orario o un altro professionista.</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => navigate(`/profilo-infermiere/${b.professional_id}?servizio=${encodeURIComponent(b.service_name)}&per=${b.recipient_type === "other" ? "other" : "self"}&ripeti=${b.id}`)}
+                          >
+                            Scegli un altro orario
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/dashboard-paziente?servizio=${encodeURIComponent(b.service_name)}`)}>
+                            Cerca un altro professionista
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     {b.professional && (
                       <p className="text-xs text-muted-foreground">
                         {b.professional.first_name} {b.professional.last_name}

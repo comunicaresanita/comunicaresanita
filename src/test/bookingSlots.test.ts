@@ -36,4 +36,7 @@ describe("user booking status", () => {
   it("today's booking is not yet done", () => {
     expect(userBookingStatus({ status: "pending", day: "Martedì 20 Ottobre 2026" }, now)).toBe("pending");
   });
+  it("a booking refused by the professional is reported as rejected", () => {
+    expect(userBookingStatus({ status: "cancelled", cancel_reason: "rejected", day: "Martedì 20 Ottobre 2026" }, now)).toBe("rejected");
+  });
 });
