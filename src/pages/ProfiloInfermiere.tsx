@@ -609,6 +609,9 @@ const ProfiloInfermiere = () => {
       } catch (e) {
         console.error(e);
       }
+      try {
+        await supabase.functions.invoke("send-booking-emails", { body: { bookingId: newId, event: "created" } });
+      } catch (e) { console.error(e); }
       localStorage.removeItem(BOOKING_DRAFT_KEY);
       navigate(`/prenotazione-confermata?booking=${newId}`);
     } catch (err: unknown) {

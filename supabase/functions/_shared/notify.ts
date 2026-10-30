@@ -1,0 +1,77 @@
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
+import { sendMail, toBase64 } from "./mailer.ts";
+import {
+  buildIcs, cancelledNotice, confirmedToPatient, confirmedToProfessional, googleCalendarUrl,
+  receivedByPatient, rejectedToPatient, requestToProfessional, signAction, type MailParts,
+} from "./bookingEmail.ts";
+
+export type BookingEvent = "created" | "confirmed" | "rejected" | "cancelled";
+const DAY = 24 * 3600 * 1000;
+
+/** Invia le email dell'evento. Restituisce quante ne sono partite; lancia se qualcuna fallisce. */
+export async function notifyBooking(admin: SupabaseClient, b: any, patient: any, prof: any, event: BookingEvent): Promise<number> {
+  const emailOf = async (p: any) => {
+    if (!p?.user_id) return p?.email ?? "";
+    const { data } = await admin.auth.admin.getUserById(p.user_id);
+    return data?.user?.email || p?.email || "";
+  };
+  const [patientEmail, profEmail] = await Promise.all([emailOf(patient), emailOf(prof)]);
+
+  const appUrl = (Deno.env.get("APP_URL") ?? "https://comunicaresanita.lovable.app").replace(/\/$/, "");
+  const secret = Deno.env.get("BOOKING_ACTION_SECRET");
+  const fnUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/booking-action`;
+  const patientName = `${patient?.first_name ?? ""} ${patient?.last_name ?? ""}`.trim() || "Paziente";
+  const profName = `${prof?.first_name ?? ""} ${prof?.last_name ?? ""}`.trim() || "Il professionista";
+  const storicoUrl = `${appUrl}/storico-prestazioni`;
+  const dashboardUrl = `${appUrl}/dashboard-professionista`;
+  const serviceQ = encodeURIComponent(b.service_name);
+
+  const jobs: Promise<void>[] = [];
+  const send = (to: string, m: MailParts, attachments?: { filename: string; content: string }[]) => {
+    if (to) jobs.push(sendMail({ to, ...m, attachments }));
+  };
+
+  if (event === "created") {
+    if (!secret) throw new Error("BOOKING_ACTION_SECRET is not configured");
+    const exp = Date.now() + 7 * DAY;
+    const [ct, rt] = await Promise.all([
+      signAction(secret, { bid: b.id, act: "confirm", exp }),
+      signAction(secret, { bid: b.id, act: "reject", exp }),
+    ]);
+    const who = b.recipient_type === "other" && b.recipient_first_name
+      ? `${b.recipient_first_name} ${b.recipient_last_name ?? ""}`.trim() : patientName;
+    send(profEmail, requestToProfessional({
+      b, patientName: who, patientPhone: patient?.phone ?? "—",
+      confirmUrl: `${fnUrl}?t=${ct}`, rejectUrl: `${fnUrl}?t=${rt}`, dashboardUrl,
+    }));
+    send(patientEmail, receivedByPatient({ b, professionalName: profName, storicoUrl }));
+  } else if (event === "confirmed") {
+    const title = `${b.service_name} · ComuniCARE`;
+    const ics = (who: string) => {
+      const s = buildIcs(b, title, `${b.service_name} con ${who}. Gestisci la prenotazione su ${appUrl}`);
+      return s ? [{ filename: "prenotazione.ics", content: toBase64(s) }] : undefined;
+    };
+    send(patientEmail, confirmedToPatient({
+      b, professionalName: profName, storicoUrl, gcalUrl: googleCalendarUrl(b, title, `Con ${profName}`),
+    }), ics(profName));
+    send(profEmail, confirmedToProfessional({
+      b, patientName, dashboardUrl, gcalUrl: googleCalendarUrl(b, title, `Paziente: ${patientName}`),
+    }), ics(patientName));
+  } else if (event === "rejected") {
+    send(patientEmail, rejectedToPatient({
+      b,
+      rebookUrl: `${appUrl}/profilo-infermiere/${b.professional_id}?servizio=${serviceQ}&per=${b.recipient_type === "other" ? "other" : "self"}&ripeti=${b.id}`,
+      searchUrl: `${appUrl}/dashboard-paziente?servizio=${serviceQ}`,
+    }));
+  } else {
+    const by = b.cancelled_by === "patient" ? "patient" : "professional";
+    if (by === "patient") send(profEmail, cancelledNotice({ b, by, to: "professional", storicoUrl }));
+    else send(patientEmail, cancelledNotice({ b, by, to: "patient", storicoUrl }));
+  }
+
+  const results = await Promise.allSettled(jobs);
+  const failed = results.filter((r) => r.status === "rejected") as PromiseRejectedResult[];
+  failed.forEach((f) => console.error(String(f.reason)));
+  if (failed.length) throw new Error(`Invio email non riuscito (${failed.length}/${results.length})`);
+  return results.length;
+}

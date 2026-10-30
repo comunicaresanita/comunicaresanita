@@ -49,6 +49,9 @@ const StoricoPrestazioni = () => {
     try {
       await supabase.functions.invoke("send-booking-notifications", { body: { bookingId: b.id, event: "cancelled" } });
     } catch (e) { console.error(e); }
+    try {
+      await supabase.functions.invoke("send-booking-emails", { body: { bookingId: b.id, event: "cancelled" } });
+    } catch (e) { console.error(e); }
     setCancelling(null);
     toast({ title: "Prenotazione annullata", description: "Il team ComuniCARE è stato avvisato." });
     load();
