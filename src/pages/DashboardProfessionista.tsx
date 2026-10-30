@@ -273,6 +273,7 @@ const DashboardProfessionista = () => {
                       </AlertDialog>
                     </div>
                   )}
+                  {b.status !== "pending" && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" className="gap-2 text-destructive border-destructive/40" disabled={cancelling === b.id}>
@@ -294,6 +295,7 @@ const DashboardProfessionista = () => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                  )}
                 </CardContent>
               </Card>
             ))}
