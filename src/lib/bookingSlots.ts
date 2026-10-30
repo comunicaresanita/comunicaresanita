@@ -26,9 +26,11 @@ export function canUserCancel(b: { status: string; day: string }, now = new Date
 }
 
 /** Status shown to the user: an active booking whose day has passed counts as done. */
-export function userBookingStatus(b: { status: string; day: string }, now = new Date()):
-  "cancelled" | "done" | "confirmed" | "pending" | "other" {
-  if (isCancelledStatus(b.status)) return "cancelled";
+export function userBookingStatus(
+  b: { status: string; day: string; cancel_reason?: string | null },
+  now = new Date(),
+): "cancelled" | "rejected" | "done" | "confirmed" | "pending" | "other" {
+  if (isCancelledStatus(b.status)) return b.cancel_reason === "rejected" ? "rejected" : "cancelled";
   if (DONE.includes(b.status)) return "done";
   const d = parseBookingDay(b.day);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

@@ -11,7 +11,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
-import { Calendar as CalendarIcon, Settings, MapPin, Camera, Clock, User, Phone, Home, XCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Settings, MapPin, Camera, Clock, User, Phone, Home, XCircle, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +45,7 @@ const DashboardProfessionista = () => {
   const [offDays, setOffDays] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Date | undefined>();
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [responding, setResponding] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
@@ -133,6 +134,27 @@ const DashboardProfessionista = () => {
     load();
   };
 
+  const respondBooking = async (b: Booking, accept: boolean) => {
+    setResponding(b.id);
+    const { error } = await (supabase.rpc as any)("respond_booking", { _booking_id: b.id, _accept: accept });
+    if (error) {
+      setResponding(null);
+      toast({ title: "Impossibile rispondere", description: italianError(error, "booking"), variant: "destructive" });
+      load();
+      return;
+    }
+    if (!accept) {
+      try {
+        await supabase.functions.invoke("send-booking-notifications", { body: { bookingId: b.id, event: "cancelled" } });
+      } catch (e) { console.error(e); }
+    }
+    setResponding(null);
+    toast(accept
+      ? { title: "Prenotazione confermata", description: "Il paziente vedrà la conferma nel suo storico." }
+      : { title: "Prenotazione rifiutata", description: "L'orario è tornato disponibile e il paziente potrà sceglierne un altro." });
+    load();
+  };
+
   const v = (x: unknown) => (x === null || x === undefined || x === "" ? "—" : String(x));
 
   return (
@@ -206,7 +228,12 @@ const DashboardProfessionista = () => {
                       </p>
                       <p className="flex items-center gap-1.5 text-muted-foreground"><Clock className="w-4 h-4" />{b.day} · ore {b.time_slot}</p>
                     </div>
-                    <span className="text-lg font-bold text-primary">€{b.price}</span>
+                    <div className="text-right">
+                      <span className="block text-lg font-bold text-primary">€{b.price}</span>
+                      <span className={`inline-block mt-1 text-xs px-2 py-1 rounded-full font-medium ${b.status === "pending" ? "bg-primary/10 text-primary" : "bg-success/15 text-success"}`}>
+                        {b.status === "pending" ? "Da confermare" : "Confermata"}
+                      </span>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-sm md:text-base">
                     <p className="flex items-center gap-1.5"><User className="w-4 h-4 text-primary" />
@@ -220,6 +247,32 @@ const DashboardProfessionista = () => {
                     )}
                     {b.medical_notes && <p className="sm:col-span-2">Note sulla condizione: {b.medical_notes}</p>}
                   </div>
+                  {b.status === "pending" && (
+                    <div className="flex flex-wrap gap-2">
+                      <Button className="gap-2" disabled={responding === b.id} onClick={() => respondBooking(b, true)}>
+                        <CheckCircle2 className="w-4 h-4" />{responding === b.id ? "Invio..." : "Conferma"}
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" className="gap-2" disabled={responding === b.id}>Rifiuta</Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Rifiutare la prenotazione?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {b.service_name} del {b.day} alle {b.time_slot}. L'orario tornerà libero e il paziente potrà scegliere un altro orario o un altro professionista.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>No, torna indietro</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => respondBooking(b, false)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Sì, rifiuta
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" className="gap-2 text-destructive border-destructive/40" disabled={cancelling === b.id}>
