@@ -19,7 +19,6 @@ export async function notifyBooking(admin: SupabaseClient, b: any, patient: any,
 
   const appUrl = (Deno.env.get("APP_URL") ?? "https://comunicaresanita.lovable.app").replace(/\/$/, "");
   const secret = Deno.env.get("BOOKING_ACTION_SECRET");
-  const fnUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/booking-action`;
   const patientName = `${patient?.first_name ?? ""} ${patient?.last_name ?? ""}`.trim() || "Paziente";
   const profName = `${prof?.first_name ?? ""} ${prof?.last_name ?? ""}`.trim() || "Il professionista";
   const storicoUrl = `${appUrl}/storico-prestazioni`;
@@ -42,7 +41,7 @@ export async function notifyBooking(admin: SupabaseClient, b: any, patient: any,
       ? `${b.recipient_first_name} ${b.recipient_last_name ?? ""}`.trim() : patientName;
     send(profEmail, requestToProfessional({
       b, patientName: who, patientPhone: patient?.phone ?? "—",
-      confirmUrl: `${fnUrl}?t=${ct}`, rejectUrl: `${fnUrl}?t=${rt}`, dashboardUrl,
+      confirmUrl: `${appUrl}/azione-prenotazione?t=${ct}`, rejectUrl: `${appUrl}/azione-prenotazione?t=${rt}`, dashboardUrl,
     }));
     send(patientEmail, receivedByPatient({ b, professionalName: profName, storicoUrl }));
   } else if (event === "confirmed") {

@@ -17,6 +17,7 @@ import ProfiloInfermiere from "./pages/ProfiloInfermiere.tsx";
 import Login from "./pages/Login.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import PrenotazioneConfermata from "./pages/PrenotazioneConfermata.tsx";
+import AzioneEmail from "./pages/AzioneEmail.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
 import Profilo from "./pages/Profilo.tsx";
 import SetupPosizione from "./pages/SetupPosizione.tsx";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/profilo-infermiere/:id" element={<ProfiloInfermiere />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/prenotazione-confermata" element={<PrenotazioneConfermata />} />
+            <Route path="/azione-prenotazione" element={<AzioneEmail />} />
             <Route path="/pagamento-successo" element={<PrenotazioneConfermata />} />
             <Route path="/profilo" element={<Profilo />} />
             <Route path="/storico-prestazioni" element={<StoricoPrestazioni />} />
