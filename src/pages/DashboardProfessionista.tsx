@@ -129,6 +129,9 @@ const DashboardProfessionista = () => {
     try {
       await supabase.functions.invoke("send-booking-notifications", { body: { bookingId: b.id, event: "cancelled" } });
     } catch (e) { console.error(e); }
+    try {
+      await supabase.functions.invoke("send-booking-emails", { body: { bookingId: b.id, event: "cancelled" } });
+    } catch (e) { console.error(e); }
     setCancelling(null);
     toast({ title: "Prenotazione annullata", description: "Il team ComuniCARE è stato avvisato." });
     load();
@@ -148,6 +151,9 @@ const DashboardProfessionista = () => {
         await supabase.functions.invoke("send-booking-notifications", { body: { bookingId: b.id, event: "cancelled" } });
       } catch (e) { console.error(e); }
     }
+    try {
+      await supabase.functions.invoke("send-booking-emails", { body: { bookingId: b.id, event: accept ? "confirmed" : "rejected" } });
+    } catch (e) { console.error(e); }
     setResponding(null);
     toast(accept
       ? { title: "Prenotazione confermata", description: "Il paziente vedrà la conferma nel suo storico." }
