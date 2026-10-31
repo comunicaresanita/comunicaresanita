@@ -104,6 +104,7 @@ export type Database = {
       bookings: {
         Row: {
           access_notes: string | null
+          cancel_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           created_at: string
@@ -122,6 +123,7 @@ export type Database = {
           recipient_first_name: string | null
           recipient_last_name: string | null
           recipient_type: string | null
+          responded_at: string | null
           service_name: string
           status: string
           stripe_session_id: string | null
@@ -129,6 +131,7 @@ export type Database = {
         }
         Insert: {
           access_notes?: string | null
+          cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
           created_at?: string
@@ -147,6 +150,7 @@ export type Database = {
           recipient_first_name?: string | null
           recipient_last_name?: string | null
           recipient_type?: string | null
+          responded_at?: string | null
           service_name: string
           status?: string
           stripe_session_id?: string | null
@@ -154,6 +158,7 @@ export type Database = {
         }
         Update: {
           access_notes?: string | null
+          cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
           created_at?: string
@@ -172,6 +177,7 @@ export type Database = {
           recipient_first_name?: string | null
           recipient_last_name?: string | null
           recipient_type?: string | null
+          responded_at?: string | null
           service_name?: string
           status?: string
           stripe_session_id?: string | null
@@ -644,6 +650,10 @@ export type Database = {
           min_price: number
           name: string
         }[]
+      }
+      respond_booking: {
+        Args: { _accept: boolean; _booking_id: string }
+        Returns: string
       }
     }
     Enums: {
