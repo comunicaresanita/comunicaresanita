@@ -42,7 +42,8 @@ serve(async (req) => {
     ? { status: "confirmed", responded_at: now }
     : { status: "cancelled", cancelled_by: "professional", cancelled_at: now, cancel_reason: "rejected", responded_at: now };
   const { data: done, error } = await admin.from("bookings").update(patch).eq("id", p.bid).eq("status", "pending").select("*");
-  if (error || !done?.length) return json({ state: "already_closed", ...info }, 409);
+  if (error) { console.error(error.message); return json({ state: "error", ...info }, 500); }
+  if (!done?.length) return json({ state: "already_closed", ...info }, 409);
 
   let emailsOk = true;
   try {
