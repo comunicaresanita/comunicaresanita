@@ -25,9 +25,11 @@ export async function notifyBooking(admin: SupabaseClient, b: any, patient: any,
   const dashboardUrl = `${appUrl}/dashboard-professionista`;
   const serviceQ = encodeURIComponent(b.service_name);
 
-  const jobs: Promise<void>[] = [];
+  // Invii in sequenza (non in parallelo) per restare sotto il limite di Resend; un errore non blocca gli altri.
+  const queue: { to: string; m: MailParts; attachments?: { filename: string; content: string }[] }[] = [];
   const send = (to: string, m: MailParts, attachments?: { filename: string; content: string }[]) => {
-    if (to) jobs.push(sendMail({ to, ...m, attachments }));
+    if (!to) console.error(`email non inviata: destinatario senza indirizzo (${m.subject})`);
+    else queue.push({ to, m, attachments });
   };
 
   if (event === "created") {
@@ -68,9 +70,12 @@ export async function notifyBooking(admin: SupabaseClient, b: any, patient: any,
     else send(patientEmail, cancelledNotice({ b, by, to: "patient", storicoUrl }));
   }
 
-  const results = await Promise.allSettled(jobs);
-  const failed = results.filter((r) => r.status === "rejected") as PromiseRejectedResult[];
-  failed.forEach((f) => console.error(String(f.reason)));
-  if (failed.length) throw new Error(`Invio email non riuscito (${failed.length}/${results.length})`);
-  return results.length;
+  let sent = 0;
+  const errors: string[] = [];
+  for (const j of queue) {
+    try { await sendMail({ to: j.to, ...j.m, attachments: j.attachments }); sent++; }
+    catch (e) { errors.push(String(e)); console.error(String(e)); }
+  }
+  if (errors.length) throw new Error(`Invio email non riuscito (${errors.length}/${queue.length}): ${errors.join(" | ")}`);
+  return sent;
 }
