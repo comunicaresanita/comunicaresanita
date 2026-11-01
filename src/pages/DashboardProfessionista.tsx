@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { italianError } from "@/lib/italianErrors";
 import { parseBookingDay, dateKey } from "@/lib/bookingDates";
-import { canMarkDone } from "@/lib/bookingSlots";
+import { canMarkDone, isCancelledStatus } from "@/lib/bookingSlots";
 import type { DayContentProps } from "react-day-picker";
 
 type Booking = {
@@ -71,7 +71,11 @@ const DashboardProfessionista = () => {
 
   useEffect(() => { load(); }, [profile?.id]);
 
-  const active = bookings.filter((b) => b.status !== "cancelled");
+  const active = bookings.filter((b) => !isCancelledStatus(b.status));
+  // Annullate (dal paziente o dal professionista) o scadute senza risposta: si vedono in una sezione a parte, senza dati di contatto
+  const cancelledList = bookings
+    .filter((b) => isCancelledStatus(b.status))
+    .sort((a, b) => (parseBookingDay(b.day)?.getTime() ?? 0) - (parseBookingDay(a.day)?.getTime() ?? 0) || b.time_slot.localeCompare(a.time_slot));
   const byDay = useMemo(() => {
     const m = new Map<string, Booking[]>();
     active.forEach((b) => {
@@ -325,6 +329,25 @@ const DashboardProfessionista = () => {
               </Card>
             ))}
           </div>
+
+          {cancelledList.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg md:text-senior-lg font-semibold mb-3">Annullate o scadute</h2>
+              <div className="space-y-2">
+                {cancelledList.map((b) => (
+                  <Card key={b.id} className="bg-muted/40">
+                    <CardContent className="p-3 md:p-4 flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="font-medium">{b.service_name}</p>
+                        <p className="text-sm text-muted-foreground">{b.day} · ore {b.time_slot} · {recipientName(b) || "Utente"}</p>
+                      </div>
+                      <span className="text-xs px-2 py-1 rounded-full font-medium bg-destructive/10 text-destructive">Annullata</span>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
             <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/setup-professionista")}>
