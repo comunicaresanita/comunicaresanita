@@ -42,7 +42,7 @@ serve(async (req) => {
       (event === "created" && b.status === "pending" && isPatient) ||
       (event === "confirmed" && b.status === "confirmed" && isProfessional) ||
       (event === "rejected" && b.status === "cancelled" && b.cancel_reason === "rejected" && isProfessional) ||
-      (event === "cancelled" && b.status === "cancelled" && b.cancel_reason !== "rejected");
+      (event === "cancelled" && b.status === "cancelled" && b.cancel_reason !== "rejected" && b.cancel_reason !== "expired");
     if (!ok) return json({ error: "Stato non coerente con l'evento" }, 409);
 
     const sent = await notifyBooking(admin, b, patient, prof, event as BookingEvent);

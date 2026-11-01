@@ -44,6 +44,7 @@ export function italianError(error: unknown, context: ErrorContext = "general"):
   if (context === "upload" && (status === 413 || /too large|exceeded.*size|size.*limit/.test(text))) return "La foto è troppo grande. Scegli un'immagine più piccola e riprova.";
   if (context === "upload" && /mime|content.type|file type|unsupported/.test(text)) return "Il formato della foto non è supportato. Scegli un'immagine JPEG o PNG.";
   if (/row.level security|permission denied|42501|forbidden/.test(text) || status === 403) return "Non hai i permessi necessari per questa operazione. Accedi con l'account corretto o contattaci.";
+  if (context === "booking" && /24 ore di anticipo/.test(text)) return "Si può prenotare con almeno 24 ore di anticipo. Scegli un altro giorno o orario.";
   if (context === "booking" && /23505|bookings_active_slot_unique|duplicate key/.test(text)) return "Questo orario è appena stato prenotato da qualcun altro. Scegli un altro orario.";
   if (context === "payment" && /card_declined|card was declined/.test(text)) return "Il pagamento è stato rifiutato. Prova con un altro metodo di pagamento.";
   if (context === "payment" && /insufficient_funds/.test(text)) return "Il pagamento non è riuscito per fondi insufficienti. Prova con un altro metodo di pagamento.";

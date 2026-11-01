@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildIcs, romeOffsetHours, signAction, slotToUtc, verifyAction,
+  buildIcs, expiredToPatient, parseDay, romeOffsetHours, signAction, slotToUtc, verifyAction,
 } from "../../supabase/functions/_shared/bookingEmail";
 
 describe("slotToUtc", () => {
@@ -66,3 +66,24 @@ describe("fine della prestazione", () => {
   });
 });
 
+
+describe("email di richiesta scaduta", () => {
+  const b = { id: "b1", service_name: "Medicazione <semplice>", price: 30, day: "Martedì 3 Novembre 2026", time_slot: "17-18" };
+  const m = expiredToPatient({ b, professionalName: "Mario Rossi", rebookUrl: "https://x.it/a?b=1&c=2", searchUrl: "https://x.it/s" });
+  it("dice chiaramente che è scaduta e rimanda a un altro orario o professionista", () => {
+    expect(m.subject).toContain("scaduta");
+    expect(m.text).toContain("https://x.it/a?b=1&c=2");
+    expect(m.text).toContain("https://x.it/s");
+  });
+  it("esegue l'escape dell'HTML dei dati", () => {
+    expect(m.html).not.toContain("<semplice>");
+    expect(m.html).toContain("&lt;semplice&gt;");
+  });
+});
+
+describe("etichetta del giorno prodotta dall'app", () => {
+  it("è leggibile da parseDay (la stessa regola è applicata dal database)", () => {
+    expect(parseDay("Martedì 3 Novembre 2026")).toEqual({ y: 2026, m: 11, d: 3 });
+    expect(parseDay("Domenica 29 Marzo 2026")).toEqual({ y: 2026, m: 3, d: 29 });
+  });
+});

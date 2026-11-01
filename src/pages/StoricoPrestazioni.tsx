@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { italianError } from "@/lib/italianErrors";
-import { canUserCancel, canMarkDone, bookingTime, compareBookingsDesc, userBookingStatus } from "@/lib/bookingSlots";
+import { canUserCancel, canMarkDone, bookingTime, compareBookingsDesc, userBookingStatus, isCancelledStatus } from "@/lib/bookingSlots";
 import ReviewDialog from "@/components/ReviewDialog";
 import { useSearchParams } from "react-router-dom";
 
@@ -99,7 +99,7 @@ const StoricoPrestazioni = () => {
     const st = userBookingStatus(b);
     return st === "confirmed" ? "border-success/60 bg-success/5"
       : st === "pending" ? "border-primary/50"
-      : st === "cancelled" || st === "rejected" ? "border-destructive/50 bg-destructive/5"
+      : st === "cancelled" || st === "rejected" || (st === "expired" && isCancelledStatus(b.status)) ? "border-destructive/50 bg-destructive/5"
       : st === "done" ? "border-success/30"
       : "opacity-80";
   };
@@ -203,9 +203,11 @@ const StoricoPrestazioni = () => {
                         Lascia una recensione
                       </Button>
                     )}
-                    {userBookingStatus(b) === "rejected" && (
+                    {(userBookingStatus(b) === "rejected" || (userBookingStatus(b) === "expired" && isCancelledStatus(b.status))) && (
                       <div className="mt-2 rounded-md border border-primary/30 bg-secondary p-3 text-sm space-y-2">
-                        <p>Il professionista non può effettuare questa prestazione nell'orario scelto. Puoi scegliere un altro orario o un altro professionista.</p>
+                        <p>{userBookingStatus(b) === "expired"
+                          ? "Il professionista non ha risposto entro il termine e la richiesta è scaduta. Puoi scegliere un altro orario o un altro professionista."
+                          : "Il professionista non può effettuare questa prestazione nell'orario scelto. Puoi scegliere un altro orario o un altro professionista."}</p>
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             size="sm"

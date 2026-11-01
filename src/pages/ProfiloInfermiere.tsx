@@ -1,4 +1,4 @@
-import { freeSlots } from "@/lib/bookingSlots";
+import { freeSlots, isSlotBookable, MIN_ADVANCE_HOURS, RESPONSE_DEADLINE_HOURS } from "@/lib/bookingSlots";
 import { italianError } from "@/lib/italianErrors";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -377,7 +377,8 @@ const ProfiloInfermiere = () => {
     };
     const dayLabel = formatDateLabel(date);
 
-    return freeSlots(sorted.map(h => `${h}-${h + 1}`), bookedSlots, dayLabel);
+    return freeSlots(sorted.map(h => `${h}-${h + 1}`), bookedSlots, dayLabel)
+      .filter(slot => isSlotBookable(date, slot));
   };
 
   const isDateAvailable = (day: number) => {
@@ -747,6 +748,9 @@ const ProfiloInfermiere = () => {
               <CardTitle className="text-base md:text-senior-lg">Scegli data e orario</CardTitle>
             </CardHeader>
             <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Si prenota con almeno {MIN_ADVANCE_HOURS} ore di anticipo. Il professionista risponde entro {RESPONSE_DEADLINE_HOURS} ore: se non risponde, la richiesta scade e potrai scegliere un altro orario o professionista.
+              </p>
               {/* Month navigation */}
               <div className="flex items-center justify-between mb-4">
                 <Button variant="outline" size="icon" onClick={prevMonth} disabled={!canGoPrev} className="h-8 w-8">

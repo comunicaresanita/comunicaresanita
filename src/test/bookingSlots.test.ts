@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { freeSlots, canUserCancel, userBookingStatus, canMarkDone, compareBookingsDesc, pickHomeBooking } from "@/lib/bookingSlots";
+import { freeSlots, canUserCancel, userBookingStatus, canMarkDone, compareBookingsDesc, pickHomeBooking, isSlotBookable } from "@/lib/bookingSlots";
 
 const day = "Giovedì 22 Ottobre 2026";
 
@@ -90,3 +90,37 @@ describe("carta della Home", () => {
   });
 });
 
+
+describe("anticipo minimo di 24 ore", () => {
+  const now = new Date(2026, 10, 2, 10, 0, 0); // lunedì 2 novembre 2026, ore 10
+  const dayOf = (d: number) => new Date(2026, 10, d);
+
+  it("uno slot fra meno di 24 ore non è prenotabile", () => {
+    expect(isSlotBookable(dayOf(2), "17-18", now)).toBe(false);
+    expect(isSlotBookable(dayOf(3), "9-10", now)).toBe(false);
+  });
+  it("lo slot esattamente a 24 ore o dopo è prenotabile", () => {
+    expect(isSlotBookable(dayOf(3), "10-11", now)).toBe(true);
+    expect(isSlotBookable(dayOf(3), "17-18", now)).toBe(true);
+    expect(isSlotBookable(dayOf(5), "8-9", now)).toBe(true);
+  });
+  it("uno slot già passato non è prenotabile e una fascia illeggibile viene rifiutata", () => {
+    expect(isSlotBookable(dayOf(1), "17-18", now)).toBe(false);
+    expect(isSlotBookable(dayOf(5), "mattina", now)).toBe(false);
+  });
+});
+
+describe("richiesta scaduta (il professionista non ha risposto)", () => {
+  it("una annullata con motivo expired è mostrata come scaduta, non come annullata", () => {
+    expect(userBookingStatus({ status: "cancelled", day, cancel_reason: "expired" })).toBe("expired");
+    expect(userBookingStatus({ status: "cancelled", day, cancel_reason: "rejected" })).toBe("rejected");
+    expect(userBookingStatus({ status: "cancelled", day, cancel_reason: null })).toBe("cancelled");
+  });
+  it("non viene proposta nella Home come prenotazione attiva", () => {
+    const list = [
+      { status: "cancelled", cancel_reason: "expired", day: "Venerdì 30 Ottobre 2026", time_slot: "17-18" },
+      { status: "confirmed", cancel_reason: null, day: "Sabato 31 Ottobre 2026", time_slot: "9-10" },
+    ];
+    expect(pickHomeBooking(list, new Date(2026, 9, 29))?.status).toBe("confirmed");
+  });
+});

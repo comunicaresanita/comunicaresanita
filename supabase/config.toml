@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.send-completion-reminders]
 verify_jwt = false
+
+[functions.expire-pending-bookings]
+verify_jwt = false

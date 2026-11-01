@@ -3,6 +3,18 @@ import { parseBookingDay } from "@/lib/bookingDates";
 const CANCELLED = ["cancelled", "cancellato"];
 const DONE = ["completed", "completato"];
 
+/** Anticipo minimo per prenotare (lo impone anche il database) e tempo massimo di risposta del professionista. */
+export const MIN_ADVANCE_HOURS = 24;
+export const RESPONSE_DEADLINE_HOURS = 24;
+
+/** Una fascia ("17-18") di un giorno è prenotabile solo se inizia fra almeno MIN_ADVANCE_HOURS ore. */
+export function isSlotBookable(date: Date, slot: string, now = new Date(), minHours = MIN_ADVANCE_HOURS): boolean {
+  const h = Number(slot.match(/^\s*(\d{1,2})/)?.[1]);
+  if (!Number.isFinite(h)) return false;
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, 0, 0);
+  return start.getTime() >= now.getTime() + minHours * 3600_000;
+}
+
 export const isCancelledStatus = (status: string | null | undefined) => CANCELLED.includes(status ?? "");
 
 /** Slots of a day still free: cancelled bookings never occupy a slot. */
@@ -38,7 +50,11 @@ export function userBookingStatus(
   b: { status: string; day: string; cancel_reason?: string | null },
   now = new Date(),
 ): UserBookingStatus {
-  if (isCancelledStatus(b.status)) return b.cancel_reason === "rejected" ? "rejected" : "cancelled";
+  if (isCancelledStatus(b.status)) {
+    if (b.cancel_reason === "rejected") return "rejected";
+    if (b.cancel_reason === "expired") return "expired"; // il professionista non ha risposto entro il termine
+    return "cancelled";
+  }
   if (DONE.includes(b.status)) return "done";
   if (CONFIRMED.includes(b.status)) return "confirmed";
   if (b.status === "pending") {
