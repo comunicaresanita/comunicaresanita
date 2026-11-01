@@ -48,3 +48,21 @@ describe("token di azione", () => {
     expect(await verifyAction("segreto", "")).toBeNull();
   });
 });
+
+describe("token per l'azione 'effettuata'", () => {
+  it("firma e verifica l'azione complete", async () => {
+    const p = { bid: "b9", act: "complete" as const, exp: Date.now() + 60_000 };
+    expect(await verifyAction("s", await signAction("s", p))).toEqual(p);
+  });
+  it("rifiuta azioni sconosciute", async () => {
+    const t = await signAction("s", { bid: "b9", act: "delete" as any, exp: Date.now() + 60_000 });
+    expect(await verifyAction("s", t)).toBeNull();
+  });
+});
+
+describe("fine della prestazione", () => {
+  it("l'ora di fine è quella della fascia, in UTC", () => {
+    expect(slotToUtc("Lunedì 2 Novembre 2026", "18-19")!.end.toISOString()).toBe("2026-11-02T18:00:00.000Z");
+  });
+});
+

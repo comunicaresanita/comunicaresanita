@@ -85,7 +85,7 @@ const hmac = async (secret: string, data: string) => {
   return b64url(await crypto.subtle.sign("HMAC", key, enc.encode(data)));
 };
 
-export type ActionPayload = { bid: string; act: "confirm" | "reject"; exp: number };
+export type ActionPayload = { bid: string; act: "confirm" | "reject" | "complete"; exp: number };
 
 export async function signAction(secret: string, p: ActionPayload): Promise<string> {
   const body = b64url(enc.encode(JSON.stringify(p)));
@@ -102,7 +102,7 @@ export async function verifyAction(secret: string, token: string, now = Date.now
   if (diff !== 0) return null;
   try {
     const p = JSON.parse(atob(body.replace(/-/g, "+").replace(/_/g, "/"))) as ActionPayload;
-    if (!p.bid || (p.act !== "confirm" && p.act !== "reject") || typeof p.exp !== "number" || p.exp < now) return null;
+    if (!p.bid || !["confirm", "reject", "complete"].includes(p.act) || typeof p.exp !== "number" || p.exp < now) return null;
     return p;
   } catch { return null; }
 }
@@ -173,9 +173,28 @@ export function rejectedToPatient(a: { b: EmailBooking; rebookUrl: string; searc
 export function cancelledNotice(a: { b: EmailBooking; by: "patient" | "professional"; to: "patient" | "professional"; storicoUrl: string }): MailParts {
   const { b } = a;
   const who = a.by === "patient" ? "dal paziente" : "dal professionista";
-  const html = shell("Prenotazione annullata", `
-<p>La prenotazione è stata annullata ${who}.</p>
+  const own = a.by === "patient" && a.to === "patient"; // ricevuta per chi ha annullato
+  const html = shell(own ? "Hai annullato la prenotazione" : "Prenotazione annullata", `
+<p>${own ? "Abbiamo registrato l'annullamento. L'orario è tornato disponibile." : `La prenotazione è stata annullata ${who}.`}</p>
 <table style="font-size:15px;border-collapse:collapse">${row("Prestazione", b.service_name)}${row("Data", b.day)}${row("Orario", b.time_slot)}</table>
 ${a.to === "patient" ? `<p style="margin-top:20px">${btn(a.storicoUrl, "Prenota di nuovo")}</p>` : ""}`);
-  return { subject: `Prenotazione annullata: ${b.day} ore ${b.time_slot}`, html, text: `Prenotazione annullata ${who}: ${b.service_name}, ${b.day} ore ${b.time_slot}.` };
+  return {
+    subject: own ? `Hai annullato la prenotazione: ${b.day} ore ${b.time_slot}` : `Prenotazione annullata: ${b.day} ore ${b.time_slot}`,
+    html,
+    text: own ? `Hai annullato la prenotazione: ${b.service_name}, ${b.day} ore ${b.time_slot}.` : `Prenotazione annullata ${who}: ${b.service_name}, ${b.day} ore ${b.time_slot}.`,
+  };
+}
+
+export function completionReminder(a: { b: EmailBooking; professionalName: string; doneUrl: string; storicoUrl: string }): MailParts {
+  const { b } = a;
+  const html = shell("La prestazione è stata effettuata?", `
+<p>Oggi era prevista la tua prestazione con ${esc(a.professionalName)}.</p>
+<table style="font-size:15px;border-collapse:collapse">${row("Prestazione", b.service_name)}${row("Data", b.day)}${row("Orario", b.time_slot)}</table>
+<p style="margin-top:20px">${btn(a.doneUrl, "Prenotazione effettuata")}</p>
+<p style="font-size:13px;color:#6b7c85">Dopo la conferma potrai lasciare una recensione. Se la prestazione non c'è stata, scrivici rispondendo a questa email o apri lo <a href="${esc(a.storicoUrl)}">storico</a>.</p>`);
+  return {
+    subject: `È andata bene? ${b.service_name}, ${b.day}`,
+    html,
+    text: `La prestazione con ${a.professionalName} è stata effettuata?\n${b.service_name}, ${b.day} ore ${b.time_slot}\nConferma: ${a.doneUrl}\nStorico: ${a.storicoUrl}`,
+  };
 }

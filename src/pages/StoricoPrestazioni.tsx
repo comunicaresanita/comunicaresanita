@@ -14,7 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { italianError } from "@/lib/italianErrors";
-import { canUserCancel, userBookingStatus } from "@/lib/bookingSlots";
+import { canUserCancel, canMarkDone, compareBookingsDesc, userBookingStatus } from "@/lib/bookingSlots";
+import ReviewDialog from "@/components/ReviewDialog";
+import { useSearchParams } from "react-router-dom";
 
 const StoricoPrestazioni = () => {
   const navigate = useNavigate();
@@ -23,6 +25,10 @@ const StoricoPrestazioni = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [marking, setMarking] = useState<string | null>(null);
+  const [reviewed, setReviewed] = useState<Set<string>>(new Set());
+  const [reviewFor, setReviewFor] = useState<any | null>(null);
+  const [params] = useSearchParams();
 
   const load = async () => {
     if (!profile) return;
@@ -30,13 +36,37 @@ const StoricoPrestazioni = () => {
     const { data } = await supabase
       .from("bookings")
       .select("*, professional:professional_id(first_name, last_name)")
-      .eq("patient_id", profile.id)
-      .order("day", { ascending: false });
-    setBookings(data || []);
+      .eq("patient_id", profile.id);
+    // "day" è testo ("Venerdì 30 Ottobre 2026"): l'ordine cronologico si calcola sulla data vera, dalla più recente
+    const list = ((data as any[]) || []).sort(compareBookingsDesc);
+    setBookings(list);
+    const { data: mine } = await supabase.from("reviews").select("booking_id").eq("patient_id", profile.id);
+    setReviewed(new Set(((mine as any[]) || []).map((r) => r.booking_id)));
     setLoading(false);
   };
 
   useEffect(() => { load(); }, [profile]);
+
+  // Dal link dell'email "prenotazione effettuata": ?recensione=<id> apre la recensione
+  useEffect(() => {
+    const id = params.get("recensione");
+    if (!id || reviewFor) return;
+    const b = bookings.find((x) => x.id === id);
+    if (b && userBookingStatus(b) === "done" && !reviewed.has(id)) setReviewFor(b);
+  }, [bookings, reviewed]);
+
+  const markDone = async (b: any) => {
+    setMarking(b.id);
+    const { error } = await (supabase.rpc as any)("complete_booking", { _booking_id: b.id });
+    setMarking(null);
+    if (error) {
+      toast({ title: "Impossibile aggiornare", description: italianError(error, "booking"), variant: "destructive" });
+      return;
+    }
+    toast({ title: "Prestazione effettuata", description: "Grazie! Vuoi lasciare una recensione?" });
+    await load();
+    setReviewFor({ ...b, status: "completed" });
+  };
 
   const cancelBooking = async (b: any) => {
     setCancelling(b.id);
@@ -103,7 +133,7 @@ const StoricoPrestazioni = () => {
                       </div>
                       {(() => {
                         const st = userBookingStatus(b);
-                        const label = st === "rejected" ? "Non confermata" : st === "cancelled" ? "Annullata" : st === "done" ? "Effettuata" : st === "confirmed" ? "Confermato" : st === "pending" ? "In attesa" : b.status;
+                        const label = st === "rejected" ? "Non confermata" : st === "cancelled" ? "Annullata" : st === "done" ? "Effettuata" : st === "confirmed" ? "Confermata" : st === "expired" ? "Scaduta" : st === "pending" ? "In attesa" : b.status;
                         const cls = st === "done" ? "bg-success/15 text-success" : st === "confirmed" || st === "pending" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground";
                         return <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium flex-shrink-0 ${cls}`}>{label}</span>;
                       })()}
@@ -139,17 +169,31 @@ const StoricoPrestazioni = () => {
                         </AlertDialog>
                       )}
                     </div>
+                    {canMarkDone(b) && (
+                      <div className="mt-2 rounded-md border border-primary/30 bg-secondary p-3 text-sm space-y-2">
+                        <p>La prestazione è stata effettuata?</p>
+                        <Button size="sm" className="w-full h-auto min-h-9 py-2 whitespace-normal text-center" disabled={marking === b.id} onClick={() => markDone(b)}>
+                          {marking === b.id ? "Salvataggio…" : "Prenotazione effettuata"}
+                        </Button>
+                      </div>
+                    )}
+                    {userBookingStatus(b) === "done" && !reviewed.has(b.id) && (
+                      <Button size="sm" variant="outline" className="mt-2 w-full h-auto min-h-9 py-2 whitespace-normal text-center" onClick={() => setReviewFor(b)}>
+                        Lascia una recensione
+                      </Button>
+                    )}
                     {userBookingStatus(b) === "rejected" && (
                       <div className="mt-2 rounded-md border border-primary/30 bg-secondary p-3 text-sm space-y-2">
                         <p>Il professionista non può effettuare questa prestazione nell'orario scelto. Puoi scegliere un altro orario o un altro professionista.</p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             size="sm"
+                            className="w-full sm:flex-1 h-auto min-h-9 py-2 whitespace-normal text-center"
                             onClick={() => navigate(`/profilo-infermiere/${b.professional_id}?servizio=${encodeURIComponent(b.service_name)}&per=${b.recipient_type === "other" ? "other" : "self"}&ripeti=${b.id}`)}
                           >
                             Scegli un altro orario
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => navigate(`/dashboard-paziente?servizio=${encodeURIComponent(b.service_name)}`)}>
+                          <Button size="sm" variant="outline" className="w-full sm:flex-1 h-auto min-h-9 py-2 whitespace-normal text-center" onClick={() => navigate(`/dashboard-paziente?servizio=${encodeURIComponent(b.service_name)}`)}>
                             Cerca un altro professionista
                           </Button>
                         </div>
@@ -168,6 +212,12 @@ const StoricoPrestazioni = () => {
         </div>
       </main>
       <Footer />
+      <ReviewDialog
+        open={!!reviewFor}
+        onOpenChange={(o) => { if (!o) setReviewFor(null); }}
+        booking={reviewFor}
+        onDone={load}
+      />
     </div>
   );
 };

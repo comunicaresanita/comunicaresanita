@@ -2,3 +2,6 @@ project_id = "cqmrrapkaikixowowffe"
 
 [functions.booking-action]
 verify_jwt = false
+
+[functions.send-completion-reminders]
+verify_jwt = false

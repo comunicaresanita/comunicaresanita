@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { italianError } from "@/lib/italianErrors";
 import { parseBookingDay, dateKey } from "@/lib/bookingDates";
+import { canMarkDone } from "@/lib/bookingSlots";
 import type { DayContentProps } from "react-day-picker";
 
 type Booking = {
@@ -46,6 +47,7 @@ const DashboardProfessionista = () => {
   const [selected, setSelected] = useState<Date | undefined>();
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [responding, setResponding] = useState<string | null>(null);
+  const [completing, setCompleting] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
@@ -93,7 +95,7 @@ const DashboardProfessionista = () => {
     (parseBookingDay(a.day)?.getTime() ?? 0) - (parseBookingDay(b.day)?.getTime() ?? 0) || a.time_slot.localeCompare(b.time_slot));
   const shown = selected
     ? byDay.get(dateKey(selected)) ?? []
-    : sortedActive.filter((b) => (parseBookingDay(b.day)?.getTime() ?? 0) >= today.getTime());
+    : sortedActive.filter((b) => (parseBookingDay(b.day)?.getTime() ?? 0) >= today.getTime() || canMarkDone(b));
 
   const DayContent = (props: DayContentProps) => {
     const list = byDay.get(dateKey(props.date));
@@ -158,6 +160,18 @@ const DashboardProfessionista = () => {
     toast(accept
       ? { title: "Prenotazione confermata", description: "Il paziente vedrà la conferma nel suo storico." }
       : { title: "Prenotazione rifiutata", description: "L'orario è tornato disponibile e il paziente potrà sceglierne un altro." });
+    load();
+  };
+
+  const markDone = async (b: Booking) => {
+    setCompleting(b.id);
+    const { error } = await (supabase.rpc as any)("complete_booking", { _booking_id: b.id });
+    setCompleting(null);
+    if (error) {
+      toast({ title: "Impossibile aggiornare", description: italianError(error, "booking"), variant: "destructive" });
+      return;
+    }
+    toast({ title: "Prestazione effettuata", description: "Il paziente potrà lasciare una recensione." });
     load();
   };
 
@@ -237,7 +251,7 @@ const DashboardProfessionista = () => {
                     <div className="text-right">
                       <span className="block text-lg font-bold text-primary">€{b.price}</span>
                       <span className={`inline-block mt-1 text-xs px-2 py-1 rounded-full font-medium ${b.status === "pending" ? "bg-primary/10 text-primary" : "bg-success/15 text-success"}`}>
-                        {b.status === "pending" ? "Da confermare" : "Confermata"}
+                        {b.status === "pending" ? "Da confermare" : b.status === "completed" ? "Effettuata" : "Confermata"}
                       </span>
                     </div>
                   </div>
@@ -279,7 +293,12 @@ const DashboardProfessionista = () => {
                       </AlertDialog>
                     </div>
                   )}
-                  {b.status !== "pending" && (
+                  {canMarkDone(b) && (
+                    <Button className="gap-2 w-full sm:w-auto" disabled={completing === b.id} onClick={() => markDone(b)}>
+                      <CheckCircle2 className="w-4 h-4" />{completing === b.id ? "Salvataggio..." : "Segna come effettuata"}
+                    </Button>
+                  )}
+                  {b.status !== "pending" && b.status !== "completed" && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" className="gap-2 text-destructive border-destructive/40" disabled={cancelling === b.id}>

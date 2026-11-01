@@ -23,6 +23,7 @@ import { articles } from "@/data/blogArticles";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { bluePinIcon } from "@/lib/leafletPin";
+import LastBookingCard from "@/components/LastBookingCard";
 
 const patientFaqItems = [
   {
@@ -487,6 +488,8 @@ const DashboardPaziente = () => {
       <main className="flex-1 bg-background md:py-12 py-0">
         <div className="container mx-auto px-4 md:px-6 max-w-6xl">
           <h1 className="md:text-senior-3xl mb-2 font-semibold text-xl font-sans">Trova la prestazione o il professionista</h1>
+
+          <LastBookingCard />
 
           <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:items-stretch lg:mb-6">
           <div className="mb-6 md:mb-8 lg:mb-0 lg:flex lg:flex-col">

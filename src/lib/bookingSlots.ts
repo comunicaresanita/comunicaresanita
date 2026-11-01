@@ -25,17 +25,63 @@ export function canUserCancel(b: { status: string; day: string }, now = new Date
   return d.getTime() >= today.getTime();
 }
 
-/** Status shown to the user: an active booking whose day has passed counts as done. */
+const CONFIRMED = ["paid", "confermato", "confirmed"];
+const startOfToday = (now: Date) => new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+export type UserBookingStatus = "cancelled" | "rejected" | "done" | "confirmed" | "pending" | "expired" | "other";
+
+/**
+ * Stato mostrato al paziente. "done" (Effettuata) solo dopo che il paziente l'ha segnata come effettuata;
+ * "confirmed" solo se il professionista ha confermato; una richiesta mai confermata il cui giorno è passato è "expired".
+ */
 export function userBookingStatus(
   b: { status: string; day: string; cancel_reason?: string | null },
   now = new Date(),
-): "cancelled" | "rejected" | "done" | "confirmed" | "pending" | "other" {
+): UserBookingStatus {
   if (isCancelledStatus(b.status)) return b.cancel_reason === "rejected" ? "rejected" : "cancelled";
   if (DONE.includes(b.status)) return "done";
-  const d = parseBookingDay(b.day);
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  if (d && d.getTime() < today.getTime()) return "done";
-  if (["paid", "confermato", "confirmed"].includes(b.status)) return "confirmed";
-  if (b.status === "pending") return "pending";
+  if (CONFIRMED.includes(b.status)) return "confirmed";
+  if (b.status === "pending") {
+    const d = parseBookingDay(b.day);
+    return d && d.getTime() < startOfToday(now).getTime() ? "expired" : "pending";
+  }
   return "other";
+}
+
+/** Il paziente può segnare "prenotazione effettuata" se il professionista ha confermato e il giorno è oggi o passato. */
+export function canMarkDone(b: { status: string; day: string }, now = new Date()): boolean {
+  if (!CONFIRMED.includes(b.status)) return false;
+  const d = parseBookingDay(b.day);
+  return !!d && d.getTime() <= startOfToday(now).getTime();
+}
+
+/** Chiave temporale (giorno + ora d'inizio) per ordinare le prenotazioni. */
+export function bookingTime(b: { day: string; time_slot: string }): number {
+  const d = parseBookingDay(b.day)?.getTime() ?? 0;
+  const h = Number(b.time_slot?.match(/(\d{1,2})/)?.[1] ?? 0);
+  return d + h * 3600_000;
+}
+
+/** Dalla più recente alla meno recente. */
+export const compareBookingsDesc = (a: { day: string; time_slot: string }, b: { day: string; time_slot: string }) =>
+  bookingTime(b) - bookingTime(a);
+
+/** Per la Home: la prossima prenotazione attiva (in attesa o confermata, da oggi in poi); se non c'è, la più recente. */
+export function pickHomeBooking<T extends { status: string; day: string; time_slot: string; cancel_reason?: string | null }>(
+  list: T[],
+  now = new Date(),
+): T | null {
+  if (!list.length) return null;
+  const upcoming = list
+    .filter((b) => {
+      const st = userBookingStatus(b, now);
+      return st === "pending" || st === "confirmed";
+    })
+    .filter((b) => {
+      const d = parseBookingDay(b.day);
+      return !!d && d.getTime() >= startOfToday(now).getTime();
+    })
+    .sort((a, b) => bookingTime(a) - bookingTime(b));
+  if (upcoming.length) return upcoming[0];
+  return [...list].sort(compareBookingsDesc)[0];
 }

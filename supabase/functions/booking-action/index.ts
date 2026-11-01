@@ -30,7 +30,19 @@ serve(async (req) => {
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const { data: b } = await admin.from("bookings").select("*").eq("id", p.bid).single();
   if (!b) return json({ state: "missing" }, 404);
-  const info = { action: p.act, service: b.service_name, day: b.day, slot: b.time_slot };
+  const info = { action: p.act, service: b.service_name, day: b.day, slot: b.time_slot, bid: b.id };
+
+  if (p.act === "complete") {
+    if (b.status === "completed") return json({ state: "already_completed", ...info });
+    if (!["confirmed", "paid"].includes(b.status)) return json({ state: "already_closed", ...info });
+    if (!body.execute) return json({ state: "ready", ...info });
+    const { data: ok, error: e } = await admin.from("bookings")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", p.bid).in("status", ["confirmed", "paid"]).select("id");
+    if (e) { console.error(e.message); return json({ state: "error", ...info }, 500); }
+    if (!ok?.length) return json({ state: "already_closed", ...info }, 409);
+    return json({ state: "completed", ...info });
+  }
 
   if (b.status !== "pending") {
     return json({ state: b.status === "confirmed" ? "already_confirmed" : "already_closed", ...info });
