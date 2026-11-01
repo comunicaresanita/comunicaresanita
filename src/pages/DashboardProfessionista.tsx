@@ -45,6 +45,7 @@ const DashboardProfessionista = () => {
   const [extraDays, setExtraDays] = useState<Set<string>>(new Set());
   const [offDays, setOffDays] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Date | undefined>();
+  const [tab, setTab] = useState<"confermate" | "effettuate" | "annullate">("confermate");
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [responding, setResponding] = useState<string | null>(null);
   const [completing, setCompleting] = useState<string | null>(null);
@@ -97,9 +98,20 @@ const DashboardProfessionista = () => {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const sortedActive = [...active].sort((a, b) =>
     (parseBookingDay(a.day)?.getTime() ?? 0) - (parseBookingDay(b.day)?.getTime() ?? 0) || a.time_slot.localeCompare(b.time_slot));
-  const shown = selected
-    ? byDay.get(dateKey(selected)) ?? []
-    : sortedActive.filter((b) => (parseBookingDay(b.day)?.getTime() ?? 0) >= today.getTime() || canMarkDone(b));
+  const isDone = (b: Booking) => ["completed", "completato"].includes(b.status);
+  const onSelectedDay = (b: Booking) => {
+    if (!selected) return true;
+    const d = parseBookingDay(b.day);
+    return !!d && dateKey(d) === dateKey(selected);
+  };
+  // "Confermate": le richieste da confermare (in cima) e quelle confermate, future o da segnare come effettuate
+  const openList = sortedActive
+    .filter((b) => !isDone(b))
+    .filter((b) => selected ? onSelectedDay(b) : (parseBookingDay(b.day)?.getTime() ?? 0) >= today.getTime() || canMarkDone(b))
+    .sort((a, b) => Number(b.status === "pending") - Number(a.status === "pending"));
+  const doneList = sortedActive.filter(isDone).filter(onSelectedDay).reverse();
+  const cancelledShown = cancelledList.filter(onSelectedDay);
+  const shown = tab === "effettuate" ? doneList : tab === "annullate" ? [] : openList;
 
   const DayContent = (props: DayContentProps) => {
     const list = byDay.get(dateKey(props.date));
@@ -231,14 +243,29 @@ const DashboardProfessionista = () => {
           {/* Prenotazioni per esteso */}
           <div className="flex items-center justify-between mb-3 gap-2">
             <h2 className="text-lg md:text-senior-lg font-semibold">
-              {selected ? `Prenotazioni del ${selected.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}` : "Prossime prenotazioni"}
+              {selected ? `Prenotazioni del ${selected.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}` : "Le tue prenotazioni"}
             </h2>
             {selected && <Button variant="ghost" size="sm" onClick={() => setSelected(undefined)}>Mostra tutte</Button>}
           </div>
+          <div className="grid grid-cols-3 gap-2 mb-4" role="tablist" aria-label="Filtra le prenotazioni">
+            {([
+              ["confermate", "Confermate", openList.length],
+              ["effettuate", "Effettuate", doneList.length],
+              ["annullate", "Annullate", cancelledShown.length],
+            ] as const).map(([key, label, n]) => (
+              <Button key={key} role="tab" aria-selected={tab === key} variant={tab === key ? "default" : "outline"}
+                className="h-auto py-2 px-2 text-sm md:text-base" onClick={() => setTab(key)}>
+                {label} ({n})
+              </Button>
+            ))}
+          </div>
           <div className="space-y-4 mb-8">
-            {shown.length === 0 && (
+            {(tab === "annullate" ? cancelledShown.length === 0 : shown.length === 0) && (
               <Card><CardContent className="p-6 text-center text-muted-foreground">
-                {selected ? "Nessuna prenotazione in questo giorno." : "Non hai ancora prenotazioni in arrivo."}
+                {selected ? "Nessuna prenotazione in questo giorno."
+                  : tab === "effettuate" ? "Non hai ancora prestazioni effettuate."
+                  : tab === "annullate" ? "Nessuna prenotazione annullata."
+                  : "Non hai ancora prenotazioni in arrivo."}
               </CardContent></Card>
             )}
             {shown.map((b) => (
@@ -328,26 +355,18 @@ const DashboardProfessionista = () => {
                 </CardContent>
               </Card>
             ))}
+            {tab === "annullate" && cancelledShown.map((b) => (
+              <Card key={b.id} className="bg-muted/40">
+                <CardContent className="p-3 md:p-4 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium">{b.service_name}</p>
+                    <p className="text-sm text-muted-foreground">{b.day} · ore {b.time_slot} · {recipientName(b) || "Utente"}</p>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded-full font-medium bg-destructive/10 text-destructive">Annullata</span>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-
-          {cancelledList.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-lg md:text-senior-lg font-semibold mb-3">Annullate o scadute</h2>
-              <div className="space-y-2">
-                {cancelledList.map((b) => (
-                  <Card key={b.id} className="bg-muted/40">
-                    <CardContent className="p-3 md:p-4 flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <p className="font-medium">{b.service_name}</p>
-                        <p className="text-sm text-muted-foreground">{b.day} · ore {b.time_slot} · {recipientName(b) || "Utente"}</p>
-                      </div>
-                      <span className="text-xs px-2 py-1 rounded-full font-medium bg-destructive/10 text-destructive">Annullata</span>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
             <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/setup-professionista")}>
