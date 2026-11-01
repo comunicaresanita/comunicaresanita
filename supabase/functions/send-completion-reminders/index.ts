@@ -16,7 +16,7 @@ serve(async (req) => {
     const secret = Deno.env.get("BOOKING_ACTION_SECRET");
     if (!secret) throw new Error("BOOKING_ACTION_SECRET is not configured");
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const appUrl = (Deno.env.get("APP_URL") ?? "https://comunicaresanita.lovable.app").replace(/\/$/, "");
+    const appUrl = (Deno.env.get("APP_URL") ?? "https://comunicaresanita.it").replace(/\/$/, "");
 
     const { data: list, error } = await admin.from("bookings").select("*")
       .in("status", ["confirmed", "paid"]).is("reminder_sent_at", null);

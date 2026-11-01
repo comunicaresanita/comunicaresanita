@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Segreti della migrazione: mai nel repository
+docs/migrazione/secrets.env

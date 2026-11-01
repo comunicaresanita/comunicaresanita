@@ -52,9 +52,9 @@ const BlogArticolo = () => {
           publisher: {
             "@type": "Organization",
             name: "ComuniCARE",
-            logo: { "@type": "ImageObject", url: "https://comunicare.lovable.app/favicon.ico" },
+            logo: { "@type": "ImageObject", url: "https://comunicaresanita.it/favicon.ico" },
           },
-          mainEntityOfPage: `https://comunicare.lovable.app/blog/${article.slug}`,
+          mainEntityOfPage: `https://comunicaresanita.it/blog/${article.slug}`,
         }}
       />
       <AuthHeader />
