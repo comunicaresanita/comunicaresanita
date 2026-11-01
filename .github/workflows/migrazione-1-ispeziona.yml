@@ -23,7 +23,9 @@ jobs:
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq postgresql-client-17
-          pg_restore --version
+          # L'immagine di GitHub ha già PostgreSQL 16 nel PATH: si mette la 17 davanti per i passaggi successivi
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          /usr/lib/postgresql/17/bin/pg_restore --version
 
       - name: Scarica l'esportazione
         env:
@@ -35,6 +37,7 @@ jobs:
 
       - name: Struttura (nessun dato)
         run: |
+          echo "Strumento in uso: $(pg_restore --version)"
           echo "Intestazione del file: $(head -c 5 dump.bin | tr -d '\0')"
           file dump.bin | cut -c1-200
           if [ "$(head -c 5 dump.bin)" = "PGDMP" ]; then
@@ -48,6 +51,10 @@ jobs:
             grep -E ' EXTENSION - ' toc.txt | sed 's/^[0-9; ]*//' | cut -c1-100
             echo "== Tabelle con dati (nome tabella)"
             grep -E ' TABLE DATA ' toc.txt | sed 's/^[0-9; ]*//' | cut -c1-100
+            echo "== Trigger (nome e tabella)"
+            grep -E ' TRIGGER ' toc.txt | sed 's/^[0-9; ]*//' | cut -c1-140
+            echo "== Funzioni dello schema public"
+            grep -E ' FUNCTION public ' toc.txt | sed 's/^[0-9; ]*//' | cut -c1-120
             echo "== Conteggio per tipo di oggetto"
             awk '!/^;/ && NF>3 {print $4" "$5}' toc.txt | sort | uniq -c | sort -rn | head -30
           else
