@@ -113,6 +113,13 @@
       "when": 1793471002679,
       "tag": "0015_bookings_status_add_confirmed",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793471003679,
+      "tag": "0016_booking_completion",
+      "breakpoints": true
     }
   ]
 }

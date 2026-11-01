@@ -66,8 +66,12 @@ export async function notifyBooking(admin: SupabaseClient, b: any, patient: any,
     }));
   } else {
     const by = b.cancelled_by === "patient" ? "patient" : "professional";
-    if (by === "patient") send(profEmail, cancelledNotice({ b, by, to: "professional", storicoUrl }));
-    else send(patientEmail, cancelledNotice({ b, by, to: "patient", storicoUrl }));
+    if (by === "patient") {
+      send(profEmail, cancelledNotice({ b, by, to: "professional", storicoUrl }));
+      send(patientEmail, cancelledNotice({ b, by, to: "patient", storicoUrl })); // ricevuta per chi annulla
+    } else {
+      send(patientEmail, cancelledNotice({ b, by, to: "patient", storicoUrl }));
+    }
   }
 
   let sent = 0;

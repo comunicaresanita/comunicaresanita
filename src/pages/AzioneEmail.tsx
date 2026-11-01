@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle, Info } from "lucide-react";
 
-type ActionInfo = { state: string; action?: "confirm" | "reject"; service?: string; day?: string; slot?: string; emailsOk?: boolean };
+type ActionInfo = { state: string; action?: "confirm" | "reject" | "complete"; service?: string; day?: string; slot?: string; emailsOk?: boolean; bid?: string };
 
 const endpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/booking-action`;
 
@@ -39,6 +39,7 @@ const AzioneEmail = () => {
 
   const label = info?.service ? `${info.service}, ${info.day} ore ${info.slot}` : "";
   const confirm = info?.action === "confirm";
+  const complete = info?.action === "complete";
 
   let icon = <Info className="w-14 h-14 text-primary mx-auto mb-4" />;
   let title = "Un momento…";
@@ -47,7 +48,7 @@ const AzioneEmail = () => {
 
   switch (info?.state) {
     case "ready":
-      title = confirm ? "Confermare la prenotazione?" : "Rifiutare la prenotazione?";
+      title = complete ? "La prestazione è stata effettuata?" : confirm ? "Confermare la prenotazione?" : "Rifiutare la prenotazione?";
       text = <p>{label}</p>;
       showButton = true;
       break;
@@ -62,8 +63,15 @@ const AzioneEmail = () => {
       text = <><p>{label}</p><p className="mt-2">L'orario è di nuovo libero e il paziente potrà sceglierne un altro.</p></>;
       break;
     case "already_confirmed":
-      title = "Già confermata";
+      icon = <CheckCircle className="w-14 h-14 text-primary mx-auto mb-4" />;
+      title = confirm ? "Hai già confermato questa prenotazione" : "Prenotazione già confermata";
       text = <p>{label}</p>;
+      break;
+    case "completed":
+    case "already_completed":
+      icon = <CheckCircle className="w-14 h-14 text-primary mx-auto mb-4" />;
+      title = info.state === "completed" ? "Grazie, prestazione registrata" : "Prestazione già registrata come effettuata";
+      text = <><p>{label}</p><p className="mt-2">Ora puoi lasciare una recensione al professionista.</p></>;
       break;
     case "already_closed":
       title = "Nessuna azione necessaria";
@@ -93,10 +101,15 @@ const AzioneEmail = () => {
             <div className="text-base text-muted-foreground mb-6">{text}</div>
             {showButton && (
               <Button className="w-full py-5 mb-3" onClick={run} disabled={busy}>
-                {busy ? "Invio…" : confirm ? "Conferma" : "Rifiuta"}
+                {busy ? "Invio…" : complete ? "Prenotazione effettuata" : confirm ? "Conferma" : "Rifiuta"}
               </Button>
             )}
-            <Link to="/dashboard-professionista"><Button variant="outline" className="w-full py-5">Vai alla dashboard</Button></Link>
+            {(info?.state === "completed" || info?.state === "already_completed") && info.bid && (
+              <Link to={`/storico-prestazioni?recensione=${info.bid}`}><Button className="w-full py-5 mb-3">Lascia una recensione</Button></Link>
+            )}
+            <Link to={complete || info?.state === "completed" || info?.state === "already_completed" ? "/storico-prestazioni" : "/dashboard-professionista"}>
+              <Button variant="outline" className="w-full py-5">{complete || info?.state === "completed" || info?.state === "already_completed" ? "Vai allo storico" : "Vai alla dashboard"}</Button>
+            </Link>
           </CardContent>
         </Card>
       </main>
