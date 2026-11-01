@@ -1,0 +1,31 @@
+name: Migrazione 3 - Rilascia le funzioni sul nuovo Supabase
+
+# Rilascia tutte le funzioni di supabase/functions sul nuovo progetto.
+# Segreto richiesto: SUPABASE_ACCESS_TOKEN (token personale creato su supabase.com/dashboard/account/tokens).
+# I segreti delle funzioni (Resend, Telegram, ecc.) si impostano a mano da Supabase > Edge Functions > Secrets.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_ref:
+        description: Codice del progetto Supabase
+        default: ywcansmtvmdvabnecova
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  rilascia:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Rilascia tutte le funzioni
+        run: supabase functions deploy --project-ref "${{ inputs.project_ref }}" --use-api
+      - name: Elenco delle funzioni attive
+        run: supabase functions list --project-ref "${{ inputs.project_ref }}"
