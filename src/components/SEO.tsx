@@ -9,7 +9,7 @@ interface SEOProps {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const BASE_URL = "https://comunicaresanita.it";
+const BASE_URL = "https://www.comunicaresanita.it";
 
 const SEO = ({ title, description, path, type = "website", image, jsonLd }: SEOProps) => {
   const url = `${BASE_URL}${path}`;

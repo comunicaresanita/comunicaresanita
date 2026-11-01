@@ -5,7 +5,7 @@ import { isIosSafari, type MobileInstallPlatform } from "@/lib/installPreference
 export default function InstallGuide({ platform }: { platform: MobileInstallPlatform }) {
   const embedded = window.self !== window.top || /lovableproject\.|^(id-preview--|preview--)/.test(location.hostname);
   return <>
-    {embedded && <p className="mt-3 text-sm text-muted-foreground">Per aggiungere l’icona, apri il sito <a className="text-primary underline break-all" href="https://comunicaresanita.it" target="_blank" rel="noopener noreferrer">comunicaresanita.it</a> nel browser del telefono, fuori da questa anteprima.</p>}
+    {embedded && <p className="mt-3 text-sm text-muted-foreground">Per aggiungere l’icona, apri il sito <a className="text-primary underline break-all" href="https://www.comunicaresanita.it" target="_blank" rel="noopener noreferrer">www.comunicaresanita.it</a> nel browser del telefono, fuori da questa anteprima.</p>}
     {platform === "ios" ? <IosInstallGuide safari={isIosSafari(navigator.userAgent, navigator.platform, navigator.maxTouchPoints)} /> : <>
       <p className="mt-3 text-sm text-muted-foreground">per non perderci e averci comodamente tra le app, segui questi semplici step:</p>
       <ol className="mt-4 space-y-3">
