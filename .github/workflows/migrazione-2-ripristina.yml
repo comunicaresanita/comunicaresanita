@@ -1,0 +1,105 @@
+name: Migrazione 2 - Ripristina il database sul nuovo Supabase
+
+# Ripristina dall'esportazione di Lovable Cloud SOLO: utenti e identita' (con le password gia' cifrate),
+# lo schema "public" dell'app (tabelle, dati, funzioni, trigger, regole di sicurezza, permessi) e le regole
+# dell'archivio foto. Non tocca nulla di interno a Supabase (cron, vault, realtime, migrazioni di Lovable).
+# Segreti richiesti: DUMP_URL, SUPABASE_DB_URL (indirizzo "Session pooler" del NUOVO progetto, con la password).
+# Il repository e' pubblico: i registri contengono solo conteggi, mai dati.
+
+on:
+  workflow_dispatch:
+    inputs:
+      conferma:
+        description: Scrivi RIPRISTINA per confermare
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  PROGETTO_ATTESO: ywcansmtvmdvabnecova
+
+jobs:
+  ripristina:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      DUMP_URL: ${{ secrets.DUMP_URL }}
+    steps:
+      - name: Controlli di sicurezza
+        run: |
+          if [ "${{ inputs.conferma }}" != "RIPRISTINA" ]; then echo "Conferma mancante: scrivi RIPRISTINA."; exit 1; fi
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$DUMP_URL" ]; then echo "Manca un segreto (SUPABASE_DB_URL o DUMP_URL)."; exit 1; fi
+          case "$SUPABASE_DB_URL" in
+            *"$PROGETTO_ATTESO"*) echo "L'indirizzo del database e' quello del nuovo progetto." ;;
+            *) echo "STOP: l'indirizzo del database NON e' quello del nuovo progetto ($PROGETTO_ATTESO)."; exit 1 ;;
+          esac
+
+      - name: Installa gli strumenti PostgreSQL 17
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq curl ca-certificates gnupg lsb-release
+          sudo install -d /usr/share/postgresql-common/pgdg
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc > /dev/null
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Scarica l'esportazione
+        run: |
+          echo "::add-mask::$DUMP_URL"
+          curl -fL --retry 3 --silent --show-error -o dump.bin "$DUMP_URL"
+          pg_restore --version
+          ls -l dump.bin | awk '{print "Dimensione (byte): " $5}'
+
+      - name: Il nuovo database deve essere vuoto
+        run: |
+          psql "$SUPABASE_DB_URL" -Atc "select 'Versione: ' || version()" | cut -c1-60
+          N=$(psql "$SUPABASE_DB_URL" -Atc "select count(*) from information_schema.tables where table_schema='public'")
+          echo "Tabelle gia' presenti nello schema public: $N"
+          if [ "$N" != "0" ]; then echo "STOP: il database non e' vuoto. Non si ripristina sopra a dati esistenti."; exit 1; fi
+
+      - name: 1) Utenti e identita' (password gia' cifrate)
+        run: |
+          pg_restore -l dump.bin | grep -E ' TABLE DATA auth (users|identities) ' > auth.list
+          echo "Voci selezionate: $(wc -l < auth.list)"
+          { echo "SET session_replication_role = replica;"; pg_restore --data-only --no-owner -L auth.list -f - dump.bin; } > auth.sql
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --single-transaction -q -f auth.sql
+
+      - name: 2) Schema public dell'app (tabelle, dati, funzioni, trigger, regole, permessi)
+        run: |
+          pg_restore -l --schema=public dump.bin | grep -v 'DEFAULT ACL' > public.list
+          echo "Voci selezionate: $(wc -l < public.list)"
+          pg_restore --schema=public --no-owner -L public.list -f public.sql dump.bin
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --single-transaction -q -f public.sql
+
+      - name: 3) Regole dell'archivio foto
+        run: |
+          pg_restore -l dump.bin | grep -E ' POLICY storage ' > storage.list || true
+          echo "Regole selezionate: $(wc -l < storage.list)"
+          if [ -s storage.list ]; then
+            pg_restore --no-owner -L storage.list -f storage.sql dump.bin
+            psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=0 -q -f storage.sql 2>&1 | cut -c1-200 || true
+          fi
+
+      - name: Controlli (solo conteggi)
+        run: |
+          psql "$SUPABASE_DB_URL" -At -F ' = ' <<'SQL'
+          select 'utenti (auth.users)', count(*) from auth.users
+          union all select 'utenti con password', count(*) from auth.users where encrypted_password is not null and encrypted_password <> ''
+          union all select 'identita (auth.identities)', count(*) from auth.identities
+          union all select 'profili', count(*) from public.profiles
+          union all select 'profili professionisti', count(*) from public.profiles where role = 'professionista'
+          union all select 'professionisti verificati', count(*) from public.profiles where verified
+          union all select 'prenotazioni', count(*) from public.bookings
+          union all select 'servizi', count(*) from public.services
+          union all select 'eccezioni disponibilita', count(*) from public.availability_overrides
+          union all select 'disponibilita settimanale', count(*) from public.availability
+          union all select 'recensioni', count(*) from public.reviews
+          union all select 'messaggi di contatto', count(*) from public.contact_submissions
+          union all select 'registro accessi admin', count(*) from public.admin_access_log
+          union all select 'regole di sicurezza public', count(*) from pg_policies where schemaname = 'public'
+          union all select 'trigger public', count(*) from pg_trigger t join pg_class c on c.oid = t.tgrelid join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and not t.tgisinternal
+          union all select 'tabelle public senza RLS', count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity;
+          SQL
