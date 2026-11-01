@@ -134,6 +134,13 @@
       "when": 1793700000000,
       "tag": "0018_security_booking_insert_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793700000001,
+      "tag": "0019_security_booking_insert_guard",
+      "breakpoints": true
     }
   ]
 }
