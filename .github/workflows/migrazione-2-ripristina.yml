@@ -64,7 +64,7 @@ jobs:
         run: |
           pg_restore -l dump.bin | grep -E ' TABLE DATA auth (users|identities) ' > auth.list
           echo "Voci selezionate: $(wc -l < auth.list)"
-          { echo "SET session_replication_role = replica;"; pg_restore --data-only --no-owner -L auth.list -f - dump.bin; } > auth.sql
+          { echo "SET session_replication_role = replica;"; echo "TRUNCATE auth.users CASCADE;"; pg_restore --data-only --no-owner -L auth.list -f - dump.bin; } > auth.sql
           psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --single-transaction -q -f auth.sql
 
       - name: 2) Schema public dell'app (tabelle, dati, funzioni, trigger, regole, permessi)
@@ -72,6 +72,22 @@ jobs:
           pg_restore -l --schema=public dump.bin | grep -v 'DEFAULT ACL' > public.list
           echo "Voci selezionate: $(wc -l < public.list)"
           pg_restore --schema=public --no-owner -L public.list -f public.sql dump.bin
+          # Via i permessi (GRANT/REVOKE) verso ruoli che esistono solo su Lovable (es. sandbox_exec): sul nuovo Supabase non ci sono
+          python3 - <<'PY'
+          import re
+          ok = {"postgres","anon","authenticated","service_role","public","supabase_admin","supabase_auth_admin","supabase_storage_admin","authenticator","dashboard_user","pgbouncer","supabase_read_only_user","supabase_realtime_admin","supabase_etl_admin","supabase_functions_admin"}
+          out, dropped = [], 0
+          for line in open("public.sql", encoding="utf-8"):
+              m = re.match(r"^(GRANT|REVOKE)\b.*?\b(?:TO|FROM)\s+(.+?);\s*$", line)
+              if m:
+                  roles = {r.strip().strip('"').lower() for r in m.group(2).replace(" GRANTED BY postgres", "").split(",")}
+                  if not roles <= ok:
+                      dropped += 1
+                      continue
+              out.append(line)
+          open("public.sql", "w", encoding="utf-8").writelines(out)
+          print(f"Permessi verso ruoli non presenti, saltati: {dropped}")
+          PY
           psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --single-transaction -q -f public.sql
 
       - name: 3) Regole dell'archivio foto
