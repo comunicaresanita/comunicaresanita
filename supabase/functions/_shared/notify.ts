@@ -17,7 +17,7 @@ export async function notifyBooking(admin: SupabaseClient, b: any, patient: any,
   };
   const [patientEmail, profEmail] = await Promise.all([emailOf(patient), emailOf(prof)]);
 
-  const appUrl = (Deno.env.get("APP_URL") ?? "https://comunicaresanita.lovable.app").replace(/\/$/, "");
+  const appUrl = (Deno.env.get("APP_URL") ?? "https://comunicaresanita.it").replace(/\/$/, "");
   const secret = Deno.env.get("BOOKING_ACTION_SECRET");
   const patientName = `${patient?.first_name ?? ""} ${patient?.last_name ?? ""}`.trim() || "Paziente";
   const profName = `${prof?.first_name ?? ""} ${prof?.last_name ?? ""}`.trim() || "Il professionista";

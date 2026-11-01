@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://comunicare.lovable.app/</loc>
+    <loc>https://comunicaresanita.it/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/contatti</loc>
+    <loc>https://comunicaresanita.it/contatti</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/blog</loc>
+    <loc>https://comunicaresanita.it/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/registrazione</loc>
+    <loc>https://comunicaresanita.it/registrazione</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/login</loc>
+    <loc>https://comunicaresanita.it/login</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/termini</loc>
+    <loc>https://comunicaresanita.it/termini</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/privacy</loc>
+    <loc>https://comunicaresanita.it/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/blog/assistenza-infermieristica-domiciliare-anziani</loc>
+    <loc>https://comunicaresanita.it/blog/assistenza-infermieristica-domiciliare-anziani</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/blog/fisioterapista-riabilitazione-post-operatoria</loc>
+    <loc>https://comunicaresanita.it/blog/fisioterapista-riabilitazione-post-operatoria</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://comunicare.lovable.app/blog/oss-assistenza-socio-sanitaria</loc>
+    <loc>https://comunicaresanita.it/blog/oss-assistenza-socio-sanitaria</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

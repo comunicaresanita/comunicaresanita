@@ -8,7 +8,7 @@ const corsHeaders = {
 // Photon (OpenStreetMap data by Komoot) — free, no API key. Nominatim blocks server IPs.
 const PHOTON = "https://photon.komoot.io/api/";
 const ITALY_BBOX = "6.6,35.4,18.6,47.1";
-const UA = "ComuniCARE/1.0 (https://comunicaresanita.lovable.app)";
+const UA = "ComuniCARE/1.0 (https://comunicaresanita.it)";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status });

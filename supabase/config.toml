@@ -1,10 +1,34 @@
 project_id = "cqmrrapkaikixowowffe"
 
+# Le chiavi pubbliche nuove di Supabase non sono JWT: con la verifica automatica attiva le funzioni pubbliche
+# risponderebbero "Invalid JWT". Ogni funzione controlla da sé l'accesso: sessione (getUser), password admin,
+# firma del link nell'email o segreto del cron.
+[functions.admin-data]
+verify_jwt = false
+
 [functions.booking-action]
+verify_jwt = false
+
+[functions.chat-assistente]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
+[functions.expire-pending-bookings]
+verify_jwt = false
+
+[functions.places-autocomplete]
+verify_jwt = false
+
+[functions.send-booking-emails]
+verify_jwt = false
+
+[functions.send-booking-notifications]
 verify_jwt = false
 
 [functions.send-completion-reminders]
 verify_jwt = false
 
-[functions.expire-pending-bookings]
+[functions.send-contact-email]
 verify_jwt = false
