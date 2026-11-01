@@ -107,6 +107,7 @@ export type Database = {
           cancel_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
+          completed_at: string | null
           created_at: string
           day: string
           emergency_contact_name: string | null
@@ -123,6 +124,7 @@ export type Database = {
           recipient_first_name: string | null
           recipient_last_name: string | null
           recipient_type: string | null
+          reminder_sent_at: string | null
           responded_at: string | null
           service_name: string
           status: string
@@ -134,6 +136,7 @@ export type Database = {
           cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
+          completed_at?: string | null
           created_at?: string
           day: string
           emergency_contact_name?: string | null
@@ -150,6 +153,7 @@ export type Database = {
           recipient_first_name?: string | null
           recipient_last_name?: string | null
           recipient_type?: string | null
+          reminder_sent_at?: string | null
           responded_at?: string | null
           service_name: string
           status?: string
@@ -161,6 +165,7 @@ export type Database = {
           cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
+          completed_at?: string | null
           created_at?: string
           day?: string
           emergency_contact_name?: string | null
@@ -177,6 +182,7 @@ export type Database = {
           recipient_first_name?: string | null
           recipient_last_name?: string | null
           recipient_type?: string | null
+          reminder_sent_at?: string | null
           responded_at?: string | null
           service_name?: string
           status?: string
@@ -589,6 +595,7 @@ export type Database = {
     }
     Functions: {
       cancel_booking: { Args: { _booking_id: string }; Returns: string }
+      complete_booking: { Args: { _booking_id: string }; Returns: string }
       create_profile_from_auth_user: {
         Args: { _user_id: string }
         Returns: undefined
