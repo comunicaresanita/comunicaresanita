@@ -113,7 +113,7 @@ const SERVIZI_OSS = [
   "Routine della sera con cena igiene e preparazione al riposo",
 ];
 
-// Limite di richieste per indirizzo IP (best effort: la memoria si azzera quando la funzione si riavvia)
+// Limite di richieste per utente (best effort: la memoria si azzera quando la funzione si riavvia)
 const hits = new Map<string, number[]>();
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_HITS = 30;
@@ -132,7 +132,23 @@ serve(async (req) => {
   }
 
   try {
-    const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+    // Solo utenti con account e sessione valida (il widget lo richiede già)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Non autorizzato", reply: "Accedi per usare l'Assistente digitale." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
+    const caller = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data: { user: authUser } } = await caller.auth.getUser();
+    if (!authUser) {
+      return new Response(JSON.stringify({ error: "Sessione scaduta", reply: "Sessione scaduta: accedi di nuovo." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
+
+    // Limite per utente (invece che per IP, più equo dietro reti condivise)
+    const ip = authUser.id;
     if (tooMany(ip)) {
       return new Response(JSON.stringify({ reply: "Troppi messaggi inviati. Attendi qualche minuto e riprova." }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
