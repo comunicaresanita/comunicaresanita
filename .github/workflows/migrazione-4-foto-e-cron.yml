@@ -57,9 +57,9 @@ jobs:
 
       - name: Copia le foto profilo
         run: |
-          pg_restore -l dump.bin | grep -E ' TABLE DATA storage objects ' > objects.list
-          pg_restore --data-only -L objects.list -f storage_objects.sql dump.bin
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -At -c "select photo_url from public.profiles where photo_url is not null and photo_url <> ''" > foto_urls.txt
           python3 docs/migrazione/copia_foto.py
+          rm -f foto_urls.txt
 
       - name: Riscrivi gli indirizzi delle foto nei profili
         run: |
