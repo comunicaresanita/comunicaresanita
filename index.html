@@ -2,6 +2,12 @@
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Chi arriva da comunicaresanita.it (reindirizzato da Register) o dall'indirizzo tecnico di prova finisce sul sito vero.
+      if (location.hostname === "comunicaresanita.pages.dev") {
+        location.replace("https://www.comunicaresanita.it" + location.pathname + location.search + location.hash);
+      }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#0097B2" />
