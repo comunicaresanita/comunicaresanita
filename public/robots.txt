@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://comunicaresanita.it/sitemap.xml
+Sitemap: https://www.comunicaresanita.it/sitemap.xml
