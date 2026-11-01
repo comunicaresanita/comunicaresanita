@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Lock, Users, UserCheck, Activity, TrendingUp, Trash2, Download, X } from "lucide-react";
+import { Lock, Users, UserCheck, Activity, TrendingUp, Trash2, Download, X, BadgeCheck } from "lucide-react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { format, parseISO } from "date-fns";
@@ -155,6 +155,27 @@ const Admin = () => {
       toast.error("Errore di connessione");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const [verifying, setVerifying] = useState(false);
+  const handleSetVerified = async (target: Profile, verified: boolean) => {
+    setVerifying(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("admin-data", {
+        body: { password, action: "setVerified", userId: target.user_id, verified },
+      });
+      if (fnError || data?.error) {
+        toast.error(italianError(data?.error || fnError, "admin"));
+        return;
+      }
+      setProfiles((prev) => prev.map((p) => (p.id === target.id ? { ...p, verified } : p)));
+      setSelectedUser((cur) => (cur && cur.id === target.id ? { ...cur, verified } : cur));
+      toast.success(verified ? "Professionista verificato" : "Verifica rimossa");
+    } catch {
+      toast.error("Errore di connessione");
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -505,6 +526,17 @@ const Admin = () => {
                     <p className="font-medium text-muted-foreground mb-2">Foto profilo</p>
                     <img src={selectedUser.photo_url} alt="Foto" className="w-24 h-24 rounded-full object-cover" />
                   </div>
+                )}
+                {selectedUser.role === "professionista" && (
+                  <Button
+                    variant={selectedUser.verified ? "outline" : "default"}
+                    className="w-full mt-4"
+                    disabled={verifying}
+                    onClick={() => handleSetVerified(selectedUser, !selectedUser.verified)}
+                  >
+                    <BadgeCheck className="w-4 h-4 mr-2" />
+                    {verifying ? "Salvataggio..." : selectedUser.verified ? "Rimuovi verifica" : "Verifica professionista"}
+                  </Button>
                 )}
                 <Button variant="destructive" className="w-full mt-4" onClick={() => { setDeleteTarget(selectedUser); }}>
                   <Trash2 className="w-4 h-4 mr-2" /> Elimina utente

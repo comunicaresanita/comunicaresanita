@@ -127,7 +127,7 @@ export function requestToProfessional(a: {
   const html = shell("Nuova richiesta di prenotazione", `
 <p>Hai ricevuto una richiesta da confermare.</p>
 <table style="font-size:15px;border-collapse:collapse">${row("Prestazione", b.service_name)}${row("Data", b.day)}${row("Orario", b.time_slot)}${row("Paziente", a.patientName)}${row("Telefono", a.patientPhone)}${row("Indirizzo", b.recipient_address ?? "—")}${row("Compenso", `€${b.price}`)}</table>
-<p style="margin:20px 0 8px">Finché non rispondi, l'orario resta riservato.</p>
+<p style="margin:20px 0 8px">Finché non rispondi, l'orario resta riservato. Ti chiediamo di rispondere entro 24 ore: dopo questo termine la richiesta scade e il paziente potrà scegliere un altro orario.</p>
 <p>${btn(a.confirmUrl, "Conferma")}${btn(a.rejectUrl, "Rifiuta", "#8a3b3b")}</p>
 <p style="font-size:13px;color:#6b7c85">Gli altri dettagli (note di accesso, contatto di emergenza) sono nella tua <a href="${esc(a.dashboardUrl)}">dashboard</a>.</p>`);
   const text = `Nuova richiesta di prenotazione\n${b.service_name}\n${b.day} ore ${b.time_slot}\nPaziente: ${a.patientName} (${a.patientPhone})\nIndirizzo: ${b.recipient_address ?? "—"}\n\nConferma: ${a.confirmUrl}\nRifiuta: ${a.rejectUrl}\nDashboard: ${a.dashboardUrl}`;
@@ -137,7 +137,7 @@ export function requestToProfessional(a: {
 export function receivedByPatient(a: { b: EmailBooking; professionalName: string; storicoUrl: string }): MailParts {
   const { b } = a;
   const html = shell("Richiesta inviata", `
-<p>Abbiamo inviato la tua richiesta a ${esc(a.professionalName)}. Riceverai un'email appena avrà risposto.</p>
+<p>Abbiamo inviato la tua richiesta a ${esc(a.professionalName)}. Riceverai un'email appena avrà risposto. Il professionista ha 24 ore per rispondere: se non lo fa, la richiesta scade e ti avviseremo, così potrai scegliere un altro orario o un altro professionista.</p>
 <table style="font-size:15px;border-collapse:collapse">${row("Prestazione", b.service_name)}${row("Data", b.day)}${row("Orario", b.time_slot)}${row("Prezzo", `€${b.price}`)}</table>
 <p style="margin-top:20px">${btn(a.storicoUrl, "Vedi le tue prenotazioni")}</p>`);
   return { subject: `Richiesta inviata: ${b.service_name}`, html, text: `Richiesta inviata a ${a.professionalName}.\n${b.service_name}, ${b.day} ore ${b.time_slot}.\nTi scriveremo appena risponde.\n${a.storicoUrl}` };
@@ -168,6 +168,19 @@ export function rejectedToPatient(a: { b: EmailBooking; rebookUrl: string; searc
 <p>Il professionista non può effettuare questa prestazione nell'orario scelto (${esc(b.day)}, ore ${esc(b.time_slot)}). Puoi scegliere un altro orario o un altro professionista.</p>
 <p>${btn(a.rebookUrl, "Scegli un altro orario")}${btn(a.searchUrl, "Cerca un altro professionista", "#4a6670")}</p>`);
   return { subject: "Prenotazione non confermata: scegli un altro orario", html, text: `Il professionista non può effettuare la prestazione (${b.service_name}, ${b.day} ore ${b.time_slot}).\nAltro orario: ${a.rebookUrl}\nAltro professionista: ${a.searchUrl}` };
+}
+
+export function expiredToPatient(a: { b: EmailBooking; professionalName: string; rebookUrl: string; searchUrl: string }): MailParts {
+  const { b } = a;
+  const html = shell("Richiesta scaduta", `
+<p>${esc(a.professionalName)} non ha risposto entro 24 ore, quindi la richiesta è scaduta e l'orario è tornato disponibile. Non è stato addebitato nulla.</p>
+<table style="font-size:15px;border-collapse:collapse">${row("Prestazione", b.service_name)}${row("Data", b.day)}${row("Orario", b.time_slot)}</table>
+<p style="margin-top:20px">${btn(a.rebookUrl, "Scegli un altro orario")}${btn(a.searchUrl, "Cerca un altro professionista", "#4a6670")}</p>`);
+  return {
+    subject: `Richiesta scaduta: scegli un altro orario o professionista`,
+    html,
+    text: `${a.professionalName} non ha risposto entro 24 ore: la richiesta (${b.service_name}, ${b.day} ore ${b.time_slot}) è scaduta.\nAltro orario: ${a.rebookUrl}\nAltro professionista: ${a.searchUrl}`,
+  };
 }
 
 export function cancelledNotice(a: { b: EmailBooking; by: "patient" | "professional"; to: "patient" | "professional"; storicoUrl: string }): MailParts {

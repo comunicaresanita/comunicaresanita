@@ -1,11 +1,11 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { sendMail, toBase64 } from "./mailer.ts";
 import {
-  buildIcs, cancelledNotice, confirmedToPatient, confirmedToProfessional, googleCalendarUrl,
+  buildIcs, cancelledNotice, confirmedToPatient, confirmedToProfessional, expiredToPatient, googleCalendarUrl,
   receivedByPatient, rejectedToPatient, requestToProfessional, signAction, type MailParts,
 } from "./bookingEmail.ts";
 
-export type BookingEvent = "created" | "confirmed" | "rejected" | "cancelled";
+export type BookingEvent = "created" | "confirmed" | "rejected" | "cancelled" | "expired";
 const DAY = 24 * 3600 * 1000;
 
 /** Invia le email dell'evento. Restituisce quante ne sono partite; lancia se qualcuna fallisce. */
@@ -61,6 +61,12 @@ export async function notifyBooking(admin: SupabaseClient, b: any, patient: any,
   } else if (event === "rejected") {
     send(patientEmail, rejectedToPatient({
       b,
+      rebookUrl: `${appUrl}/profilo-infermiere/${b.professional_id}?servizio=${serviceQ}&per=${b.recipient_type === "other" ? "other" : "self"}&ripeti=${b.id}`,
+      searchUrl: `${appUrl}/dashboard-paziente?servizio=${serviceQ}`,
+    }));
+  } else if (event === "expired") {
+    send(patientEmail, expiredToPatient({
+      b, professionalName: profName,
       rebookUrl: `${appUrl}/profilo-infermiere/${b.professional_id}?servizio=${serviceQ}&per=${b.recipient_type === "other" ? "other" : "self"}&ripeti=${b.id}`,
       searchUrl: `${appUrl}/dashboard-paziente?servizio=${serviceQ}`,
     }));

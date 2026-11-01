@@ -7,9 +7,10 @@ const corsHeaders = {
 
 type AdminRequest = {
   password?: string;
-  action?: "delete" | "deleteBooking";
+  action?: "delete" | "deleteBooking" | "setVerified";
   userId?: string;
   bookingId?: string;
+  verified?: boolean;
 };
 
 const ADMIN_EMAIL = "msm446@gmail.com";
@@ -19,6 +20,24 @@ const jsonResponse = (body: Record<string, unknown>, status = 200) =>
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+
+// Limite ai tentativi sbagliati: massimo 5 per IP e 30 in totale ogni 15 minuti. I tentativi sono nella tabella
+// admin_access_log (non in memoria), quindi il limite regge anche se la funzione si riavvia.
+const WINDOW_MS = 15 * 60 * 1000;
+const MAX_FAILED_PER_IP = 5;
+const MAX_FAILED_TOTAL = 30;
+
+const clientIp = (req: Request) =>
+  (req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown").trim().slice(0, 64) || "unknown";
+
+// Confronto a tempo costante (si confrontano gli hash, che hanno sempre la stessa lunghezza)
+const sha256 = async (v: string) => new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v)));
+const safeEqual = async (a: string, b: string) => {
+  const [x, y] = await Promise.all([sha256(a), sha256(b)]);
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
+};
 
 const ensureNoError = (error: { message: string } | null, message: string) => {
   if (error) {
@@ -100,23 +119,58 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { password, action, userId, bookingId }: AdminRequest = await req.json();
+    const { password, action, userId, bookingId, verified }: AdminRequest = await req.json();
     const adminPassword = Deno.env.get("ADMIN_PASSWORD");
-
-    if (!adminPassword || password !== adminPassword) {
-      return jsonResponse({ error: "Password non valida" }, 401);
-    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+    const ip = clientIp(req);
+
+    // Il registro non deve mai bloccare l'admin se la tabella non c'è ancora: in caso di errore si va avanti e si segnala nei log.
+    const logAccess = async (act: string, success: boolean, detail?: string) => {
+      try {
+        const { error } = await supabase.from("admin_access_log").insert({ ip, action: act, success, detail: detail?.slice(0, 200) ?? null });
+        if (error) console.error(`registro accessi: ${error.message}`);
+      } catch (e) { console.error(`registro accessi: ${String(e)}`); }
+    };
+    const failedSince = async (byIp: boolean) => {
+      try {
+        let q = supabase.from("admin_access_log").select("id", { count: "exact", head: true })
+          .eq("success", false).gte("created_at", new Date(Date.now() - WINDOW_MS).toISOString());
+        if (byIp) q = q.eq("ip", ip);
+        const { count, error } = await q;
+        if (error) { console.error(`limite tentativi: ${error.message}`); return 0; }
+        return count ?? 0;
+      } catch (e) { console.error(`limite tentativi: ${String(e)}`); return 0; }
+    };
+
+    if ((await failedSince(true)) >= MAX_FAILED_PER_IP || (await failedSince(false)) >= MAX_FAILED_TOTAL) {
+      return jsonResponse({ error: "Troppi tentativi. Riprova tra 15 minuti." }, 429);
+    }
+
+    const act = action ?? "login";
+    if (!adminPassword || typeof password !== "string" || !(await safeEqual(password, adminPassword))) {
+      await logAccess(act, false);
+      return jsonResponse({ error: "Password non valida" }, 401);
+    }
+    await logAccess(act, true, action === "delete" ? userId : action === "deleteBooking" ? bookingId : action === "setVerified" ? `${userId} -> ${verified}` : undefined);
 
     if (action === "deleteBooking") {
       if (!bookingId) return jsonResponse({ error: "Prenotazione non specificata" }, 400);
       ensureNoError((await supabase.from("reviews").delete().eq("booking_id", bookingId)).error, "Impossibile eliminare le recensioni collegate");
       ensureNoError((await supabase.from("bookings").delete().eq("id", bookingId)).error, "Impossibile eliminare la prenotazione");
       return jsonResponse({ success: true });
+    }
+
+    if (action === "setVerified") {
+      if (!userId || typeof verified !== "boolean") return jsonResponse({ error: "Richiesta non valida" }, 400);
+      const { data: done, error } = await supabase.from("profiles").update({ verified })
+        .eq("user_id", userId).eq("role", "professionista").select("id");
+      if (error) return jsonResponse({ error: error.message }, 500);
+      if (!done?.length) return jsonResponse({ error: "Professionista non trovato" }, 404);
+      return jsonResponse({ success: true, verified });
     }
 
     if (action === "delete") {
