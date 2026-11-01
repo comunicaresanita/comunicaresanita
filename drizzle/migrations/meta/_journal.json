@@ -127,6 +127,13 @@
       "when": 1793530417185,
       "tag": "0017_apply_pending_0016",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793700000000,
+      "tag": "0018_security_booking_insert_guard",
+      "breakpoints": true
     }
   ]
 }

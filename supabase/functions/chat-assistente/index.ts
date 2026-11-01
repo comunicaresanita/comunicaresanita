@@ -113,14 +113,43 @@ const SERVIZI_OSS = [
   "Routine della sera con cena igiene e preparazione al riposo",
 ];
 
+// Limite di richieste per indirizzo IP (best effort: la memoria si azzera quando la funzione si riavvia)
+const hits = new Map<string, number[]>();
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_HITS = 30;
+const tooMany = (ip: string) => {
+  const now = Date.now();
+  const recent = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 5000) for (const [k, v] of hits) if (!v.some((t) => now - t < WINDOW_MS)) hits.delete(k);
+  return recent.length > MAX_HITS;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages, recipient } = await req.json();
-    if (!messages || !Array.isArray(messages)) throw new Error("Invalid messages");
+    const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+    if (tooMany(ip)) {
+      return new Response(JSON.stringify({ reply: "Troppi messaggi inviati. Attendi qualche minuto e riprova." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    const body = await req.json();
+    const { recipient } = body;
+    if (!body.messages || !Array.isArray(body.messages)) throw new Error("Invalid messages");
+    // Sicurezza: solo ruoli "user" e "assistant", testo breve, ultimi 12 messaggi.
+    // Un chiamante non può inserire istruzioni di sistema né ruoli diversi.
+    const messages = body.messages
+      .filter((m: any) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+      .slice(-12)
+      .map((m: any) => ({ role: m.role, content: m.content.slice(0, 1500) }));
+    if (messages.length === 0 || messages[messages.length - 1].role !== "user") throw new Error("Invalid messages");
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
