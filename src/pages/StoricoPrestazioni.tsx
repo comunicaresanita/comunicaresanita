@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthHeader from "@/components/AuthHeader";
 import Footer from "@/components/Footer";
@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { italianError } from "@/lib/italianErrors";
-import { canUserCancel, canMarkDone, compareBookingsDesc, userBookingStatus } from "@/lib/bookingSlots";
+import { canUserCancel, canMarkDone, bookingTime, compareBookingsDesc, userBookingStatus } from "@/lib/bookingSlots";
 import ReviewDialog from "@/components/ReviewDialog";
 import { useSearchParams } from "react-router-dom";
 
@@ -87,6 +87,23 @@ const StoricoPrestazioni = () => {
     load();
   };
 
+  // Attive (in attesa o confermate) in alto, dalla più vicina; sotto concluse, annullate e scadute, dalla più recente
+  const isActive = (b: any) => { const st = userBookingStatus(b); return st === "pending" || st === "confirmed"; };
+  const activeList = bookings.filter(isActive).sort((a, b) => bookingTime(a) - bookingTime(b));
+  const pastList = bookings.filter((b) => !isActive(b)).sort(compareBookingsDesc);
+  const ordered = [...activeList, ...pastList];
+  const sectionTitle = (i: number) =>
+    i === 0 && activeList.length > 0 ? "Prenotazioni attive"
+      : i === activeList.length && pastList.length > 0 ? "Concluse e annullate" : null;
+  const cardTone = (b: any) => {
+    const st = userBookingStatus(b);
+    return st === "confirmed" ? "border-success/60 bg-success/5"
+      : st === "pending" ? "border-primary/50"
+      : st === "cancelled" || st === "rejected" ? "border-destructive/50 bg-destructive/5"
+      : st === "done" ? "border-success/30"
+      : "opacity-80";
+  };
+
   const formatDay = (day: string) => {
     const d = new Date(day);
     return isNaN(d.getTime()) ? day : d.toLocaleDateString("it-IT");
@@ -114,8 +131,12 @@ const StoricoPrestazioni = () => {
                   Non hai ancora effettuato prestazioni.
                 </p>
               ) : (
-                bookings.map((b) => (
-                  <Card key={b.id} className="p-3">
+                ordered.map((b, i) => (
+                  <Fragment key={b.id}>
+                  {sectionTitle(i) && (
+                    <h2 className={`text-sm font-semibold uppercase tracking-wide text-muted-foreground ${i === 0 ? "" : "pt-3"}`}>{sectionTitle(i)}</h2>
+                  )}
+                  <Card className={`p-3 border-2 ${cardTone(b)}`}>
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">
                         <p className="font-semibold text-base break-words flex items-start gap-1">
@@ -134,7 +155,7 @@ const StoricoPrestazioni = () => {
                       {(() => {
                         const st = userBookingStatus(b);
                         const label = st === "rejected" ? "Non confermata" : st === "cancelled" ? "Annullata" : st === "done" ? "Effettuata" : st === "confirmed" ? "Confermata" : st === "expired" ? "Scaduta" : st === "pending" ? "In attesa" : b.status;
-                        const cls = st === "done" ? "bg-success/15 text-success" : st === "confirmed" || st === "pending" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground";
+                        const cls = st === "done" || st === "confirmed" ? "bg-success/15 text-success" : st === "pending" ? "bg-primary/10 text-primary" : st === "cancelled" || st === "rejected" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground";
                         return <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium flex-shrink-0 ${cls}`}>{label}</span>;
                       })()}
                     </div>
@@ -205,6 +226,7 @@ const StoricoPrestazioni = () => {
                       </p>
                     )}
                   </Card>
+                  </Fragment>
                 ))
               )}
             </CardContent>
