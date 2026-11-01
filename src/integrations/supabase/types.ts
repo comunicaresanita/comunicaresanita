@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_access_log: {
+        Row: {
+          action: string
+          created_at: string
+          detail: string | null
+          id: number
+          ip: string
+          success: boolean
+        }
+        Insert: {
+          action?: string
+          created_at?: string
+          detail?: string | null
+          id?: never
+          ip?: string
+          success: boolean
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          detail?: string | null
+          id?: never
+          ip?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
       availability: {
         Row: {
           created_at: string
